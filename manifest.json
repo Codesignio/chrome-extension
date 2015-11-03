@@ -1,6 +1,6 @@
 {
-  "name": "Batch bookmarks",
-  "description": "Navigate through next page and add specific links to bookmarks",
+  "name": "Screenshotter",
+  "description": "Capture webpage screenshots",
   "version": "1.0",
   "permissions": [
     "tabs",
