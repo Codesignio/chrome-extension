@@ -1,41 +1,13 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link href="css/app.css" rel="stylesheet" type="text/css">
 </head>
-<style>
-    #popup {
-        width: 300px;
-    }
-    button {
-        display: block;
-        margin: auto;
-        margin-bottom: 5px;
-        outline: none;
-    }
-    img {
-        height: 200px;
-        border: 1px solid whitesmoke;
-    }
-
-    .progress_bar {
-        display: none;
-        height: 15px;
-        background: orange;
-        width: 0%;
-        margin-bottom: 5px;
-    }
-
-    #images {
-        overflow: auto;
-    }
-</style>
 <body>
-<div id="popup">
-    <div id="progressBar" class="progress_bar"></div>
-    <button id="takeScreenshot">Take Screenshot</button>
-    <button id="takeFullPageScreenshot">Take FullPage Screenshot</button>
-    <div id="images"></div>
-</div>
-<script src="popup.js"></script>
+<div id="app"></div>
+
+<script src="compiled/bundle.js"></script>
 </body>
 </html>

@@ -1,0 +1,24 @@
+#popup {
+    width: 300px;
+}
+button {
+    display: block;
+    margin: auto;
+    margin-bottom: 5px;
+    outline: none;
+}
+img {
+    height: 200px;
+    border: 1px solid whitesmoke;
+}
+
+.progress_bar {
+    height: 15px;
+    background: orange;
+    width: 0%;
+    margin-bottom: 5px;
+}
+
+#images {
+    overflow: auto;
+}
