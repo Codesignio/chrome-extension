@@ -42,9 +42,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/*!********************!*\
-  !*** ./app/app.js ***!
-  \********************/
+/*!****************************!*\
+  !*** ./page-script/app.js ***!
+  \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -75,322 +75,196 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var App = (function (_React$Component) {
-	  _inherits(App, _React$Component);
+	var Snap = (function (_React$Component) {
+	  _inherits(Snap, _React$Component);
 	
-	  function App(props) {
-	    _classCallCheck(this, App);
+	  function Snap(props) {
+	    _classCallCheck(this, Snap);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Snap).call(this, props));
 	
+	    var cursor = document.body.style.cursor;
+	    document.body.style.cursor = "crosshair";
 	    _this.state = {
-	      progress: false,
-	      screenshot: null,
-	      contentURL: '',
-	      images: [],
-	      token: localStorage.token
+	      select: false,
+	      cursor: cursor
 	    };
 	    return _this;
 	  }
 	
-	  _createClass(App, [{
-	    key: 'componentWillMount',
-	    value: function componentWillMount() {
-	      chrome.extension.onRequest.addListener((function (request, sender, callback) {
-	        if (request.msg === 'capturePage') {
-	          this.capturePage(request, sender, callback);
-	        }
-	      }).bind(this));
+	  _createClass(Snap, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      document.addEventListener('keydown', this.onKeyDown.bind(this));
 	    }
 	  }, {
-	    key: 'takeScreenshoot',
-	    value: function takeScreenshoot(e) {
-	      chrome.tabs.captureVisibleTab(null, null, function (dataUrl) {
-	        var el = document.createElement('img');
-	        el.setAttribute('src', dataUrl);
-	        el.onclick = function () {
-	          chrome.tabs.create({ url: dataUrl });
-	        };
-	        document.getElementById('images').appendChild(el);
-	      });
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      document.removeEventListener('keydown', this.onKeyDown.bind(this));
 	    }
 	  }, {
-	    key: 'takeFullPageScreenshoot',
-	    value: function takeFullPageScreenshoot() {
-	      var me = this;
-	      chrome.tabs.getSelected(null, function (tab) {
-	        var loaded = false;
-	        chrome.tabs.executeScript(tab.id, { file: 'page.js' }, (function () {
-	          loaded = true;
-	          this.sendScrollMessage(tab);
-	        }).bind(me));
-	      });
-	    }
-	  }, {
-	    key: 'sendScrollMessage',
-	    value: function sendScrollMessage(tab) {
-	      var me = this;
-	      this.state.contentURL = tab.url;
-	      this.state.screenshot = {};
-	      chrome.tabs.sendRequest(tab.id, { msg: 'scrollPage' }, (function () {
-	        this.openPage();
-	      }).bind(me));
-	    }
-	  }, {
-	    key: 'capturePage',
-	    value: function capturePage(data, sender, callback) {
-	      this.setState({ progress: parseInt(data.complete * 100, 10) + '%' });
-	      var screenshot = this.state.screenshot;
-	      var canvas;
-	
-	      var scale = data.devicePixelRatio && data.devicePixelRatio !== 1 ? 1 / data.devicePixelRatio : 1;
-	      if (scale !== 1) {
-	        data.x = data.x / scale;
-	        data.y = data.y / scale;
-	        data.totalWidth = data.totalWidth / scale;
-	        data.totalHeight = data.totalHeight / scale;
+	    key: 'onKeyDown',
+	    value: function onKeyDown(e) {
+	      if (e.keyCode == 27) {
+	        this.setState({ cancel: true });
+	        var elem = document.getElementById('snap-overlay');
+	        elem.parentNode.removeChild(el);
 	      }
-	      if (!screenshot.canvas) {
-	        canvas = document.createElement('canvas');
-	        canvas.width = data.totalWidth;
-	        canvas.height = data.totalHeight;
-	        screenshot.canvas = canvas;
-	        screenshot.ctx = canvas.getContext('2d');
-	      }
-	
-	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
-	        if (dataURI) {
-	          var image = new Image();
-	          image.onload = function () {
-	            screenshot.ctx.drawImage(image, data.x, data.y);
-	            callback(true);
-	          };
-	          image.src = dataURI;
-	        }
-	      });
 	    }
 	  }, {
-	    key: 'openPage',
-	    value: function openPage() {
-	      var screenshot = this.state.screenshot;
-	
-	      var dataURI = screenshot.canvas.toDataURL();
-	
-	      var byteString = atob(dataURI.split(',')[1]);
-	      var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-	      var ab = new ArrayBuffer(byteString.length);
-	      var ia = new Uint8Array(ab);
-	      for (var i = 0; i < byteString.length; i++) {
-	        ia[i] = byteString.charCodeAt(i);
-	      }
-	      var blob = new Blob([ab], { type: mimeString });
-	      var size = blob.size + 1024 / 2;
-	      var name = this.state.contentURL.split('?')[0].split('#')[0];
-	      if (name) {
-	        name = name.replace(/^https?:\/\//, '').replace(/[^A-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^[_\-]+/, '').replace(/[_\-]+$/, '');
-	        name = '-' + name;
-	      } else {
-	        name = '';
-	      }
-	      name = 'screencapture' + name + '-' + Date.now() + '.png';
-	
-	      var me = this;
-	      function onwriteend() {
-	        var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	        me.state.images.push({ link: url });
-	        me.setState({ progress: false });
-	      }
-	
-	      window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
-	        fs.root.getFile(name, { create: true }, function (fileEntry) {
-	          fileEntry.createWriter(function (fileWriter) {
-	            fileWriter.onwriteend = onwriteend;
-	            fileWriter.write(blob);
-	          });
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'imgClick',
-	    value: function imgClick(url, e) {
-	      chrome.tabs.create({ url: url });
-	    }
-	  }, {
-	    key: 'handleLogin',
-	    value: function handleLogin(token) {
-	      this.setState({ token: token });
-	      localStorage.token = token;
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        { id: 'popup' },
-	        this.state.token ? _react2.default.createElement(
-	          'div',
-	          { id: 'screenshot-app' },
-	          this.state.progress && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.snapScreen.bind(this) },
-	            'Snap screen area'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.takeScreenshoot.bind(this) },
-	            'Snap visible part'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.takeFullPageScreenshoot.bind(this) },
-	            'Snap a full page'
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { id: 'images' },
-	            this.state.images && this.state.images.map((function (img) {
-	              return _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
-	            }).bind(this))
-	          )
-	        ) : _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) })
-	      );
-	    }
-	  }, {
-	    key: 'snapScreen',
-	    value: function snapScreen() {
-	      var me = this;
-	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {});
-	      });
-	    }
-	  }]);
-	
-	  return App;
-	})(_react2.default.Component);
-	
-	var ProgressBar = (function (_React$Component2) {
-	  _inherits(ProgressBar, _React$Component2);
-	
-	  function ProgressBar() {
-	    _classCallCheck(this, ProgressBar);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(ProgressBar).apply(this, arguments));
-	  }
-	
-	  _createClass(ProgressBar, [{
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.props.progress } });
-	    }
-	  }]);
-	
-	  return ProgressBar;
-	})(_react2.default.Component);
-	
-	var LoginForm = (function (_React$Component3) {
-	  _inherits(LoginForm, _React$Component3);
-	
-	  function LoginForm(props) {
-	    _classCallCheck(this, LoginForm);
-	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
-	
-	    _this3.state = {
-	      status: null
-	    };
-	    return _this3;
-	  }
-	
-	  _createClass(LoginForm, [{
-	    key: 'handleSubmit',
-	    value: function handleSubmit(e) {
-	      var me = this;
+	    key: 'handleMouseDown',
+	    value: function handleMouseDown(e) {
+	      e.stopPropagation();
 	      e.preventDefault();
-	
-	      var xhr = new XMLHttpRequest();
-	      var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
-	      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
-	      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-	      xhr.onreadystatechange = function () {
-	        if (xhr.readyState != 4) return;
-	        if (xhr.status != 200) {
-	          me.setState({ status: xhr.status + ': ' + xhr.statusText });
-	        } else {
-	          console.log(xhr.responseText);
-	          me.props.handleLogin(JSON.parse(xhr.responseText).token);
+	      this.setState({
+	        select: true,
+	        startX: e.pageX,
+	        startY: e.pageY,
+	        width: 0,
+	        height: 0,
+	        inverseX: false,
+	        inverseY: false
+	      });
+	    }
+	  }, {
+	    key: 'handleMouseUp',
+	    value: function handleMouseUp(e) {
+	      if (this.state.select) {
+	        this.setState({
+	          left: this.state.inverseX ? this.state.mouseX : this.state.startX,
+	          top: this.state.inverseY ? this.state.mouseY : this.state.startY
+	        });
+	        document.body.style.cursor = this.state.cursor;
+	      }
+	      this.setState({
+	        select: false,
+	        resize: false
+	      });
+	    }
+	  }, {
+	    key: 'handleMouseMove',
+	    value: function handleMouseMove(e) {
+	      if (this.state.select) {
+	        this.setState({
+	          width: Math.abs(e.pageX - this.state.startX),
+	          height: Math.abs(e.pageY - this.state.startY),
+	          mouseX: e.pageX,
+	          mouseY: e.pageY,
+	          inverseX: e.pageX - this.state.startX < 0,
+	          inverseY: e.pageY - this.state.startY < 0
+	        });
+	      } else if (this.state.resize) {
+	        if (this.state.direction == 'bottom-right') {
+	          this.state.width += e.pageX - this.state.resizeX;
+	          this.state.height += e.pageY - this.state.resizeY;
+	        } else if (this.state.direction == 'bottom-left') {
+	          this.state.width -= e.pageX - this.state.resizeX;
+	          this.state.height += e.pageY - this.state.resizeY;
+	          this.state.left += e.pageX - this.state.resizeX;
+	        } else if (this.state.direction == 'top-left') {
+	          this.state.width -= e.pageX - this.state.resizeX;
+	          this.state.height -= e.pageY - this.state.resizeY;
+	          this.state.left += e.pageX - this.state.resizeX;
+	          this.state.top += e.pageY - this.state.resizeY;
+	        } else if (this.state.direction == 'top-right') {
+	          this.state.width += e.pageX - this.state.resizeX;
+	          this.state.height -= e.pageY - this.state.resizeY;
+	          this.state.top += e.pageY - this.state.resizeY;
+	        } else if (this.state.direction == 'top') {
+	          this.state.height -= e.pageY - this.state.resizeY;
+	          this.state.top += e.pageY - this.state.resizeY;
+	        } else if (this.state.direction == 'bottom') {
+	          this.state.height += e.pageY - this.state.resizeY;
+	        } else if (this.state.direction == 'left') {
+	          this.state.width -= e.pageX - this.state.resizeX;
+	          this.state.left += e.pageX - this.state.resizeX;
+	        } else if (this.state.direction = 'right') {
+	          this.state.width += e.pageX - this.state.resizeX;
 	        }
-	      };
-	      xhr.send(json);
+	
+	        this.setState({
+	          resizeX: e.pageX,
+	          resizeY: e.pageY
+	        });
+	      }
+	    }
+	  }, {
+	    key: 'startResize',
+	    value: function startResize(direction, e) {
+	      e.stopPropagation();
+	      e.preventDefault();
+	      this.setState({
+	        resize: true,
+	        resizeX: e.pageX,
+	        resizeY: e.pageY,
+	        direction: direction
+	      });
+	    }
+	  }, {
+	    key: 'snapSelection',
+	    value: function snapSelection(e) {
+	      e.stopPropagation();
+	      e.preventDefault();
+	    }
+	  }, {
+	    key: 'startDrag',
+	    value: function startDrag(e) {
+	      e.preventDefault();
+	      e.stopPropagation();
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      return _react2.default.createElement(
+	      var styles = {
+	        width: '100%',
+	        height: '100%',
+	        zIndex: 1000001,
+	        position: 'absolute',
+	        left: 0,
+	        top: 0
+	      };
+	
+	      var selectionStyle = {
+	        position: 'absolute',
+	        border: '1px dashed black',
+	        width: this.state.width,
+	        height: this.state.height,
+	        left: this.state.select ? this.state.inverseX ? this.state.mouseX : this.state.startX : this.state.left,
+	        top: this.state.select ? this.state.inverseY ? this.state.mouseY : this.state.startY : this.state.top,
+	        boxShadow: '0px 0px 30px 0px rgba(0,0,0,1)'
+	
+	      };
+	
+	      var resizerStyle = {
+	        position: 'absolute'
+	      };
+	      return this.state.cancel ? null : _react2.default.createElement(
 	        'div',
-	        { className: 'login-form' },
-	        this.state.status && _react2.default.createElement(
-	          'p',
-	          null,
-	          'Wrong email or password'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'title' },
-	          'Log in'
-	        ),
-	        _react2.default.createElement(
-	          'button',
-	          { className: 'facebook-login' },
-	          'Log In with Facebook'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          null,
-	          'or ',
-	          _react2.default.createElement(
-	            'a',
-	            { className: 'google-login' },
-	            'Google'
-	          ),
-	          ', ',
-	          _react2.default.createElement(
-	            'a',
-	            { className: 'github-login' },
-	            'Github'
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'email-login' },
-	          'or Log in with Email'
-	        ),
-	        _react2.default.createElement(
-	          'form',
-	          { onSubmit: this.handleSubmit.bind(this) },
-	          _react2.default.createElement('input', { type: 'text', ref: 'email', placeholder: 'Email' }),
-	          _react2.default.createElement('input', { type: 'password', ref: 'password', placeholder: 'Password' }),
-	          _react2.default.createElement('input', { type: 'submit', value: 'Log in' })
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'signup-title' },
-	          'Please ',
-	          _react2.default.createElement(
-	            'a',
-	            { className: 'sign-up' },
-	            'Sign Up'
-	          ),
-	          ' if you don\'t have an account'
+	        { id: 'snap-overlay', style: styles,
+	          onMouseDown: this.handleMouseDown.bind(this),
+	          onMouseMove: this.handleMouseMove.bind(this),
+	          onMouseUp: this.handleMouseUp.bind(this) },
+	        this.state.width && _react2.default.createElement(
+	          'div',
+	          { className: 'selection', onMouseDown: this.startDrag.bind(this), style: (0, _objectAssign2.default)({}, selectionStyle) },
+	          this.state.select || this.state.resize ? null : [_react2.default.createElement(
+	            'div',
+	            { key: 'button', onMouseDown: this.snapSelection.bind(this), style: { margin: 'auto', width: '100px', height: '20px', textAlign: 'center', lineHeight: '20px', color: 'white', backgroundColor: '#37A037', borderRadius: '0px', position: 'relative', top: '-30px', margin: 'auto', cursor: 'pointer' } },
+	            'Snap'
+	          ), _react2.default.createElement('div', { key: 'resizer top', onMouseDown: this.startResize.bind(this, 'top'), className: 'resizer top', style: (0, _objectAssign2.default)({}, resizerStyle, { top: 0, width: '100%', height: '2px', cursor: 'ns-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom', onMouseDown: this.startResize.bind(this, 'bottom'), className: 'resizer bottom', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize' }) }), _react2.default.createElement('div', { key: 'resizer left', onMouseDown: this.startResize.bind(this, 'left'), className: 'resizer left', style: (0, _objectAssign2.default)({}, resizerStyle, { left: 0, width: '2px', height: '100%', cursor: 'ew-resize' }) }), _react2.default.createElement('div', { key: 'resizer right', onMouseDown: this.startResize.bind(this, 'right'), className: 'resizer right', style: (0, _objectAssign2.default)({}, resizerStyle, { right: 0, width: '2px', height: '100%', cursor: 'ew-resize' }) }), _react2.default.createElement('div', { key: 'resizer top-left', onMouseDown: this.startResize.bind(this, 'top-left'), className: 'resizer top-left', style: (0, _objectAssign2.default)({}, resizerStyle, { top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize' }) }), _react2.default.createElement('div', { key: 'resizer top-right', onMouseDown: this.startResize.bind(this, 'top-right'), className: 'resizer top-right', style: (0, _objectAssign2.default)({}, resizerStyle, { top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom-right', onMouseDown: this.startResize.bind(this, 'bottom-right'), className: 'resizer bottom-right', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom-left', onMouseDown: this.startResize.bind(this, 'bottom-left'), className: 'resizer bottom-left', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize' }) })]
 	        )
 	      );
 	    }
 	  }]);
 	
-	  return LoginForm;
+	  return Snap;
 	})(_react2.default.Component);
 	
-	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));
+	var el = document.createElement('div');
+	el.setAttribute('id', 'snap-overlay');
+	el.setAttribute('style', 'width: ' + document.body.scrollWidth + 'px;height:' + document.body.scrollHeight + 'px; z-index:1000000; position: absolute; top: 0px; left: 0px;');
+	document.body.appendChild(el);
+	_reactDom2.default.render(_react2.default.createElement(Snap, null), el);
 
 /***/ },
 /* 1 */

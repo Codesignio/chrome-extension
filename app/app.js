@@ -149,10 +149,10 @@ class App extends React.Component {
       <div id="popup">
         {this.state.token ?
         <div id="screenshot-app">
-         <p>Token: {this.state.token} </p>
         {this.state.progress && <ProgressBar progress={this.state.progress}/>}
-          <button onClick={this.takeScreenshoot.bind(this)}>Take Screenshot</button>
-          <button onClick={this.takeFullPageScreenshoot.bind(this)}>Take FullPage Screenshot</button>
+          <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
+          <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
+          <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
           <div id="images">
             {this.state.images && this.state.images.map(function (img) {
               return <img src={img.link} onClick={this.imgClick.bind(this, img.link)} style={{heght: 500}}/>
@@ -161,6 +161,14 @@ class App extends React.Component {
         </div> : <LoginForm handleLogin={this.handleLogin.bind(this)}></LoginForm>}
       </div>
     )
+  }
+
+  snapScreen(){
+    var me =this;
+    chrome.tabs.getSelected(null, function (tab) {
+      chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/bundle.js'}, function () {
+      });
+    });
   }
 }
 
