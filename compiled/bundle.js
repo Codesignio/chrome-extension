@@ -87,7 +87,8 @@
 	      progress: false,
 	      screenshot: null,
 	      contentURL: '',
-	      images: []
+	      images: [],
+	      token: localStorage.token
 	    };
 	    return _this;
 	  }
@@ -215,29 +216,46 @@
 	      chrome.tabs.create({ url: url });
 	    }
 	  }, {
+	    key: 'handleLogin',
+	    value: function handleLogin(token) {
+	      this.setState({ token: token });
+	      localStorage.token = token;
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
 	        { id: 'popup' },
-	        this.state.progress && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
-	        _react2.default.createElement(
-	          'button',
-	          { onClick: this.takeScreenshoot.bind(this) },
-	          'Take Screenshot'
-	        ),
-	        _react2.default.createElement(
-	          'button',
-	          { onClick: this.takeFullPageScreenshoot.bind(this) },
-	          'Take FullPage Screenshot'
-	        ),
-	        _react2.default.createElement(
+	        this.state.token ? _react2.default.createElement(
 	          'div',
-	          { id: 'images' },
-	          this.state.images && this.state.images.map((function (img) {
-	            return _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
-	          }).bind(this))
-	        )
+	          { id: 'screenshot-app' },
+	          _react2.default.createElement(
+	            'p',
+	            null,
+	            'Token: ',
+	            this.state.token,
+	            ' '
+	          ),
+	          this.state.progress && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
+	          _react2.default.createElement(
+	            'button',
+	            { onClick: this.takeScreenshoot.bind(this) },
+	            'Take Screenshot'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            { onClick: this.takeFullPageScreenshoot.bind(this) },
+	            'Take FullPage Screenshot'
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { id: 'images' },
+	            this.state.images && this.state.images.map((function (img) {
+	              return _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
+	            }).bind(this))
+	          )
+	        ) : _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) })
 	      );
 	    }
 	  }]);
@@ -262,6 +280,108 @@
 	  }]);
 	
 	  return ProgressBar;
+	})(_react2.default.Component);
+	
+	var LoginForm = (function (_React$Component3) {
+	  _inherits(LoginForm, _React$Component3);
+	
+	  function LoginForm(props) {
+	    _classCallCheck(this, LoginForm);
+	
+	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
+	
+	    _this3.state = {
+	      status: null
+	    };
+	    return _this3;
+	  }
+	
+	  _createClass(LoginForm, [{
+	    key: 'handleSubmit',
+	    value: function handleSubmit(e) {
+	      var me = this;
+	      e.preventDefault();
+	
+	      var xhr = new XMLHttpRequest();
+	      var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
+	      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
+	      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	      xhr.onreadystatechange = function () {
+	        if (xhr.readyState != 4) return;
+	        if (xhr.status != 200) {
+	          me.setState({ status: xhr.status + ': ' + xhr.statusText });
+	        } else {
+	          console.log(xhr.responseText);
+	          me.props.handleLogin(JSON.parse(xhr.responseText).token);
+	        }
+	      };
+	      xhr.send(json);
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'login-form' },
+	        this.state.status && _react2.default.createElement(
+	          'p',
+	          null,
+	          'Wrong email or password'
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'title' },
+	          'Log in'
+	        ),
+	        _react2.default.createElement(
+	          'button',
+	          { className: 'facebook-login' },
+	          'Log In with Facebook'
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          null,
+	          'or ',
+	          _react2.default.createElement(
+	            'a',
+	            { className: 'google-login' },
+	            'Google'
+	          ),
+	          ', ',
+	          _react2.default.createElement(
+	            'a',
+	            { className: 'github-login' },
+	            'Github'
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'email-login' },
+	          'or Log in with Email'
+	        ),
+	        _react2.default.createElement(
+	          'form',
+	          { onSubmit: this.handleSubmit.bind(this) },
+	          _react2.default.createElement('input', { type: 'text', ref: 'email', placeholder: 'Email' }),
+	          _react2.default.createElement('input', { type: 'password', ref: 'password', placeholder: 'Password' }),
+	          _react2.default.createElement('input', { type: 'submit', value: 'Log in' })
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'signup-title' },
+	          'Please ',
+	          _react2.default.createElement(
+	            'a',
+	            { className: 'sign-up' },
+	            'Sign Up'
+	          ),
+	          ' if you don\'t have an account'
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return LoginForm;
 	})(_react2.default.Component);
 	
 	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));

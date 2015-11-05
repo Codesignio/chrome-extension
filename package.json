@@ -18,6 +18,8 @@
   "homepage": "https://github.com/Codesignio/chrome-extension#readme",
   "dependencies": {
     "classnames": "^2.2.0",
+    "es6-promise": "^3.0.2",
+    "isomorphic-fetch": "^2.2.0",
     "object-assign": "^4.0.1",
     "react": "^0.14.2",
     "react-dom": "^0.14.2"

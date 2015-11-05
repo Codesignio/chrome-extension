@@ -1,10 +1,111 @@
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    font-size: 100%;
+    vertical-align: baseline;
+    box-sizing: border-box;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+
+
+.body {
+    font-family: arial, sans-serif;
+}
+
+.login-form {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+
+}
+
+.login-form .title {
+    text-align: center;
+    font-size: 30px;
+    color: #8c8c8c;
+}
+
+.facebook-login {
+    margin-top: 20px;
+    height: 30px;
+    width: 100%;
+    background-color: #000066;
+    color: white;
+    border-radius: 20px;
+}
+
+p {
+    text-align: center;
+    color: #8c8c8c;
+}
+
+p .sign-up {
+    color: #00ae00;
+}
+
+p .google-login {
+    color: red;
+}
+
+p .github-login {
+    color: black;
+}
+
+p.email-login {
+    margin-top: 20px;
+}
+
+input {
+    display: block;
+    width: 100%;
+    height: 35px;
+    border: 2px solid #b5b5b5;
+    text-align: center;
+    outline: none;
+    border-bottom: none;
+}
+
+
+::-webkit-input-placeholder {
+    text-align: center;
+}
+
+input[type="submit"]{
+    font-weight: bold;
+    background-color: #b5b5b5;
+}
+
+form {
+    margin-top: 10px;
+}
+
+.signup-title {
+    margin-top: 10px;
+}
+
+
+
+
 #popup {
     width: 300px;
 }
-button {
+#screenshot-app button {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #37A037;
+    color: white;
     display: block;
     margin: auto;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
+    margin-top: 3px;
     outline: none;
 }
 img {
