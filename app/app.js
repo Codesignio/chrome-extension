@@ -300,7 +300,7 @@ class SelectAndUpload extends React.Component {
   }
 
   logProgress(value){
-    this.setState({propess: value})
+    this.setState({progress: value})
   }
 
 
@@ -359,8 +359,9 @@ class SelectAndUpload extends React.Component {
   render(){
     return (
      <div className="uploadWidget">
-        <p>Place to upload</p>
+        <p className="uploadTitle">Place to upload</p>
        {this.state.status == 'progress' && <ProgressBar progress={this.state.progress} />}
+       <div className="selectors">
         <select onChange={this.setBoard.bind(this)}>
           {this.state.boards && this.state.boards.map(function(board,i){
             return <option key={i} value={board.id}>{board.title}</option>
@@ -371,7 +372,8 @@ class SelectAndUpload extends React.Component {
             return <option key={i} value={folder.id}>{folder.title}</option>
           })}
         </select>
-        <button onClick={this.uploadImage.bind(this)}>Upload</button>
+       </div>
+        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>Upload</button>
       </div>
     )
   }

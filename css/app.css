@@ -109,6 +109,8 @@ form {
     outline: none;
 }
 img {
+    margin: auto;
+    display: block;
     height: 200px;
     border: 1px solid whitesmoke;
 }
@@ -122,4 +124,28 @@ img {
 
 #images {
     overflow: auto;
+}
+
+
+#uploadButton {
+    background-color: #37A037;
+    color: white;
+    margin: auto;
+    display: block;
+    width: 100px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 20px;
+}
+
+.selectors {
+    margin-top: 10px;
+    display: flex;
+}
+.selectors select {
+    flex: auto;
+}
+
+.uploadTitle {
+    margin-top: 5px;
 }

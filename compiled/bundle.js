@@ -400,7 +400,7 @@
 	  }, {
 	    key: 'logProgress',
 	    value: function logProgress(value) {
-	      this.setState({ propess: value });
+	      this.setState({ progress: value });
 	    }
 	  }, {
 	    key: 'uploadImage',
@@ -457,35 +457,39 @@
 	        { className: 'uploadWidget' },
 	        _react2.default.createElement(
 	          'p',
-	          null,
+	          { className: 'uploadTitle' },
 	          'Place to upload'
 	        ),
 	        this.state.status == 'progress' && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
 	        _react2.default.createElement(
-	          'select',
-	          { onChange: this.setBoard.bind(this) },
-	          this.state.boards && this.state.boards.map(function (board, i) {
-	            return _react2.default.createElement(
-	              'option',
-	              { key: i, value: board.id },
-	              board.title
-	            );
-	          })
-	        ),
-	        _react2.default.createElement(
-	          'select',
-	          { onChange: this.setFolder.bind(this) },
-	          this.state.folders && this.state.folders.map(function (folder, i) {
-	            return _react2.default.createElement(
-	              'option',
-	              { key: i, value: folder.id },
-	              folder.title
-	            );
-	          })
+	          'div',
+	          { className: 'selectors' },
+	          _react2.default.createElement(
+	            'select',
+	            { onChange: this.setBoard.bind(this) },
+	            this.state.boards && this.state.boards.map(function (board, i) {
+	              return _react2.default.createElement(
+	                'option',
+	                { key: i, value: board.id },
+	                board.title
+	              );
+	            })
+	          ),
+	          _react2.default.createElement(
+	            'select',
+	            { onChange: this.setFolder.bind(this) },
+	            this.state.folders && this.state.folders.map(function (folder, i) {
+	              return _react2.default.createElement(
+	                'option',
+	                { key: i, value: folder.id },
+	                folder.title
+	              );
+	            })
+	          )
 	        ),
 	        _react2.default.createElement(
 	          'button',
-	          { onClick: this.uploadImage.bind(this) },
+	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
 	          'Upload'
 	        )
 	      );
