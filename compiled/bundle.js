@@ -87,7 +87,7 @@
 	      progress: false,
 	      screenshot: null,
 	      contentURL: '',
-	      images: [],
+	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token
 	    };
 	    return _this;
@@ -105,13 +105,60 @@
 	  }, {
 	    key: 'takeScreenshoot',
 	    value: function takeScreenshoot(e) {
-	      chrome.tabs.captureVisibleTab(null, null, function (dataUrl) {
-	        var el = document.createElement('img');
-	        el.setAttribute('src', dataUrl);
-	        el.onclick = function () {
-	          chrome.tabs.create({ url: dataUrl });
-	        };
-	        document.getElementById('images').appendChild(el);
+	      var me = this;
+	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
+	
+	        if (dataURI) {
+	          var image = new Image();
+	          image.onload = function () {
+	            var canvas = document.createElement('canvas');
+	            canvas.width = this.width;
+	            canvas.height = this.height;
+	
+	            canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
+	
+	            var canvasURI = canvas.toDataURL();
+	
+	            var byteString = atob(canvasURI.split(',')[1]);
+	            var mimeString = canvasURI.split(',')[0].split(':')[1].split(';')[0];
+	            var ab = new ArrayBuffer(byteString.length);
+	            var ia = new Uint8Array(ab);
+	            for (var i = 0; i < byteString.length; i++) {
+	              ia[i] = byteString.charCodeAt(i);
+	            }
+	            var blob = new Blob([ab], { type: mimeString });
+	            var size = blob.size + 1024 / 2;
+	
+	            chrome.tabs.getSelected(null, function (tab) {
+	
+	              var name = tab.url.split('?')[0].split('#')[0];
+	              if (name) {
+	                name = name.replace(/^https?:\/\//, '').replace(/[^A-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^[_\-]+/, '').replace(/[_\-]+$/, '');
+	                name = '-' + name;
+	              } else {
+	                name = '';
+	              }
+	              name = 'screencapture' + name + '-' + Date.now() + '.png';
+	
+	              function onwriteend() {
+	                var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
+	                me.state.images.push({ link: url });
+	                localStorage.images = JSON.stringify(me.state.images);
+	                me.setState({ progress: false });
+	              }
+	
+	              window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
+	                fs.root.getFile(name, { create: true }, function (fileEntry) {
+	                  fileEntry.createWriter(function (fileWriter) {
+	                    fileWriter.onwriteend = onwriteend;
+	                    fileWriter.write(blob);
+	                  });
+	                });
+	              });
+	            });
+	          };
+	          image.src = dataURI;
+	        }
 	      });
 	    }
 	  }, {
@@ -198,6 +245,7 @@
 	      function onwriteend() {
 	        var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
 	        me.state.images.push({ link: url });
+	        localStorage.images = JSON.stringify(me.state.images);
 	        me.setState({ progress: false });
 	      }
 	
@@ -249,8 +297,8 @@
 	          _react2.default.createElement(
 	            'div',
 	            { id: 'images' },
-	            this.state.images && this.state.images.map((function (img) {
-	              return _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
+	            this.state.images && this.state.images.map((function (img, i) {
+	              return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
 	            }).bind(this))
 	          )
 	        ) : _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) })

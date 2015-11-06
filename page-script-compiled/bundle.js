@@ -205,6 +205,18 @@
 	    value: function snapSelection(e) {
 	      e.stopPropagation();
 	      e.preventDefault();
+	      var data = {
+	        msg: 'capturePart',
+	        width: this.state.width,
+	        height: this.state.height,
+	        left: this.state.left,
+	        top: this.state.top,
+	        url: document.location.toString()
+	      };
+	      var me = this;
+	      chrome.extension.sendRequest(data, function () {
+	        me.setState({ cancel: true });
+	      });
 	    }
 	  }, {
 	    key: 'startDrag',
