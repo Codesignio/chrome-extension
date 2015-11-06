@@ -207,6 +207,10 @@ class App extends React.Component {
     localStorage.token = token;
   }
 
+  handleUpload(){
+    this.setState({status: 'actions'})
+  }
+
   renderPopup(){
 
     if (!this.state.token){
@@ -217,7 +221,7 @@ class App extends React.Component {
       return (
         <div>
           <img src={this.state.capturedImage.link}/>
-          <SelectAndUpload image={this.state.capturedImage} token={this.state.token}/>
+          <SelectAndUpload handleUpload={this.handleUpload.bind(this)} image={this.state.capturedImage} token={this.state.token}/>
         </div>
       )
     } else if (this.state.status == 'actions'){
@@ -334,7 +338,7 @@ class SelectAndUpload extends React.Component {
                     width: capturedImage.size.width,
                     height: capturedImage.size.height
                   }, function (data3) {
-                    me.setState({status: 'actions'})
+                    me.props.handleUpload()
                   });
 
                 });

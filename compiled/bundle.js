@@ -277,6 +277,11 @@
 	      localStorage.token = token;
 	    }
 	  }, {
+	    key: 'handleUpload',
+	    value: function handleUpload() {
+	      this.setState({ status: 'actions' });
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	
@@ -289,7 +294,7 @@
 	          'div',
 	          null,
 	          _react2.default.createElement('img', { src: this.state.capturedImage.link }),
-	          _react2.default.createElement(SelectAndUpload, { image: this.state.capturedImage, token: this.state.token })
+	          _react2.default.createElement(SelectAndUpload, { handleUpload: this.handleUpload.bind(this), image: this.state.capturedImage, token: this.state.token })
 	        );
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
@@ -433,7 +438,7 @@
 	                      width: capturedImage.size.width,
 	                      height: capturedImage.size.height
 	                    }, function (data3) {
-	                      me.setState({ status: 'actions' });
+	                      me.props.handleUpload();
 	                    });
 	                  });
 	                };
