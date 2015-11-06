@@ -108,12 +108,13 @@
 	    key: 'takeScreenshoot',
 	    value: function takeScreenshoot(e) {
 	      var me = this;
-	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
+	      chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 100 }, function (dataURI) {
 	
 	        if (dataURI) {
 	          var image = new Image();
 	          image.onload = function () {
 	            var canvas = document.createElement('canvas');
+	            var capturedImageSize = { width: this.width, height: this.height };
 	            canvas.width = this.width;
 	            canvas.height = this.height;
 	
@@ -140,11 +141,11 @@
 	              } else {
 	                name = '';
 	              }
-	              name = 'screencapture' + name + '-' + Date.now() + '.png';
+	              name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
 	
 	              function onwriteend() {
 	                var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	                var capturedImage = { link: url, name: name };
+	                var capturedImage = { link: url, name: name, size: capturedImageSize };
 	                me.state.images.push(capturedImage);
 	                localStorage.images = JSON.stringify(me.state.images);
 	                me.setState({ status: 'captured', capturedImage: capturedImage });
@@ -208,7 +209,7 @@
 	        screenshot.ctx = canvas.getContext('2d');
 	      }
 	
-	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
+	      chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 100 }, function (dataURI) {
 	        if (dataURI) {
 	          var image = new Image();
 	          image.onload = function () {
@@ -226,6 +227,8 @@
 	
 	      var dataURI = screenshot.canvas.toDataURL();
 	
+	      var capturedImageSize = { width: screenshot.canvas.width, height: screenshot.canvas.height };
+	
 	      var byteString = atob(dataURI.split(',')[1]);
 	      var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
 	      var ab = new ArrayBuffer(byteString.length);
@@ -242,12 +245,12 @@
 	      } else {
 	        name = '';
 	      }
-	      name = 'screencapture' + name + '-' + Date.now() + '.png';
+	      name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
 	
 	      var me = this;
 	      function onwriteend() {
 	        var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	        var capturedImage = { link: url, name: name };
+	        var capturedImage = { link: url, name: name, size: capturedImageSize };
 	        me.state.images.push(capturedImage);
 	        localStorage.images = JSON.stringify(me.state.images);
 	        me.setState({ status: 'captured', capturedImage: capturedImage });
@@ -390,29 +393,56 @@
 	      });
 	    }
 	  }, {
+	    key: 'logProgress',
+	    value: function logProgress(value) {
+	      this.setState({ propess: value });
+	    }
+	  }, {
 	    key: 'uploadImage',
 	    value: function uploadImage() {
-	      (0, _utils.request)('http://api.codesign.io/boards/' + this.state.activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + this.props.token, "Content-Type": "application/json;charset=UTF-8" }, {
-	        title: this.props.image.name
-	      }, (function (data) {
+	      var token = this.props.token;
+	      var me = this;
+	      var capturedImage = this.props.image;
+	      var link = this.props.image.link;
+	      this.setState({ status: 'progress', progress: 0 });
+	      (0, _utils.request)('http://api.codesign.io/boards/' + this.state.activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	        title: capturedImage.name
+	      }, function (data) {
 	        console.log(data);
 	
-	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + this.props.image.name + '&image_type=image%2Fpng&thumbnail_type=image%2Fpng', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
+	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
 	          console.log(data1);
 	
-	          window.webkitResolveLocalFileSystemURL(this.props.image.link, function (fileEntry) {
+	          window.webkitResolveLocalFileSystemURL(link, function (fileEntry) {
 	            fileEntry.file(function (file) {
-	              (0, _utils.s3Upload)(data1.image_upload_url, file, function (data2) {
-	                console.log(data2);
+	              (0, _utils.s3Upload)(data1.image_upload_url, file, me.logProgress.bind(me), function (data2) {
+	
+	                var canvas = document.createElement('canvas');
+	                canvas.width = 250;
+	                canvas.height = 150;
+	                var image = new Image();
+	                image.onload = function () {
+	                  canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
+	
+	                  var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL('image/jpeg'));
+	                  (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
+	
+	                    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	                      image_upload_url: data1.image_upload_url,
+	                      thumbnail_upload_url: data1.thumbnail_upload_url,
+	                      width: capturedImage.size.width,
+	                      height: capturedImage.size.height
+	                    }, function (data3) {
+	                      me.setState({ status: 'actions' });
+	                    });
+	                  });
+	                };
+	                image.src = link;
 	              });
 	            });
 	          });
-	
-	          /*        s3Upload(data1.thumbnail_upload_url, {},function (data2) {
-	                    console.log(data2)
-	                  });*/
-	        }).bind(this));
-	      }).bind(this));
+	        });
+	      });
 	    }
 	  }, {
 	    key: 'render',
@@ -425,6 +455,7 @@
 	          null,
 	          'Place to upload'
 	        ),
+	        this.state.status == 'progress' && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
 	        _react2.default.createElement(
 	          'select',
 	          { onChange: this.setBoard.bind(this) },
@@ -20759,6 +20790,7 @@
 	});
 	exports.request = request;
 	exports.s3Upload = s3Upload;
+	exports.dataURItoBlob = dataURItoBlob;
 	function request(url, method, headers, body, callback) {
 	  var xhr = new XMLHttpRequest();
 	  var json = JSON.stringify(body);
@@ -20773,12 +20805,17 @@
 	  xhr.send(json);
 	}
 	
-	function s3Upload(url, imageFile, callBack) {
+	function s3Upload(url, imageFile, logCallback, callBack) {
 	
 	  var xhr = new XMLHttpRequest();
 	  xhr.onerror = function (e) {
 	    callbacks.onError(e);
 	  };
+	
+	  xhr.upload.addEventListener('progress', function (e) {
+	    var percent = Math.round(e.loaded / e.total * 100);
+	    logCallback(percent);
+	  }, false);
 	
 	  xhr.onreadystatechange = function () {
 	    if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -20791,9 +20828,33 @@
 	  };
 	
 	  xhr.open('PUT', url, true);
-	  xhr.setRequestHeader('Content-Type', 'image/png');
+	  xhr.setRequestHeader('Content-Type', 'image/jpeg');
 	  xhr.setRequestHeader('Cache-Control', 'public, max-age=31536000');
 	  xhr.send(imageFile);
+	}
+	
+	function dataURItoBlob(dataURL) {
+	  var BASE64_MARKER = ';base64,';
+	  if (dataURL.indexOf(BASE64_MARKER) == -1) {
+	    var parts = dataURL.split(',');
+	    var contentType = parts[0].split(':')[1];
+	    var raw = decodeURIComponent(parts[1]);
+	
+	    return new Blob([raw], { type: contentType });
+	  }
+	
+	  var parts = dataURL.split(BASE64_MARKER);
+	  var contentType = parts[0].split(':')[1];
+	  var raw = window.atob(parts[1]);
+	  var rawLength = raw.length;
+	
+	  var uInt8Array = new Uint8Array(rawLength);
+	
+	  for (var i = 0; i < rawLength; ++i) {
+	    uInt8Array[i] = raw.charCodeAt(i);
+	  }
+	
+	  return new Blob([uInt8Array], { type: contentType });
 	}
 
 /***/ }

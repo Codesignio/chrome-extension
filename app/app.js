@@ -4,6 +4,7 @@ import cx from 'classnames';
 import assign from 'object-assign';
 import {request} from './utils'
 import {s3Upload} from './utils'
+import {dataURItoBlob} from './utils'
 
 class App extends React.Component {
   constructor(props) {
@@ -27,12 +28,13 @@ class App extends React.Component {
 
   takeScreenshoot(e) {
     var me = this;
-    chrome.tabs.captureVisibleTab(null, {format: 'png', quality: 100}, function (dataURI) {
+    chrome.tabs.captureVisibleTab(null, {format: 'jpeg', quality: 100}, function (dataURI) {
 
       if (dataURI) {
         var image = new Image();
         image.onload = function () {
           var canvas = document.createElement('canvas');
+          var capturedImageSize = {width: this.width, height: this.height};
           canvas.width = this.width;
           canvas.height = this.height;
 
@@ -65,11 +67,11 @@ class App extends React.Component {
             } else {
               name = '';
             }
-            name = 'screencapture' + name + '-' + Date.now() + '.png';
+            name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
 
             function onwriteend() {
               var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-              var capturedImage = {link: url, name: name};
+              var capturedImage = {link: url, name: name, size: capturedImageSize};
               me.state.images.push(capturedImage);
               localStorage.images = JSON.stringify(me.state.images);
               me.setState({status: 'captured', capturedImage: capturedImage});
@@ -134,7 +136,7 @@ class App extends React.Component {
     }
 
     chrome.tabs.captureVisibleTab(
-      null, {format: 'png', quality: 100}, function (dataURI) {
+      null, {format: 'jpeg', quality: 100}, function (dataURI) {
         if (dataURI) {
           var image = new Image();
           image.onload = function () {
@@ -150,6 +152,8 @@ class App extends React.Component {
     var screenshot = this.state.screenshot;
 
     var dataURI = screenshot.canvas.toDataURL();
+
+    var capturedImageSize = {width: screenshot.canvas.width, height: screenshot.canvas.height};
 
     var byteString = atob(dataURI.split(',')[1]);
     var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
@@ -172,12 +176,12 @@ class App extends React.Component {
     } else {
       name = '';
     }
-    name = 'screencapture' + name + '-' + Date.now() + '.png';
+    name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
 
     var me = this;
     function onwriteend() {
       var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-      var capturedImage = {link: url, name: name};
+      var capturedImage = {link: url, name: name, size: capturedImageSize};
       me.state.images.push(capturedImage);
       localStorage.images = JSON.stringify(me.state.images);
       me.setState({status: 'captured', capturedImage: capturedImage});
@@ -291,39 +295,68 @@ class SelectAndUpload extends React.Component {
     })
   }
 
+  logProgress(value){
+    this.setState({propess: value})
+  }
+
 
   uploadImage(){
-    request('http://api.codesign.io/boards/'+ this.state.activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + this.props.token, "Content-Type": "application/json;charset=UTF-8" }, {
-      title: this.props.image.name
+    var token = this.props.token;
+    var me = this;
+    var capturedImage = this.props.image;
+    var link = this.props.image.link;
+    this.setState({status: 'progress', progress: 0});
+    request('http://api.codesign.io/boards/'+ this.state.activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+      title: capturedImage.name
     }, function (data) {
       console.log(data);
 
-      request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ this.props.image.name +'&image_type=image%2Fpng&thumbnail_type=image%2Fpng', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data1) {
+      request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
         console.log(data1);
 
-        window.webkitResolveLocalFileSystemURL(this.props.image.link, function(fileEntry){
+        window.webkitResolveLocalFileSystemURL(link, function(fileEntry){
           fileEntry.file(function(file) {
-            s3Upload(data1.image_upload_url, file, function (data2) {
-              console.log(data2)
-            })
+            s3Upload(data1.image_upload_url, file, me.logProgress.bind(me), function (data2) {
+
+              var canvas = document.createElement('canvas');
+              canvas.width = 250;
+              canvas.height = 150;
+              var image = new Image();
+              image.onload = function () {
+                canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
+
+                var blob =  dataURItoBlob(canvas.toDataURL('image/jpeg'));
+                s3Upload(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
+
+                  request('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
+                    image_upload_url:data1.image_upload_url,
+                    thumbnail_upload_url: data1.thumbnail_upload_url,
+                    width: capturedImage.size.width,
+                    height: capturedImage.size.height
+                  }, function (data3) {
+                    me.setState({status: 'actions'})
+                  });
+
+                });
+
+              };
+              image.src = link;
+
+            });
           });
         });
 
-/*        s3Upload(data1.thumbnail_upload_url, {},function (data2) {
-          console.log(data2)
-        });*/
 
+      });
 
-
-      }.bind(this));
-
-    }.bind(this));
+    });
   }
 
   render(){
     return (
-      <div className="uploadWidget">
+     <div className="uploadWidget">
         <p>Place to upload</p>
+       {this.state.status == 'progress' && <ProgressBar progress={this.state.progress} />}
         <select onChange={this.setBoard.bind(this)}>
           {this.state.boards && this.state.boards.map(function(board,i){
             return <option key={i} value={board.id}>{board.title}</option>
