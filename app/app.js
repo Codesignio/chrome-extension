@@ -2,13 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import assign from 'object-assign';
-
+import {request} from './utils'
+import {s3Upload} from './utils'
 
 class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      progress: false,
+      status: 'actions',
       screenshot: null,
       contentURL: '',
       images: JSON.parse(localStorage.images || '[]'),
@@ -68,9 +69,10 @@ class App extends React.Component {
 
             function onwriteend() {
               var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-              me.state.images.push({link: url});
+              var capturedImage = {link: url, name: name};
+              me.state.images.push(capturedImage);
               localStorage.images = JSON.stringify(me.state.images);
-              me.setState({progress: false});
+              me.setState({status: 'captured', capturedImage: capturedImage});
             }
 
             window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
@@ -111,7 +113,7 @@ class App extends React.Component {
   }
 
   capturePage(data, sender, callback) {
-    this.setState({progress: parseInt(data.complete * 100, 10) + '%'});
+    this.setState({status: 'progress', progress: parseInt(data.complete * 100, 10) + '%'});
     var screenshot = this.state.screenshot;
     var canvas;
 
@@ -175,9 +177,10 @@ class App extends React.Component {
     var me = this;
     function onwriteend() {
       var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-      me.state.images.push({link: url});
+      var capturedImage = {link: url, name: name};
+      me.state.images.push(capturedImage);
       localStorage.images = JSON.stringify(me.state.images);
-      me.setState({progress: false});
+      me.setState({status: 'captured', capturedImage: capturedImage});
     }
 
     window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
@@ -200,21 +203,44 @@ class App extends React.Component {
     localStorage.token = token;
   }
 
+  renderPopup(){
+
+    if (!this.state.token){
+      return <LoginForm handleLogin={this.handleLogin.bind(this)}></LoginForm>
+    } else if (this.state.status == 'progress'){
+      return <ProgressBar progress={this.state.progress}/>
+    } else if (this.state.status == 'captured'){
+      return (
+        <div>
+          <img src={this.state.capturedImage.link}/>
+          <SelectAndUpload image={this.state.capturedImage} token={this.state.token}/>
+        </div>
+      )
+    } else if (this.state.status == 'actions'){
+      return (
+        <div id="screenshot-app">
+          <div className="actions">
+            <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
+            <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
+            <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
+          </div>
+        </div>
+      )
+    } else if (this.state.status == 'list'){
+      return (
+        <div id="images">
+          {this.state.images && this.state.images.map(function (img, i) {
+            return <img key={i} src={img.link} onClick={this.imgClick.bind(this, img.link)} style={{heght: 500}}/>
+          }.bind(this))}
+        </div>
+      )
+    }
+  }
+
   render() {
     return (
       <div id="popup">
-        {this.state.token ?
-        <div id="screenshot-app">
-        {this.state.progress && <ProgressBar progress={this.state.progress}/>}
-          <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
-          <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
-          <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
-          <div id="images">
-            {this.state.images && this.state.images.map(function (img, i) {
-              return <img key={i} src={img.link} onClick={this.imgClick.bind(this, img.link)} style={{heght: 500}}/>
-            }.bind(this))}
-          </div>
-        </div> : <LoginForm handleLogin={this.handleLogin.bind(this)}></LoginForm>}
+        {this.renderPopup()}
       </div>
     )
   }
@@ -225,6 +251,92 @@ class App extends React.Component {
       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/bundle.js'}, function () {
       });
     });
+  }
+}
+
+class SelectAndUpload extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      folders: [],
+      boards: [],
+      activeFolder: null,
+      activeBoard: null,
+    }
+  }
+
+  componentWillMount() {
+    request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data1) {
+      request('http://api.codesign.io/folders/'+ data1.results[0].id + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data2) {
+        this.setState({
+          folders: data1.results,
+          activeFolder: data1.results[0].id,
+          boards: data2.results,
+          activeBoard: data2.results[0].id
+        });
+      }.bind(this))
+    }.bind(this));
+
+  }
+
+  setFolder(e) {
+    request('http://api.codesign.io/folders/'+ e.target.value + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data) {
+      this.setState({activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id});
+    }.bind(this));
+  }
+
+  setBoard() {
+    this.setState({
+      activeBoard: e.target.value
+    })
+  }
+
+
+  uploadImage(){
+    request('http://api.codesign.io/boards/'+ this.state.activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + this.props.token, "Content-Type": "application/json;charset=UTF-8" }, {
+      title: this.props.image.name
+    }, function (data) {
+      console.log(data);
+
+      request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ this.props.image.name +'&image_type=image%2Fpng&thumbnail_type=image%2Fpng', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data1) {
+        console.log(data1);
+
+        window.webkitResolveLocalFileSystemURL(this.props.image.link, function(fileEntry){
+          fileEntry.file(function(file) {
+            s3Upload(data1.image_upload_url, file, function (data2) {
+              console.log(data2)
+            })
+          });
+        });
+
+/*        s3Upload(data1.thumbnail_upload_url, {},function (data2) {
+          console.log(data2)
+        });*/
+
+
+
+      }.bind(this));
+
+    }.bind(this));
+  }
+
+  render(){
+    return (
+      <div className="uploadWidget">
+        <p>Place to upload</p>
+        <select onChange={this.setBoard.bind(this)}>
+          {this.state.boards && this.state.boards.map(function(board,i){
+            return <option key={i} value={board.id}>{board.title}</option>
+          })}
+        </select>
+        <select onChange={this.setFolder.bind(this)}>
+          {this.state.folders && this.state.folders.map(function(folder, i){
+            return <option key={i} value={folder.id}>{folder.title}</option>
+          })}
+        </select>
+        <button onClick={this.uploadImage.bind(this)}>Upload</button>
+      </div>
+    )
   }
 }
 

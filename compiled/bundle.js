@@ -67,6 +67,8 @@
 	
 	var _objectAssign2 = _interopRequireDefault(_objectAssign);
 	
+	var _utils = __webpack_require__(/*! ./utils */ 161);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -84,7 +86,7 @@
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
 	
 	    _this.state = {
-	      progress: false,
+	      status: 'actions',
 	      screenshot: null,
 	      contentURL: '',
 	      images: JSON.parse(localStorage.images || '[]'),
@@ -142,9 +144,10 @@
 	
 	              function onwriteend() {
 	                var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	                me.state.images.push({ link: url });
+	                var capturedImage = { link: url, name: name };
+	                me.state.images.push(capturedImage);
 	                localStorage.images = JSON.stringify(me.state.images);
-	                me.setState({ progress: false });
+	                me.setState({ status: 'captured', capturedImage: capturedImage });
 	              }
 	
 	              window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
@@ -186,7 +189,7 @@
 	  }, {
 	    key: 'capturePage',
 	    value: function capturePage(data, sender, callback) {
-	      this.setState({ progress: parseInt(data.complete * 100, 10) + '%' });
+	      this.setState({ status: 'progress', progress: parseInt(data.complete * 100, 10) + '%' });
 	      var screenshot = this.state.screenshot;
 	      var canvas;
 	
@@ -244,9 +247,10 @@
 	      var me = this;
 	      function onwriteend() {
 	        var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	        me.state.images.push({ link: url });
+	        var capturedImage = { link: url, name: name };
+	        me.state.images.push(capturedImage);
 	        localStorage.images = JSON.stringify(me.state.images);
-	        me.setState({ progress: false });
+	        me.setState({ status: 'captured', capturedImage: capturedImage });
 	      }
 	
 	      window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
@@ -270,38 +274,61 @@
 	      localStorage.token = token;
 	    }
 	  }, {
+	    key: 'renderPopup',
+	    value: function renderPopup() {
+	
+	      if (!this.state.token) {
+	        return _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) });
+	      } else if (this.state.status == 'progress') {
+	        return _react2.default.createElement(ProgressBar, { progress: this.state.progress });
+	      } else if (this.state.status == 'captured') {
+	        return _react2.default.createElement(
+	          'div',
+	          null,
+	          _react2.default.createElement('img', { src: this.state.capturedImage.link }),
+	          _react2.default.createElement(SelectAndUpload, { image: this.state.capturedImage, token: this.state.token })
+	        );
+	      } else if (this.state.status == 'actions') {
+	        return _react2.default.createElement(
+	          'div',
+	          { id: 'screenshot-app' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'actions' },
+	            _react2.default.createElement(
+	              'button',
+	              { onClick: this.snapScreen.bind(this) },
+	              'Snap screen area'
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { onClick: this.takeScreenshoot.bind(this) },
+	              'Snap visible part'
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { onClick: this.takeFullPageScreenshoot.bind(this) },
+	              'Snap a full page'
+	            )
+	          )
+	        );
+	      } else if (this.state.status == 'list') {
+	        return _react2.default.createElement(
+	          'div',
+	          { id: 'images' },
+	          this.state.images && this.state.images.map((function (img, i) {
+	            return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
+	          }).bind(this))
+	        );
+	      }
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
 	        { id: 'popup' },
-	        this.state.token ? _react2.default.createElement(
-	          'div',
-	          { id: 'screenshot-app' },
-	          this.state.progress && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.snapScreen.bind(this) },
-	            'Snap screen area'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.takeScreenshoot.bind(this) },
-	            'Snap visible part'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.takeFullPageScreenshoot.bind(this) },
-	            'Snap a full page'
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { id: 'images' },
-	            this.state.images && this.state.images.map((function (img, i) {
-	              return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
-	            }).bind(this))
-	          )
-	        ) : _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) })
+	        this.renderPopup()
 	      );
 	    }
 	  }, {
@@ -317,8 +344,123 @@
 	  return App;
 	})(_react2.default.Component);
 	
-	var ProgressBar = (function (_React$Component2) {
-	  _inherits(ProgressBar, _React$Component2);
+	var SelectAndUpload = (function (_React$Component2) {
+	  _inherits(SelectAndUpload, _React$Component2);
+	
+	  function SelectAndUpload(props) {
+	    _classCallCheck(this, SelectAndUpload);
+	
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
+	
+	    _this2.state = {
+	      folders: [],
+	      boards: [],
+	      activeFolder: null,
+	      activeBoard: null
+	    };
+	    return _this2;
+	  }
+	
+	  _createClass(SelectAndUpload, [{
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {
+	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
+	        (0, _utils.request)('http://api.codesign.io/folders/' + data1.results[0].id + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data2) {
+	          this.setState({
+	            folders: data1.results,
+	            activeFolder: data1.results[0].id,
+	            boards: data2.results,
+	            activeBoard: data2.results[0].id
+	          });
+	        }).bind(this));
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'setFolder',
+	    value: function setFolder(e) {
+	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data) {
+	        this.setState({ activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id });
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'setBoard',
+	    value: function setBoard() {
+	      this.setState({
+	        activeBoard: e.target.value
+	      });
+	    }
+	  }, {
+	    key: 'uploadImage',
+	    value: function uploadImage() {
+	      (0, _utils.request)('http://api.codesign.io/boards/' + this.state.activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + this.props.token, "Content-Type": "application/json;charset=UTF-8" }, {
+	        title: this.props.image.name
+	      }, (function (data) {
+	        console.log(data);
+	
+	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + this.props.image.name + '&image_type=image%2Fpng&thumbnail_type=image%2Fpng', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
+	          console.log(data1);
+	
+	          window.webkitResolveLocalFileSystemURL(this.props.image.link, function (fileEntry) {
+	            fileEntry.file(function (file) {
+	              (0, _utils.s3Upload)(data1.image_upload_url, file, function (data2) {
+	                console.log(data2);
+	              });
+	            });
+	          });
+	
+	          /*        s3Upload(data1.thumbnail_upload_url, {},function (data2) {
+	                    console.log(data2)
+	                  });*/
+	        }).bind(this));
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'uploadWidget' },
+	        _react2.default.createElement(
+	          'p',
+	          null,
+	          'Place to upload'
+	        ),
+	        _react2.default.createElement(
+	          'select',
+	          { onChange: this.setBoard.bind(this) },
+	          this.state.boards && this.state.boards.map(function (board, i) {
+	            return _react2.default.createElement(
+	              'option',
+	              { key: i, value: board.id },
+	              board.title
+	            );
+	          })
+	        ),
+	        _react2.default.createElement(
+	          'select',
+	          { onChange: this.setFolder.bind(this) },
+	          this.state.folders && this.state.folders.map(function (folder, i) {
+	            return _react2.default.createElement(
+	              'option',
+	              { key: i, value: folder.id },
+	              folder.title
+	            );
+	          })
+	        ),
+	        _react2.default.createElement(
+	          'button',
+	          { onClick: this.uploadImage.bind(this) },
+	          'Upload'
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return SelectAndUpload;
+	})(_react2.default.Component);
+	
+	var ProgressBar = (function (_React$Component3) {
+	  _inherits(ProgressBar, _React$Component3);
 	
 	  function ProgressBar() {
 	    _classCallCheck(this, ProgressBar);
@@ -336,18 +478,18 @@
 	  return ProgressBar;
 	})(_react2.default.Component);
 	
-	var LoginForm = (function (_React$Component3) {
-	  _inherits(LoginForm, _React$Component3);
+	var LoginForm = (function (_React$Component4) {
+	  _inherits(LoginForm, _React$Component4);
 	
 	  function LoginForm(props) {
 	    _classCallCheck(this, LoginForm);
 	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
+	    var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
 	
-	    _this3.state = {
+	    _this4.state = {
 	      status: null
 	    };
-	    return _this3;
+	    return _this4;
 	  }
 	
 	  _createClass(LoginForm, [{
@@ -20602,6 +20744,57 @@
 		return to;
 	};
 
+
+/***/ },
+/* 161 */
+/*!**********************!*\
+  !*** ./app/utils.js ***!
+  \**********************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.request = request;
+	exports.s3Upload = s3Upload;
+	function request(url, method, headers, body, callback) {
+	  var xhr = new XMLHttpRequest();
+	  var json = JSON.stringify(body);
+	  xhr.open(method, url, true);
+	  for (var i in headers) {
+	    xhr.setRequestHeader(i, headers[i]);
+	  };
+	  xhr.onreadystatechange = function () {
+	    if (xhr.readyState != 4) return;
+	    callback(JSON.parse(xhr.responseText));
+	  };
+	  xhr.send(json);
+	}
+	
+	function s3Upload(url, imageFile, callBack) {
+	
+	  var xhr = new XMLHttpRequest();
+	  xhr.onerror = function (e) {
+	    callbacks.onError(e);
+	  };
+	
+	  xhr.onreadystatechange = function () {
+	    if (xhr.readyState === XMLHttpRequest.DONE) {
+	      if (xhr.status >= 200 && xhr.status <= 299) {
+	        callBack(xhr.responseText);
+	      } else {
+	        console.log('error');
+	      }
+	    }
+	  };
+	
+	  xhr.open('PUT', url, true);
+	  xhr.setRequestHeader('Content-Type', 'image/png');
+	  xhr.setRequestHeader('Cache-Control', 'public, max-age=31536000');
+	  xhr.send(imageFile);
+	}
 
 /***/ }
 /******/ ]);
