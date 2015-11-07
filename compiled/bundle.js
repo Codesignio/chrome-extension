@@ -281,6 +281,7 @@
 	  }, {
 	    key: 'handleUpload',
 	    value: function handleUpload() {
+	      localStorage.currentCaptureImage = '';
 	      this.setState({ status: 'actions' });
 	    }
 	  }, {
@@ -20837,7 +20838,7 @@
 	
 	  var xhr = new XMLHttpRequest();
 	  xhr.onerror = function (e) {
-	    callbacks.onError(e);
+	    console.log('error');
 	  };
 	
 	  xhr.upload.addEventListener('progress', function (e) {

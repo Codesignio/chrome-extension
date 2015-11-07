@@ -16,7 +16,7 @@ export function s3Upload(url, imageFile, logCallback, callBack){
 
   var xhr = new XMLHttpRequest();
   xhr.onerror = e => {
-    callbacks.onError(e);
+    console.log('error')
   };
 
   xhr.upload.addEventListener('progress', e => {

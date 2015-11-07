@@ -210,6 +210,7 @@ class App extends React.Component {
   }
 
   handleUpload(){
+    localStorage.currentCaptureImage = '';
     this.setState({status: 'actions'})
   }
 
