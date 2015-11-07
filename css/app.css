@@ -112,7 +112,7 @@ form {
 img {
     margin: auto;
     display: block;
-    height: 200px;
+    width: 200px;
     border: 1px solid whitesmoke;
 }
 
@@ -123,15 +123,16 @@ img {
     margin-bottom: 5px;
 }
 
-#images {
+.images {
     overflow: auto;
+    max-height: 500px;
 }
 
 .buttons {
     display: flex;
 }
 
-#uploadButton, #cancelButton {
+#uploadButton, #cancelButton, .basicButton {
     background-color: #37A037;
     color: white;
     margin: auto;
@@ -141,6 +142,7 @@ img {
     margin-bottom: 10px;
     height: 20px;
 }
+
 
 .selectors {
     margin-top: 10px;

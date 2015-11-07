@@ -30,7 +30,7 @@ class App extends React.Component {
 
   takeScreenshoot(e) {
     var me = this;
-    chrome.tabs.captureVisibleTab(null, {format: 'jpeg', quality: 100}, function (dataURI) {
+    chrome.tabs.captureVisibleTab(null, {format: 'png', quality: 100}, function (dataURI) {
 
       if (dataURI) {
         var image = new Image();
@@ -69,13 +69,14 @@ class App extends React.Component {
             } else {
               name = '';
             }
-            name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
+            name = 'screencapture' + name + '-' + Date.now() + '.png';
 
             function onwriteend() {
               var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
               var capturedImage = {link: url, name: name, size: capturedImageSize};
               me.state.images.push(capturedImage);
               localStorage.images = JSON.stringify(me.state.images);
+              localStorage.currentCaptureImage = JSON.stringify(capturedImage);
               me.setState({status: 'captured', capturedImage: capturedImage});
             }
 
@@ -138,7 +139,7 @@ class App extends React.Component {
     }
 
     chrome.tabs.captureVisibleTab(
-      null, {format: 'jpeg', quality: 100}, function (dataURI) {
+      null, {format: 'png', quality: 100}, function (dataURI) {
         if (dataURI) {
           var image = new Image();
           image.onload = function () {
@@ -178,7 +179,7 @@ class App extends React.Component {
     } else {
       name = '';
     }
-    name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
+    name = 'screencapture' + name + '-' + Date.now() + '.png';
 
     var me = this;
     function onwriteend() {
@@ -234,15 +235,19 @@ class App extends React.Component {
             <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
             <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
             <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
+            <button onClick={()=> this.setState({status: 'list'})}>List Images</button>
           </div>
         </div>
       )
     } else if (this.state.status == 'list'){
       return (
-        <div id="images">
-          {this.state.images && this.state.images.map(function (img, i) {
-            return <img key={i} src={img.link} onClick={this.imgClick.bind(this, img.link)} style={{heght: 500}}/>
-          }.bind(this))}
+        <div id="images-list">
+          <div className="images">
+            {this.state.images && this.state.images.map(function (img, i) {
+              return <img key={i} src={img.link} onClick={this.imgClick.bind(this, img.link)} style={{heght: 500}}/>
+            }.bind(this))}
+          </div>
+          <button className="basicButton" onClick={()=> this.setState({status: 'actions'})}>Back</button>
         </div>
       )
     }
@@ -333,7 +338,7 @@ class SelectAndUpload extends React.Component {
               image.onload = function () {
                 canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
 
-                var blob =  dataURItoBlob(canvas.toDataURL('image/jpeg'));
+                var blob =  dataURItoBlob(canvas.toDataURL());
                 s3Upload(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
 
                   request('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {

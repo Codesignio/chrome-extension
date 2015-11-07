@@ -110,7 +110,7 @@
 	    key: 'takeScreenshoot',
 	    value: function takeScreenshoot(e) {
 	      var me = this;
-	      chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 100 }, function (dataURI) {
+	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
 	
 	        if (dataURI) {
 	          var image = new Image();
@@ -143,13 +143,14 @@
 	              } else {
 	                name = '';
 	              }
-	              name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
+	              name = 'screencapture' + name + '-' + Date.now() + '.png';
 	
 	              function onwriteend() {
 	                var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
 	                var capturedImage = { link: url, name: name, size: capturedImageSize };
 	                me.state.images.push(capturedImage);
 	                localStorage.images = JSON.stringify(me.state.images);
+	                localStorage.currentCaptureImage = JSON.stringify(capturedImage);
 	                me.setState({ status: 'captured', capturedImage: capturedImage });
 	              }
 	
@@ -211,7 +212,7 @@
 	        screenshot.ctx = canvas.getContext('2d');
 	      }
 	
-	      chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 100 }, function (dataURI) {
+	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
 	        if (dataURI) {
 	          var image = new Image();
 	          image.onload = function () {
@@ -247,7 +248,7 @@
 	      } else {
 	        name = '';
 	      }
-	      name = 'screencapture' + name + '-' + Date.now() + '.jpeg';
+	      name = 'screencapture' + name + '-' + Date.now() + '.png';
 	
 	      var me = this;
 	      function onwriteend() {
@@ -287,6 +288,7 @@
 	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
+	      var _this2 = this;
 	
 	      if (!this.state.token) {
 	        return _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) });
@@ -320,16 +322,34 @@
 	              'button',
 	              { onClick: this.takeFullPageScreenshoot.bind(this) },
 	              'Snap a full page'
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { onClick: function onClick() {
+	                  return _this2.setState({ status: 'list' });
+	                } },
+	              'List Images'
 	            )
 	          )
 	        );
 	      } else if (this.state.status == 'list') {
 	        return _react2.default.createElement(
 	          'div',
-	          { id: 'images' },
-	          this.state.images && this.state.images.map((function (img, i) {
-	            return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
-	          }).bind(this))
+	          { id: 'images-list' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'images' },
+	            this.state.images && this.state.images.map((function (img, i) {
+	              return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
+	            }).bind(this))
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            { className: 'basicButton', onClick: function onClick() {
+	                return _this2.setState({ status: 'actions' });
+	              } },
+	            'Back'
+	          )
 	        );
 	      }
 	    }
@@ -363,15 +383,15 @@
 	  function SelectAndUpload(props) {
 	    _classCallCheck(this, SelectAndUpload);
 	
-	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
+	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
 	
-	    _this2.state = {
+	    _this3.state = {
 	      folders: [],
 	      boards: [],
 	      activeFolder: null,
 	      activeBoard: null
 	    };
-	    return _this2;
+	    return _this3;
 	  }
 	
 	  _createClass(SelectAndUpload, [{
@@ -434,7 +454,7 @@
 	                image.onload = function () {
 	                  canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
 	
-	                  var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL('image/jpeg'));
+	                  var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
 	                  (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
 	
 	                    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
@@ -544,12 +564,12 @@
 	  function LoginForm(props) {
 	    _classCallCheck(this, LoginForm);
 	
-	    var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
+	    var _this5 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
 	
-	    _this4.state = {
+	    _this5.state = {
 	      status: null
 	    };
-	    return _this4;
+	    return _this5;
 	  }
 	
 	  _createClass(LoginForm, [{
