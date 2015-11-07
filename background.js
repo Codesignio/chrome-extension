@@ -59,6 +59,7 @@ function openPage(data) {
     var images = JSON.parse(localStorage.images || '[]');
     images.push(image);
     localStorage.images = JSON.stringify(images);
+    canvas = null;
   }
 
   window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {

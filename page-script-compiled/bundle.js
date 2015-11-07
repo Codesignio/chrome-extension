@@ -209,13 +209,15 @@
 	        msg: 'capturePart',
 	        width: this.state.width,
 	        height: this.state.height,
-	        left: this.state.left,
-	        top: this.state.top,
+	        left: this.state.left - document.body.scrollLeft,
+	        top: this.state.top - document.body.scrollTop,
 	        url: document.location.toString()
 	      };
 	      var me = this;
 	      chrome.extension.sendRequest(data, function () {
 	        me.setState({ cancel: true });
+	        var elem = document.getElementById('snap-overlay');
+	        elem.parentNode.removeChild(el);
 	      });
 	    }
 	  }, {
