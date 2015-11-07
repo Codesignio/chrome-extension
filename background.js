@@ -16,7 +16,7 @@ function cropVisible(data, sender, callback) {
       if (dataURI) {
         var image = new Image();
         image.onload = function () {
-          canvas.getContext('2d').drawImage(image, data.left, data.top, data.width, data.height, 0, 0, data.width, data.height);
+          canvas.getContext('2d').drawImage(image, data.left+1, data.top+1, data.width, data.height, 0, 0, data.width, data.height);
           openPage(data);
           callback(true);
         };
@@ -54,8 +54,10 @@ function openPage(data) {
 
   function onwriteend() {
     var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
+    var image = {link: url, size: {width: data.width, height: data.height}};
+    localStorage.currentCaptureImage = JSON.stringify(image);
     var images = JSON.parse(localStorage.images || '[]');
-    images.push({link: url});
+    images.push(image);
     localStorage.images = JSON.stringify(images);
   }
 

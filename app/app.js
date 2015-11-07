@@ -8,13 +8,15 @@ import {dataURItoBlob} from './utils'
 
 class App extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
+    var capturedImage = JSON.parse(localStorage.currentCaptureImage || 'null');
     this.state = {
-      status: 'actions',
+      status: capturedImage ? 'captured': 'actions',
       screenshot: null,
       contentURL: '',
       images: JSON.parse(localStorage.images || '[]'),
       token: localStorage.token,
+      capturedImage: capturedImage
     }
   }
 
@@ -257,6 +259,7 @@ class App extends React.Component {
     var me =this;
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/bundle.js'}, function () {
+        window.close();
       });
     });
   }
@@ -293,7 +296,7 @@ class SelectAndUpload extends React.Component {
     }.bind(this));
   }
 
-  setBoard() {
+  setBoard(e) {
     this.setState({
       activeBoard: e.target.value
     })
@@ -356,6 +359,11 @@ class SelectAndUpload extends React.Component {
     });
   }
 
+  handleCancel(){
+    localStorage.currentCaptureImage = '';
+    this.props.handleUpload();
+  }
+
   render(){
     return (
      <div className="uploadWidget">
@@ -373,7 +381,10 @@ class SelectAndUpload extends React.Component {
           })}
         </select>
        </div>
+       <div className="buttons">
+         <button id="cancelButton" onClick={this.handleCancel.bind(this)}>Cancel</button>
         <button id="uploadButton" onClick={this.uploadImage.bind(this)}>Upload</button>
+       </div>
       </div>
     )
   }

@@ -85,12 +85,14 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
 	
+	    var capturedImage = JSON.parse(localStorage.currentCaptureImage || 'null');
 	    _this.state = {
-	      status: 'actions',
+	      status: capturedImage ? 'captured' : 'actions',
 	      screenshot: null,
 	      contentURL: '',
 	      images: JSON.parse(localStorage.images || '[]'),
-	      token: localStorage.token
+	      token: localStorage.token,
+	      capturedImage: capturedImage
 	    };
 	    return _this;
 	  }
@@ -344,7 +346,9 @@
 	    value: function snapScreen() {
 	      var me = this;
 	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {});
+	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {
+	          window.close();
+	        });
 	      });
 	    }
 	  }]);
@@ -392,7 +396,7 @@
 	    }
 	  }, {
 	    key: 'setBoard',
-	    value: function setBoard() {
+	    value: function setBoard(e) {
 	      this.setState({
 	        activeBoard: e.target.value
 	      });
@@ -450,6 +454,12 @@
 	      });
 	    }
 	  }, {
+	    key: 'handleCancel',
+	    value: function handleCancel() {
+	      localStorage.currentCaptureImage = '';
+	      this.props.handleUpload();
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
@@ -488,9 +498,18 @@
 	          )
 	        ),
 	        _react2.default.createElement(
-	          'button',
-	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	          'Upload'
+	          'div',
+	          { className: 'buttons' },
+	          _react2.default.createElement(
+	            'button',
+	            { id: 'cancelButton', onClick: this.handleCancel.bind(this) },
+	            'Cancel'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
+	            'Upload'
+	          )
 	        )
 	      );
 	    }
