@@ -376,16 +376,16 @@ class SelectAndUpload extends React.Component {
         <p className="uploadTitle">Place to upload</p>
        {this.state.status == 'progress' && <ProgressBar progress={this.state.progress} />}
        <div className="selectors">
-        <select onChange={this.setBoard.bind(this)}>
-          {this.state.boards && this.state.boards.map(function(board,i){
-            return <option key={i} value={board.id}>{board.title}</option>
-          })}
-        </select>
         <select onChange={this.setFolder.bind(this)}>
           {this.state.folders && this.state.folders.map(function(folder, i){
             return <option key={i} value={folder.id}>{folder.title}</option>
           })}
         </select>
+         <select onChange={this.setBoard.bind(this)}>
+           {this.state.boards && this.state.boards.map(function(board,i){
+             return <option key={i} value={board.id}>{board.title}</option>
+           })}
+         </select>
        </div>
        <div className="buttons">
          <button id="cancelButton" onClick={this.handleCancel.bind(this)}>Cancel</button>

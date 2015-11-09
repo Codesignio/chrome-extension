@@ -497,23 +497,23 @@
 	          { className: 'selectors' },
 	          _react2.default.createElement(
 	            'select',
-	            { onChange: this.setBoard.bind(this) },
-	            this.state.boards && this.state.boards.map(function (board, i) {
-	              return _react2.default.createElement(
-	                'option',
-	                { key: i, value: board.id },
-	                board.title
-	              );
-	            })
-	          ),
-	          _react2.default.createElement(
-	            'select',
 	            { onChange: this.setFolder.bind(this) },
 	            this.state.folders && this.state.folders.map(function (folder, i) {
 	              return _react2.default.createElement(
 	                'option',
 	                { key: i, value: folder.id },
 	                folder.title
+	              );
+	            })
+	          ),
+	          _react2.default.createElement(
+	            'select',
+	            { onChange: this.setBoard.bind(this) },
+	            this.state.boards && this.state.boards.map(function (board, i) {
+	              return _react2.default.createElement(
+	                'option',
+	                { key: i, value: board.id },
+	                board.title
 	              );
 	            })
 	          )
