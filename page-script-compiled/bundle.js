@@ -214,11 +214,10 @@
 	        url: document.location.toString()
 	      };
 	      var me = this;
-	      chrome.extension.sendRequest(data, function () {
-	        me.setState({ cancel: true });
-	        var elem = document.getElementById('snap-overlay');
-	        elem.parentNode.removeChild(el);
-	      });
+	      chrome.extension.sendRequest(data, function () {});
+	      me.setState({ cancel: true });
+	      var elem = document.getElementById('snap-overlay');
+	      elem.parentNode.removeChild(el);
 	    }
 	  }, {
 	    key: 'startDrag',

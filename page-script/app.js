@@ -135,10 +135,11 @@ class Snap extends React.Component {
     };
     var me = this;
     chrome.extension.sendRequest(data, function() {
-      me.setState({cancel: true})
-      var elem = document.getElementById('snap-overlay');
-      elem.parentNode.removeChild(el);
     });
+    me.setState({cancel: true})
+    var elem = document.getElementById('snap-overlay');
+    elem.parentNode.removeChild(el);
+
   }
 
   startDrag(e){
