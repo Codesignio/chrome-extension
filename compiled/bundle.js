@@ -92,7 +92,8 @@
 	      contentURL: '',
 	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token,
-	      capturedImage: capturedImage
+	      capturedImage: capturedImage,
+	      unsupported: false
 	    };
 	    return _this;
 	  }
@@ -100,6 +101,14 @@
 	  _createClass(App, [{
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
+	
+	      var me = this;
+	      chrome.tabs.getSelected(null, function (tab) {
+	        chrome.tabs.executeScript(tab.id, { code: "{}" }, function () {
+	          me.setState({ unsupported: chrome.runtime.lastError !== undefined });
+	        });
+	      });
+	
 	      chrome.extension.onRequest.addListener((function (request, sender, callback) {
 	        if (request.msg === 'capturePage') {
 	          this.capturePage(request, sender, callback);
@@ -308,20 +317,28 @@
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'actions' },
-	            _react2.default.createElement(
-	              'button',
-	              { onClick: this.snapScreen.bind(this) },
-	              'Snap screen area'
-	            ),
-	            _react2.default.createElement(
-	              'button',
-	              { onClick: this.takeScreenshoot.bind(this) },
-	              'Snap visible part'
-	            ),
-	            _react2.default.createElement(
-	              'button',
-	              { onClick: this.takeFullPageScreenshoot.bind(this) },
-	              'Snap a full page'
+	            this.state.unsupported ? _react2.default.createElement(
+	              'p',
+	              null,
+	              'This page don\'t supported capture screenshot'
+	            ) : _react2.default.createElement(
+	              'div',
+	              null,
+	              _react2.default.createElement(
+	                'button',
+	                { onClick: this.snapScreen.bind(this) },
+	                'Snap screen area'
+	              ),
+	              _react2.default.createElement(
+	                'button',
+	                { onClick: this.takeScreenshoot.bind(this) },
+	                'Snap visible part'
+	              ),
+	              _react2.default.createElement(
+	                'button',
+	                { onClick: this.takeFullPageScreenshoot.bind(this) },
+	                'Snap a full page'
+	              )
 	            ),
 	            _react2.default.createElement(
 	              'button',

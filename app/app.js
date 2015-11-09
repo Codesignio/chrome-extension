@@ -16,11 +16,19 @@ class App extends React.Component {
       contentURL: '',
       images: JSON.parse(localStorage.images || '[]'),
       token: localStorage.token,
-      capturedImage: capturedImage
+      capturedImage: capturedImage,
+      unsupported: false
     }
   }
 
   componentWillMount() {
+
+    var me = this;
+    chrome.tabs.getSelected(null, function(tab) {
+      chrome.tabs.executeScript(tab.id, {code:"{}"}, function () {
+        me.setState({unsupported: chrome.runtime.lastError !== undefined});
+      })});
+
     chrome.extension.onRequest.addListener(function (request, sender, callback) {
       if (request.msg === 'capturePage') {
         this.capturePage(request, sender, callback);
@@ -232,9 +240,12 @@ class App extends React.Component {
       return (
         <div id="screenshot-app">
           <div className="actions">
-            <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
-            <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
-            <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
+            {this.state.unsupported ? <p>This page don't supported capture screenshot</p> :
+              <div>
+                <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
+                <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
+                <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
+              </div>}
             <button onClick={()=> this.setState({status: 'list'})}>List Images</button>
           </div>
         </div>
