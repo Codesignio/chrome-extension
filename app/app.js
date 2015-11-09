@@ -218,9 +218,16 @@ class App extends React.Component {
     localStorage.token = token;
   }
 
-  handleUpload(){
+  handleUpload(uploadedPost){
     localStorage.currentCaptureImage = '';
-    this.setState({status: 'actions'})
+    request('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', {"Authorization": 'Token ' + this.state.token}, null, function (data) {
+      var boardCode = data.results[0].code;
+      this.setState({status: 'uploaded', uploadedPost: {link: "http://www.codesign.io/board/" + boardCode + "?post="+ uploadedPost.postID}})
+    }.bind(this))
+  }
+  handleUploaded(){
+    this.setState({status: 'actions'});
+    window.open(this.state.uploadedPost.link);
   }
 
   renderPopup(){
@@ -259,6 +266,15 @@ class App extends React.Component {
             }.bind(this))}
           </div>
           <button className="basicButton" onClick={()=> this.setState({status: 'actions'})}>Back</button>
+        </div>
+      )
+    } else if(this.state.status == 'uploaded'){
+      return (
+        <div id="screenshot-app">
+          <div className="actions">
+            <button onClick={()=> this.setState({status: 'actions'})}>Back to actions</button>
+            <button onClick={this.handleUploaded.bind(this)}>Go to Board</button>
+          </div>
         </div>
       )
     }
@@ -329,12 +345,13 @@ class SelectAndUpload extends React.Component {
     var me = this;
     var capturedImage = this.props.image;
     var link = this.props.image.link;
+    var activeBoard = this.state.activeBoard;
     this.setState({status: 'progress', progress: 0});
-    request('http://api.codesign.io/boards/'+ this.state.activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+    request('http://api.codesign.io/boards/'+ activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
       title: capturedImage.name
     }, function (data) {
       console.log(data);
-
+      var uploadedPost = {boardID: activeBoard, postID: data.id};
       request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
         console.log(data1);
 
@@ -358,7 +375,7 @@ class SelectAndUpload extends React.Component {
                     width: capturedImage.size.width,
                     height: capturedImage.size.height
                   }, function (data3) {
-                    me.props.handleUpload()
+                    me.props.handleUpload(uploadedPost)
                   });
 
                 });

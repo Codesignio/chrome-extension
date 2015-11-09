@@ -290,9 +290,18 @@
 	    }
 	  }, {
 	    key: 'handleUpload',
-	    value: function handleUpload() {
+	    value: function handleUpload(uploadedPost) {
 	      localStorage.currentCaptureImage = '';
+	      (0, _utils.request)('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', { "Authorization": 'Token ' + this.state.token }, null, (function (data) {
+	        var boardCode = data.results[0].code;
+	        this.setState({ status: 'uploaded', uploadedPost: { link: "http://www.codesign.io/board/" + boardCode + "?post=" + uploadedPost.postID } });
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'handleUploaded',
+	    value: function handleUploaded() {
 	      this.setState({ status: 'actions' });
+	      window.open(this.state.uploadedPost.link);
 	    }
 	  }, {
 	    key: 'renderPopup',
@@ -366,6 +375,27 @@
 	                return _this2.setState({ status: 'actions' });
 	              } },
 	            'Back'
+	          )
+	        );
+	      } else if (this.state.status == 'uploaded') {
+	        return _react2.default.createElement(
+	          'div',
+	          { id: 'screenshot-app' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'actions' },
+	            _react2.default.createElement(
+	              'button',
+	              { onClick: function onClick() {
+	                  return _this2.setState({ status: 'actions' });
+	                } },
+	              'Back to actions'
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { onClick: this.handleUploaded.bind(this) },
+	              'Go to Board'
+	            )
 	          )
 	        );
 	      }
@@ -451,12 +481,13 @@
 	      var me = this;
 	      var capturedImage = this.props.image;
 	      var link = this.props.image.link;
+	      var activeBoard = this.state.activeBoard;
 	      this.setState({ status: 'progress', progress: 0 });
-	      (0, _utils.request)('http://api.codesign.io/boards/' + this.state.activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	        title: capturedImage.name
 	      }, function (data) {
 	        console.log(data);
-	
+	        var uploadedPost = { boardID: activeBoard, postID: data.id };
 	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
 	          console.log(data1);
 	
@@ -480,7 +511,7 @@
 	                      width: capturedImage.size.width,
 	                      height: capturedImage.size.height
 	                    }, function (data3) {
-	                      me.props.handleUpload();
+	                      me.props.handleUpload(uploadedPost);
 	                    });
 	                  });
 	                };
