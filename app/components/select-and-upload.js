@@ -162,7 +162,7 @@ export default class SelectAndUpload extends React.Component {
             })}
             <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
           </select>
-          {this.state.newBoard && <input type="text" ref="new_board" placeholder="New folder name"/>}
+          {this.state.newBoard && <input type="text" ref="new_board" placeholder="New board name"/>}
         </div>
         <div className="buttons">
           <button id="cancelButton" onClick={this.handleCancel.bind(this)}>Cancel</button>

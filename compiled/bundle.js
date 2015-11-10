@@ -21082,7 +21082,7 @@
 	              '                  Create new board'
 	            )
 	          ),
-	          this.state.newBoard && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New folder name' })
+	          this.state.newBoard && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New board name' })
 	        ),
 	        _react2.default.createElement(
 	          'div',
