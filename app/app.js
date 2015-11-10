@@ -84,7 +84,7 @@ class App extends React.Component {
 
             function onwriteend() {
               var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-              var capturedImage = {link: url, name: name, size: capturedImageSize};
+              var capturedImage = {link: url, name: name, size: capturedImageSize, url: tab.url.split('?')[0]};
               me.state.images.push(capturedImage);
               localStorage.images = JSON.stringify(me.state.images);
               localStorage.currentCaptureImage = JSON.stringify(capturedImage);
@@ -195,7 +195,7 @@ class App extends React.Component {
     var me = this;
     function onwriteend() {
       var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-      var capturedImage = {link: url, name: name, size: capturedImageSize};
+      var capturedImage = {link: url, name: name, size: capturedImageSize, url: me.state.contentURL.split('?')[0]};
       me.state.images.push(capturedImage);
       localStorage.images = JSON.stringify(me.state.images);
       me.setState({status: 'captured', capturedImage: capturedImage});

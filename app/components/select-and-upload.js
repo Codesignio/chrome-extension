@@ -65,7 +65,7 @@ export default class SelectAndUpload extends React.Component {
     var activeBoard = this.state.activeBoard;
     this.setState({status: 'progress', progress: 0});
     request('http://api.codesign.io/boards/'+ activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-      title: capturedImage.name
+      title: capturedImage.url + " " + (new Date).toString()
     }, function (data) {
       console.log(data);
       var uploadedPost = {boardID: activeBoard, postID: data.id};

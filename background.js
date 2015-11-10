@@ -54,7 +54,7 @@ function openPage(data) {
 
   function onwriteend() {
     var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-    var image = {link: url, size: {width: data.width, height: data.height}};
+    var image = {link: url, size: {width: data.width, height: data.height}, url: data.url.split('?')[0]};
     localStorage.currentCaptureImage = JSON.stringify(image);
     var images = JSON.parse(localStorage.images || '[]');
     images.push(image);

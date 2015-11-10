@@ -166,7 +166,7 @@
 	
 	              function onwriteend() {
 	                var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	                var capturedImage = { link: url, name: name, size: capturedImageSize };
+	                var capturedImage = { link: url, name: name, size: capturedImageSize, url: tab.url.split('?')[0] };
 	                me.state.images.push(capturedImage);
 	                localStorage.images = JSON.stringify(me.state.images);
 	                localStorage.currentCaptureImage = JSON.stringify(capturedImage);
@@ -272,7 +272,7 @@
 	      var me = this;
 	      function onwriteend() {
 	        var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	        var capturedImage = { link: url, name: name, size: capturedImageSize };
+	        var capturedImage = { link: url, name: name, size: capturedImageSize, url: me.state.contentURL.split('?')[0] };
 	        me.state.images.push(capturedImage);
 	        localStorage.images = JSON.stringify(me.state.images);
 	        me.setState({ status: 'captured', capturedImage: capturedImage });
@@ -20939,7 +20939,7 @@
 	      var activeBoard = this.state.activeBoard;
 	      this.setState({ status: 'progress', progress: 0 });
 	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	        title: capturedImage.name
+	        title: capturedImage.url + " " + new Date().toString()
 	      }, function (data) {
 	        console.log(data);
 	        var uploadedPost = { boardID: activeBoard, postID: data.id };
