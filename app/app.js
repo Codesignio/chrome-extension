@@ -249,6 +249,16 @@ class App extends React.Component {
     }
   }
 
+  logOut(){
+    this.setState({token: null});
+    localStorage.token = '';
+  }
+
+  openMenu(e){
+    this.setState({menu: !this.state.menu});
+    e.stopPropagation();
+  }
+
   renderPopup(){
 
     if (!this.state.token){
@@ -271,7 +281,11 @@ class App extends React.Component {
       )
     } else if (this.state.status == 'actions'){
       return (
-        <div id="screenshot-app">
+        <div id="screenshot-app" onClick={()=> this.setState({menu: false})}>
+          <div className="menu-icon" onClick={this.openMenu.bind(this)}></div>
+          {this.state.menu && <div className="menu">
+            <div className="menu-item logOut" onClick={this.logOut.bind(this)}>Log out</div>
+          </div>}
           <div className="actions">
             {this.state.unsupported ? <p>This page don't supported capture screenshot</p> :
               <div>

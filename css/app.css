@@ -164,3 +164,29 @@ img {
 .uploadTitle {
     margin-top: 5px;
 }
+
+.menu-icon {
+    height: 15px;
+    width: 15px;
+    background-image: url(./../icon2.png);
+    background-size: cover;
+    position: absolute;
+    top:0;
+    right: 0;
+}
+
+.menu {
+    position: absolute;
+    right: 0;
+    top: 20px;
+    box-shadow: -1px 2px 10px 0px rgba(0,0,0,1);
+    padding: 5px;
+    background-color: #37A037;
+    color: white;
+    display: flex;
+}
+
+.menu-item {
+    flex: auto;
+    cursor: pointer;
+}

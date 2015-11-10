@@ -332,6 +332,18 @@
 	      }
 	    }
 	  }, {
+	    key: 'logOut',
+	    value: function logOut() {
+	      this.setState({ token: null });
+	      localStorage.token = '';
+	    }
+	  }, {
+	    key: 'openMenu',
+	    value: function openMenu(e) {
+	      this.setState({ menu: !this.state.menu });
+	      e.stopPropagation();
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -357,7 +369,19 @@
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
-	          { id: 'screenshot-app' },
+	          { id: 'screenshot-app', onClick: function onClick() {
+	              return _this2.setState({ menu: false });
+	            } },
+	          _react2.default.createElement('div', { className: 'menu-icon', onClick: this.openMenu.bind(this) }),
+	          this.state.menu && _react2.default.createElement(
+	            'div',
+	            { className: 'menu' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'menu-item logOut', onClick: this.logOut.bind(this) },
+	              'Log out'
+	            )
+	          ),
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'actions' },
