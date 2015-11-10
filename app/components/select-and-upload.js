@@ -18,21 +18,30 @@ export default class SelectAndUpload extends React.Component {
     request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data1) {
       request('http://api.codesign.io/folders/'+ (this.state.activeFolder || data1.results[0].id) + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data2) {
 
-        this.setState({
-          folders: data1.results,
-          activeFolder: this.state.activeFolder && data1.results.map((res)=>res.id).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
-          boards: data2.results,
-          activeBoard: this.state.activeBoard && data2.results.map((res) => res.id).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id
-        });
+
+        var activeBoard = this.state.activeBoard && data2.results.map((res) => res.id).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id;
+        request('http://api.codesign.io/boards/'+ activeBoard +'/posts/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data3) {
+
+          this.setState({
+            folders: data1.results,
+            activeFolder: this.state.activeFolder && data1.results.map((res)=>res.id).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
+            boards: data2.results,
+            activeBoard: activeBoard,
+            posts: data3.results
+
+          });
+        }.bind(this));
+
       }.bind(this))
     }.bind(this));
 
   }
 
   setFolder(e) {
+    this.setState({activeFolder: e.target.value});
     request('http://api.codesign.io/folders/'+ e.target.value + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data) {
       this.props.handleChangeSelectorsState({folder: e.target.value});
-      this.setState({activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id});
+      this.setState({boards: data.results, activeBoard: data.results[0].id});
     }.bind(this));
   }
 
@@ -83,7 +92,13 @@ export default class SelectAndUpload extends React.Component {
                     width: capturedImage.size.width,
                     height: capturedImage.size.height
                   }, function (data3) {
-                    me.props.handleUpload(uploadedPost)
+
+                    request('http://api.codesign.io/boards/'+ activeBoard + '/update_order/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
+                      keys: me.state.posts.map((post)=> post.id).concat(data.id)
+                    }, function () {
+                      me.props.handleUpload(uploadedPost)
+                    });
+
                   });
 
                 });
