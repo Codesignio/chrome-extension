@@ -2,9 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import assign from 'object-assign';
-import {request} from './utils'
-import {s3Upload} from './utils'
-import {dataURItoBlob} from './utils'
+import {request} from './utils';
+
+import LoginForm from './components/login-form';
+import SelectAndUpload from './components/select-and-upload';
 
 class App extends React.Component {
   constructor(props) {
@@ -235,7 +236,7 @@ class App extends React.Component {
     if (!this.state.token){
       return <LoginForm handleLogin={this.handleLogin.bind(this)}></LoginForm>
     } else if (this.state.status == 'progress'){
-      return <ProgressBar progress={this.state.progress}/>
+      return <div className="progress_bar" style={{width: this.state.progress}}></div>
     } else if (this.state.status == 'captured'){
       return (
         <div>
@@ -295,184 +296,6 @@ class App extends React.Component {
         window.close();
       });
     });
-  }
-}
-
-class SelectAndUpload extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      folders: [],
-      boards: [],
-      activeFolder: null,
-      activeBoard: null,
-    }
-  }
-
-  componentWillMount() {
-    request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data1) {
-      request('http://api.codesign.io/folders/'+ data1.results[0].id + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data2) {
-        this.setState({
-          folders: data1.results,
-          activeFolder: data1.results[0].id,
-          boards: data2.results,
-          activeBoard: data2.results[0].id
-        });
-      }.bind(this))
-    }.bind(this));
-
-  }
-
-  setFolder(e) {
-    request('http://api.codesign.io/folders/'+ e.target.value + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data) {
-      this.setState({activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id});
-    }.bind(this));
-  }
-
-  setBoard(e) {
-    this.setState({
-      activeBoard: e.target.value
-    })
-  }
-
-  logProgress(value){
-    this.setState({progress: value})
-  }
-
-
-  uploadImage(){
-    var token = this.props.token;
-    var me = this;
-    var capturedImage = this.props.image;
-    var link = this.props.image.link;
-    var activeBoard = this.state.activeBoard;
-    this.setState({status: 'progress', progress: 0});
-    request('http://api.codesign.io/boards/'+ activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-      title: capturedImage.name
-    }, function (data) {
-      console.log(data);
-      var uploadedPost = {boardID: activeBoard, postID: data.id};
-      request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
-        console.log(data1);
-
-        window.webkitResolveLocalFileSystemURL(link, function(fileEntry){
-          fileEntry.file(function(file) {
-            s3Upload(data1.image_upload_url, file, me.logProgress.bind(me), function (data2) {
-
-              var canvas = document.createElement('canvas');
-              canvas.width = 250;
-              canvas.height = 150;
-              var image = new Image();
-              image.onload = function () {
-                canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
-
-                var blob =  dataURItoBlob(canvas.toDataURL());
-                s3Upload(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
-
-                  request('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
-                    image_upload_url:data1.image_upload_url,
-                    thumbnail_upload_url: data1.thumbnail_upload_url,
-                    width: capturedImage.size.width,
-                    height: capturedImage.size.height
-                  }, function (data3) {
-                    me.props.handleUpload(uploadedPost)
-                  });
-
-                });
-
-              };
-              image.src = link;
-
-            });
-          });
-        });
-
-
-      });
-
-    });
-  }
-
-  handleCancel(){
-    localStorage.currentCaptureImage = '';
-    this.props.handleUpload();
-  }
-
-  render(){
-    return (
-     <div className="uploadWidget">
-        <p className="uploadTitle">Place to upload</p>
-       {this.state.status == 'progress' && <ProgressBar progress={this.state.progress} />}
-       <div className="selectors">
-        <select onChange={this.setFolder.bind(this)}>
-          {this.state.folders && this.state.folders.map(function(folder, i){
-            return <option key={i} value={folder.id}>{folder.title}</option>
-          })}
-        </select>
-         <select onChange={this.setBoard.bind(this)}>
-           {this.state.boards && this.state.boards.map(function(board,i){
-             return <option key={i} value={board.id}>{board.title}</option>
-           })}
-         </select>
-       </div>
-       <div className="buttons">
-         <button id="cancelButton" onClick={this.handleCancel.bind(this)}>Cancel</button>
-        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>Upload</button>
-       </div>
-      </div>
-    )
-  }
-}
-
-
-class ProgressBar extends React.Component {
-  render() {
-    return <div className="progress_bar" style={{width: this.props.progress}}></div>
-  }
-}
-
-class LoginForm extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      status: null
-    }
-  }
-  handleSubmit(e){
-    var me = this;
-    e.preventDefault();
-
-    var xhr = new XMLHttpRequest();
-    var json = JSON.stringify({username: this.refs.email.value, password: this.refs.password.value});
-    xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
-    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState != 4) return;
-      if (xhr.status != 200) {
-        me.setState({status: xhr.status + ': ' + xhr.statusText});
-      } else {
-        console.log(xhr.responseText);
-        me.props.handleLogin(JSON.parse(xhr.responseText).token);
-      }
-    };
-    xhr.send(json);
-  }
-  render(){
-    return (
-    <div className="login-form">
-      {this.state.status && <p>Wrong email or password</p>}
-      <p className="title">Log in</p>
-      <button className="facebook-login">Log In with Facebook</button>
-      <p>or <a className="google-login">Google</a>, <a className="github-login">Github</a></p>
-      <p className="email-login">or Log in with Email</p>
-      <form onSubmit={this.handleSubmit.bind(this)}>
-        <input type="text" ref="email" placeholder="Email"/>
-        <input type="password" ref="password" placeholder="Password"/>
-        <input type="submit" value="Log in"/>
-      </form>
-      <p className="signup-title">Please <a className="sign-up">Sign Up</a> if you don't have an account</p>
-    </div>
-    )
   }
 }
 

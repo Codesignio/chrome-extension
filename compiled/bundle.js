@@ -69,6 +69,14 @@
 	
 	var _utils = __webpack_require__(/*! ./utils */ 161);
 	
+	var _loginForm = __webpack_require__(/*! ./components/login-form */ 162);
+	
+	var _loginForm2 = _interopRequireDefault(_loginForm);
+	
+	var _selectAndUpload = __webpack_require__(/*! ./components/select-and-upload */ 163);
+	
+	var _selectAndUpload2 = _interopRequireDefault(_selectAndUpload);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -309,15 +317,15 @@
 	      var _this2 = this;
 	
 	      if (!this.state.token) {
-	        return _react2.default.createElement(LoginForm, { handleLogin: this.handleLogin.bind(this) });
+	        return _react2.default.createElement(_loginForm2.default, { handleLogin: this.handleLogin.bind(this) });
 	      } else if (this.state.status == 'progress') {
-	        return _react2.default.createElement(ProgressBar, { progress: this.state.progress });
+	        return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } });
 	      } else if (this.state.status == 'captured') {
 	        return _react2.default.createElement(
 	          'div',
 	          null,
 	          _react2.default.createElement('img', { src: this.state.capturedImage.link }),
-	          _react2.default.createElement(SelectAndUpload, { handleUpload: this.handleUpload.bind(this), image: this.state.capturedImage, token: this.state.token })
+	          _react2.default.createElement(_selectAndUpload2.default, { handleUpload: this.handleUpload.bind(this), image: this.state.capturedImage, token: this.state.token })
 	        );
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
@@ -422,290 +430,6 @@
 	  }]);
 	
 	  return App;
-	})(_react2.default.Component);
-	
-	var SelectAndUpload = (function (_React$Component2) {
-	  _inherits(SelectAndUpload, _React$Component2);
-	
-	  function SelectAndUpload(props) {
-	    _classCallCheck(this, SelectAndUpload);
-	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
-	
-	    _this3.state = {
-	      folders: [],
-	      boards: [],
-	      activeFolder: null,
-	      activeBoard: null
-	    };
-	    return _this3;
-	  }
-	
-	  _createClass(SelectAndUpload, [{
-	    key: 'componentWillMount',
-	    value: function componentWillMount() {
-	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
-	        (0, _utils.request)('http://api.codesign.io/folders/' + data1.results[0].id + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data2) {
-	          this.setState({
-	            folders: data1.results,
-	            activeFolder: data1.results[0].id,
-	            boards: data2.results,
-	            activeBoard: data2.results[0].id
-	          });
-	        }).bind(this));
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'setFolder',
-	    value: function setFolder(e) {
-	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data) {
-	        this.setState({ activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id });
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'setBoard',
-	    value: function setBoard(e) {
-	      this.setState({
-	        activeBoard: e.target.value
-	      });
-	    }
-	  }, {
-	    key: 'logProgress',
-	    value: function logProgress(value) {
-	      this.setState({ progress: value });
-	    }
-	  }, {
-	    key: 'uploadImage',
-	    value: function uploadImage() {
-	      var token = this.props.token;
-	      var me = this;
-	      var capturedImage = this.props.image;
-	      var link = this.props.image.link;
-	      var activeBoard = this.state.activeBoard;
-	      this.setState({ status: 'progress', progress: 0 });
-	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	        title: capturedImage.name
-	      }, function (data) {
-	        console.log(data);
-	        var uploadedPost = { boardID: activeBoard, postID: data.id };
-	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
-	          console.log(data1);
-	
-	          window.webkitResolveLocalFileSystemURL(link, function (fileEntry) {
-	            fileEntry.file(function (file) {
-	              (0, _utils.s3Upload)(data1.image_upload_url, file, me.logProgress.bind(me), function (data2) {
-	
-	                var canvas = document.createElement('canvas');
-	                canvas.width = 250;
-	                canvas.height = 150;
-	                var image = new Image();
-	                image.onload = function () {
-	                  canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
-	
-	                  var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
-	                  (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
-	
-	                    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	                      image_upload_url: data1.image_upload_url,
-	                      thumbnail_upload_url: data1.thumbnail_upload_url,
-	                      width: capturedImage.size.width,
-	                      height: capturedImage.size.height
-	                    }, function (data3) {
-	                      me.props.handleUpload(uploadedPost);
-	                    });
-	                  });
-	                };
-	                image.src = link;
-	              });
-	            });
-	          });
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'handleCancel',
-	    value: function handleCancel() {
-	      localStorage.currentCaptureImage = '';
-	      this.props.handleUpload();
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'uploadWidget' },
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'uploadTitle' },
-	          'Place to upload'
-	        ),
-	        this.state.status == 'progress' && _react2.default.createElement(ProgressBar, { progress: this.state.progress }),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'selectors' },
-	          _react2.default.createElement(
-	            'select',
-	            { onChange: this.setFolder.bind(this) },
-	            this.state.folders && this.state.folders.map(function (folder, i) {
-	              return _react2.default.createElement(
-	                'option',
-	                { key: i, value: folder.id },
-	                folder.title
-	              );
-	            })
-	          ),
-	          _react2.default.createElement(
-	            'select',
-	            { onChange: this.setBoard.bind(this) },
-	            this.state.boards && this.state.boards.map(function (board, i) {
-	              return _react2.default.createElement(
-	                'option',
-	                { key: i, value: board.id },
-	                board.title
-	              );
-	            })
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'buttons' },
-	          _react2.default.createElement(
-	            'button',
-	            { id: 'cancelButton', onClick: this.handleCancel.bind(this) },
-	            'Cancel'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	            'Upload'
-	          )
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return SelectAndUpload;
-	})(_react2.default.Component);
-	
-	var ProgressBar = (function (_React$Component3) {
-	  _inherits(ProgressBar, _React$Component3);
-	
-	  function ProgressBar() {
-	    _classCallCheck(this, ProgressBar);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(ProgressBar).apply(this, arguments));
-	  }
-	
-	  _createClass(ProgressBar, [{
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.props.progress } });
-	    }
-	  }]);
-	
-	  return ProgressBar;
-	})(_react2.default.Component);
-	
-	var LoginForm = (function (_React$Component4) {
-	  _inherits(LoginForm, _React$Component4);
-	
-	  function LoginForm(props) {
-	    _classCallCheck(this, LoginForm);
-	
-	    var _this5 = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
-	
-	    _this5.state = {
-	      status: null
-	    };
-	    return _this5;
-	  }
-	
-	  _createClass(LoginForm, [{
-	    key: 'handleSubmit',
-	    value: function handleSubmit(e) {
-	      var me = this;
-	      e.preventDefault();
-	
-	      var xhr = new XMLHttpRequest();
-	      var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
-	      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
-	      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-	      xhr.onreadystatechange = function () {
-	        if (xhr.readyState != 4) return;
-	        if (xhr.status != 200) {
-	          me.setState({ status: xhr.status + ': ' + xhr.statusText });
-	        } else {
-	          console.log(xhr.responseText);
-	          me.props.handleLogin(JSON.parse(xhr.responseText).token);
-	        }
-	      };
-	      xhr.send(json);
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'login-form' },
-	        this.state.status && _react2.default.createElement(
-	          'p',
-	          null,
-	          'Wrong email or password'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'title' },
-	          'Log in'
-	        ),
-	        _react2.default.createElement(
-	          'button',
-	          { className: 'facebook-login' },
-	          'Log In with Facebook'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          null,
-	          'or ',
-	          _react2.default.createElement(
-	            'a',
-	            { className: 'google-login' },
-	            'Google'
-	          ),
-	          ', ',
-	          _react2.default.createElement(
-	            'a',
-	            { className: 'github-login' },
-	            'Github'
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'email-login' },
-	          'or Log in with Email'
-	        ),
-	        _react2.default.createElement(
-	          'form',
-	          { onSubmit: this.handleSubmit.bind(this) },
-	          _react2.default.createElement('input', { type: 'text', ref: 'email', placeholder: 'Email' }),
-	          _react2.default.createElement('input', { type: 'password', ref: 'password', placeholder: 'Password' }),
-	          _react2.default.createElement('input', { type: 'submit', value: 'Log in' })
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { className: 'signup-title' },
-	          'Please ',
-	          _react2.default.createElement(
-	            'a',
-	            { className: 'sign-up' },
-	            'Sign Up'
-	          ),
-	          ' if you don\'t have an account'
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return LoginForm;
 	})(_react2.default.Component);
 	
 	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));
@@ -20953,6 +20677,331 @@
 	
 	  return new Blob([uInt8Array], { type: contentType });
 	}
+
+/***/ },
+/* 162 */
+/*!**************************************!*\
+  !*** ./app/components/login-form.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var LoginForm = (function (_React$Component) {
+	  _inherits(LoginForm, _React$Component);
+	
+	  function LoginForm(props) {
+	    _classCallCheck(this, LoginForm);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
+	
+	    _this.state = {
+	      status: null
+	    };
+	    return _this;
+	  }
+	
+	  _createClass(LoginForm, [{
+	    key: 'handleSubmit',
+	    value: function handleSubmit(e) {
+	      var me = this;
+	      e.preventDefault();
+	
+	      var xhr = new XMLHttpRequest();
+	      var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
+	      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
+	      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	      xhr.onreadystatechange = function () {
+	        if (xhr.readyState != 4) return;
+	        if (xhr.status != 200) {
+	          me.setState({ status: xhr.status + ': ' + xhr.statusText });
+	        } else {
+	          console.log(xhr.responseText);
+	          me.props.handleLogin(JSON.parse(xhr.responseText).token);
+	        }
+	      };
+	      xhr.send(json);
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'login-form' },
+	        this.state.status && _react2.default.createElement(
+	          'p',
+	          null,
+	          'Wrong email or password'
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'title' },
+	          'Log in'
+	        ),
+	        _react2.default.createElement(
+	          'button',
+	          { className: 'facebook-login' },
+	          'Log In with Facebook'
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          null,
+	          'or ',
+	          _react2.default.createElement(
+	            'a',
+	            { className: 'google-login' },
+	            'Google'
+	          ),
+	          ', ',
+	          _react2.default.createElement(
+	            'a',
+	            { className: 'github-login' },
+	            'Github'
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'email-login' },
+	          'or Log in with Email'
+	        ),
+	        _react2.default.createElement(
+	          'form',
+	          { onSubmit: this.handleSubmit.bind(this) },
+	          _react2.default.createElement('input', { type: 'text', ref: 'email', placeholder: 'Email' }),
+	          _react2.default.createElement('input', { type: 'password', ref: 'password', placeholder: 'Password' }),
+	          _react2.default.createElement('input', { type: 'submit', value: 'Log in' })
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'signup-title' },
+	          'Please ',
+	          _react2.default.createElement(
+	            'a',
+	            { className: 'sign-up' },
+	            'Sign Up'
+	          ),
+	          ' if you don\'t have an account'
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return LoginForm;
+	})(_react2.default.Component);
+	
+	exports.default = LoginForm;
+
+/***/ },
+/* 163 */
+/*!*********************************************!*\
+  !*** ./app/components/select-and-upload.js ***!
+  \*********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _utils = __webpack_require__(/*! ./../utils */ 161);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var SelectAndUpload = (function (_React$Component) {
+	  _inherits(SelectAndUpload, _React$Component);
+	
+	  function SelectAndUpload(props) {
+	    _classCallCheck(this, SelectAndUpload);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
+	
+	    _this.state = {
+	      folders: [],
+	      boards: [],
+	      activeFolder: null,
+	      activeBoard: null
+	    };
+	    return _this;
+	  }
+	
+	  _createClass(SelectAndUpload, [{
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {
+	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
+	        (0, _utils.request)('http://api.codesign.io/folders/' + data1.results[0].id + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data2) {
+	          this.setState({
+	            folders: data1.results,
+	            activeFolder: data1.results[0].id,
+	            boards: data2.results,
+	            activeBoard: data2.results[0].id
+	          });
+	        }).bind(this));
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'setFolder',
+	    value: function setFolder(e) {
+	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data) {
+	        this.setState({ activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id });
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'setBoard',
+	    value: function setBoard(e) {
+	      this.setState({
+	        activeBoard: e.target.value
+	      });
+	    }
+	  }, {
+	    key: 'logProgress',
+	    value: function logProgress(value) {
+	      this.setState({ progress: value });
+	    }
+	  }, {
+	    key: 'uploadImage',
+	    value: function uploadImage() {
+	      var token = this.props.token;
+	      var me = this;
+	      var capturedImage = this.props.image;
+	      var link = this.props.image.link;
+	      var activeBoard = this.state.activeBoard;
+	      this.setState({ status: 'progress', progress: 0 });
+	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	        title: capturedImage.name
+	      }, function (data) {
+	        console.log(data);
+	        var uploadedPost = { boardID: activeBoard, postID: data.id };
+	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
+	          console.log(data1);
+	
+	          window.webkitResolveLocalFileSystemURL(link, function (fileEntry) {
+	            fileEntry.file(function (file) {
+	              (0, _utils.s3Upload)(data1.image_upload_url, file, me.logProgress.bind(me), function (data2) {
+	
+	                var canvas = document.createElement('canvas');
+	                canvas.width = 250;
+	                canvas.height = 150;
+	                var image = new Image();
+	                image.onload = function () {
+	                  canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
+	
+	                  var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
+	                  (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
+	
+	                    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	                      image_upload_url: data1.image_upload_url,
+	                      thumbnail_upload_url: data1.thumbnail_upload_url,
+	                      width: capturedImage.size.width,
+	                      height: capturedImage.size.height
+	                    }, function (data3) {
+	                      me.props.handleUpload(uploadedPost);
+	                    });
+	                  });
+	                };
+	                image.src = link;
+	              });
+	            });
+	          });
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'handleCancel',
+	    value: function handleCancel() {
+	      localStorage.currentCaptureImage = '';
+	      this.props.handleUpload();
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'uploadWidget' },
+	        _react2.default.createElement(
+	          'p',
+	          { className: 'uploadTitle' },
+	          'Place to upload'
+	        ),
+	        this.state.status == 'progress' && _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } }),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'selectors' },
+	          _react2.default.createElement(
+	            'select',
+	            { onChange: this.setFolder.bind(this) },
+	            this.state.folders && this.state.folders.map(function (folder, i) {
+	              return _react2.default.createElement(
+	                'option',
+	                { key: i, value: folder.id },
+	                folder.title
+	              );
+	            })
+	          ),
+	          _react2.default.createElement(
+	            'select',
+	            { onChange: this.setBoard.bind(this) },
+	            this.state.boards && this.state.boards.map(function (board, i) {
+	              return _react2.default.createElement(
+	                'option',
+	                { key: i, value: board.id },
+	                board.title
+	              );
+	            })
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'buttons' },
+	          _react2.default.createElement(
+	            'button',
+	            { id: 'cancelButton', onClick: this.handleCancel.bind(this) },
+	            'Cancel'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
+	            'Upload'
+	          )
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return SelectAndUpload;
+	})(_react2.default.Component);
+	
+	exports.default = SelectAndUpload;
 
 /***/ }
 /******/ ]);
