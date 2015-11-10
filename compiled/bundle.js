@@ -20941,7 +20941,10 @@
 	    value: function setBoard(e) {
 	      if (e.target.value !== "new_board") {
 	        this.props.handleChangeSelectorsState({ board: e.target.value });
-	      };
+	        this.setState({ newBoard: false });
+	      } else {
+	        this.setState({ newBoard: true });
+	      }
 	      this.setState({
 	        activeBoard: e.target.value
 	      });
@@ -21019,8 +21022,8 @@
 	        (0, _utils.request)('http://api.codesign.io/folders/' + this.state.activeFolder + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	          title: me.refs['new_board'].value
 	        }, function (data) {
-	          me.state.activeBoard = data.id;
-	          localStorage.activeBoard = data.id;
+	          me.props.handleChangeSelectorsState({ board: data.id });
+	          me.setState({ activeBoard: data.id });
 	          me.state.posts = [];
 	          me.uploadImageProcess();
 	        });
@@ -21065,7 +21068,7 @@
 	          ),
 	          _react2.default.createElement(
 	            'select',
-	            { value: this.state.activeBoard, onChange: this.setBoard.bind(this) },
+	            { value: this.state.newBoard ? 'new_board' : this.state.activeBoard, onChange: this.setBoard.bind(this) },
 	            this.state.boards && this.state.boards.map(function (board, i) {
 	              return _react2.default.createElement(
 	                'option',
@@ -21076,10 +21079,10 @@
 	            _react2.default.createElement(
 	              'option',
 	              { key: 'new board', className: 'new_board_option', value: 'new_board' },
-	              '                     Create new board'
+	              '                  Create new board'
 	            )
 	          ),
-	          this.state.activeBoard == 'new_board' && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New folder name' })
+	          this.state.newBoard && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New folder name' })
 	        ),
 	        _react2.default.createElement(
 	          'div',

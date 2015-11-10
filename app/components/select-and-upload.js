@@ -42,7 +42,10 @@ export default class SelectAndUpload extends React.Component {
   setBoard(e) {
       if (e.target.value !== "new_board") {
         this.props.handleChangeSelectorsState({board: e.target.value});
-      };
+        this.setState({newBoard: false})
+      } else {
+        this.setState({newBoard: true})
+      }
       this.setState({
         activeBoard: e.target.value
       });
@@ -123,8 +126,8 @@ export default class SelectAndUpload extends React.Component {
       request('http://api.codesign.io/folders/'+ this.state.activeFolder + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
         title: me.refs['new_board'].value
       }, function (data) {
-        me.state.activeBoard = data.id;
-        localStorage.activeBoard = data.id;
+        me.props.handleChangeSelectorsState({board: data.id});
+        me.setState({activeBoard: data.id})
         me.state.posts = [];
         me.uploadImageProcess();
       });
@@ -153,13 +156,13 @@ export default class SelectAndUpload extends React.Component {
               return <option key={i} value={folder.id}>{folder.title}</option>
             })}
           </select>
-          <select value={this.state.activeBoard} onChange={this.setBoard.bind(this)}>
+          <select value={this.state.newBoard ? 'new_board' : this.state.activeBoard} onChange={this.setBoard.bind(this)}>
             {this.state.boards && this.state.boards.map(function(board,i){
               return <option key={i} value={board.id}>{board.title}</option>
             })}
-            <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
+            <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
           </select>
-          {this.state.activeBoard == 'new_board' && <input type="text" ref="new_board" placeholder="New folder name"/>}
+          {this.state.newBoard && <input type="text" ref="new_board" placeholder="New folder name"/>}
         </div>
         <div className="buttons">
           <button id="cancelButton" onClick={this.handleCancel.bind(this)}>Cancel</button>
