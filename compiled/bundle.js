@@ -20891,19 +20891,14 @@
 	          var activeBoard = this.state.activeBoard && data2.results.map(function (res) {
 	            return res.id;
 	          }).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id;
-	          (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data3) {
-	
-	            this.setState({
-	              folders: data1.results,
-	              activeFolder: this.state.activeFolder && data1.results.map(function (res) {
-	                return res.id;
-	              }).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
-	              boards: data2.results,
-	              activeBoard: activeBoard,
-	              posts: data3.results
-	
-	            });
-	          }).bind(this));
+	          this.setState({
+	            folders: data1.results,
+	            activeFolder: this.state.activeFolder && data1.results.map(function (res) {
+	              return res.id;
+	            }).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
+	            boards: data2.results,
+	            activeBoard: activeBoard
+	          });
 	        }).bind(this));
 	      }).bind(this));
 	    }
@@ -20938,6 +20933,11 @@
 	      var link = this.props.image.link;
 	      var activeBoard = this.state.activeBoard;
 	      this.setState({ status: 'progress', progress: 0 });
+	
+	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, function (data) {
+	        me.state.posts = data.results;
+	      });
+	
 	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	        title: capturedImage.url + " " + new Date().toString()
 	      }, function (data) {
