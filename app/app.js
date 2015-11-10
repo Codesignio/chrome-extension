@@ -18,7 +18,9 @@ class App extends React.Component {
       images: JSON.parse(localStorage.images || '[]'),
       token: localStorage.token,
       capturedImage: capturedImage,
-      unsupported: false
+      unsupported: false,
+      activeBoard: JSON.parse(localStorage.activeBoard || 'null'),
+      activeFolder: JSON.parse(localStorage.activeFolder || 'null')
     }
   }
 
@@ -219,6 +221,11 @@ class App extends React.Component {
     localStorage.token = token;
   }
 
+  backToActions(){
+    localStorage.currentCaptureImage = '';
+    this.setState({status: 'actions'});
+  }
+
   handleUpload(uploadedPost){
     localStorage.currentCaptureImage = '';
     request('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', {"Authorization": 'Token ' + this.state.token}, null, function (data) {
@@ -231,6 +238,17 @@ class App extends React.Component {
     window.open(this.state.uploadedPost.link);
   }
 
+  handleChangeSelectorsState(obj){
+    if (obj.folder){
+      localStorage.activeFolder = obj.folder;
+      this.setState({activeFolder: obj.folder})
+    }
+    if (obj.board){
+      localStorage.activeBoard = obj.board;
+      this.setState({activeBoard: obj.board})
+    }
+  }
+
   renderPopup(){
 
     if (!this.state.token){
@@ -241,7 +259,14 @@ class App extends React.Component {
       return (
         <div>
           <img src={this.state.capturedImage.link}/>
-          <SelectAndUpload handleUpload={this.handleUpload.bind(this)} image={this.state.capturedImage} token={this.state.token}/>
+          <SelectAndUpload
+            backToActions={this.backToActions.bind(this)}
+            activeBoard={this.state.activeBoard}
+            activeFolder={this.state.activeFolder}
+            handleChangeSelectorsState={this.handleChangeSelectorsState.bind(this)}
+            handleUpload={this.handleUpload.bind(this)}
+            image={this.state.capturedImage}
+            token={this.state.token}/>
         </div>
       )
     } else if (this.state.status == 'actions'){

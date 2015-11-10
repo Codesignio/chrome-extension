@@ -9,19 +9,20 @@ export default class SelectAndUpload extends React.Component {
     this.state = {
       folders: [],
       boards: [],
-      activeFolder: null,
-      activeBoard: null,
+      activeFolder: props.activeFolder,
+      activeBoard: props.activeBoard,
     }
   }
 
   componentWillMount() {
     request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data1) {
-      request('http://api.codesign.io/folders/'+ data1.results[0].id + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data2) {
+      request('http://api.codesign.io/folders/'+ (this.state.activeFolder || data1.results[0].id) + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data2) {
+
         this.setState({
           folders: data1.results,
-          activeFolder: data1.results[0].id,
+          activeFolder: this.state.activeFolder && data1.results.map((res)=>res.id).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
           boards: data2.results,
-          activeBoard: data2.results[0].id
+          activeBoard: this.state.activeBoard && data2.results.map((res) => res.id).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id
         });
       }.bind(this))
     }.bind(this));
@@ -30,11 +31,13 @@ export default class SelectAndUpload extends React.Component {
 
   setFolder(e) {
     request('http://api.codesign.io/folders/'+ e.target.value + '/boards/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data) {
+      this.props.handleChangeSelectorsState({folder: e.target.value});
       this.setState({activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id});
     }.bind(this));
   }
 
   setBoard(e) {
+    this.props.handleChangeSelectorsState({board: e.target.value});
     this.setState({
       activeBoard: e.target.value
     })
@@ -99,8 +102,7 @@ export default class SelectAndUpload extends React.Component {
   }
 
   handleCancel(){
-    localStorage.currentCaptureImage = '';
-    this.props.handleUpload();
+    this.props.backToActions();
   }
 
   render(){
@@ -109,12 +111,12 @@ export default class SelectAndUpload extends React.Component {
         <p className="uploadTitle">Place to upload</p>
         {this.state.status == 'progress' && <div className="progress_bar" style={{width: this.state.progress}}></div>}
         <div className="selectors">
-          <select onChange={this.setFolder.bind(this)}>
+          <select value={this.state.activeFolder} onChange={this.setFolder.bind(this)}>
             {this.state.folders && this.state.folders.map(function(folder, i){
               return <option key={i} value={folder.id}>{folder.title}</option>
             })}
           </select>
-          <select onChange={this.setBoard.bind(this)}>
+          <select value={this.state.activeBoard} onChange={this.setBoard.bind(this)}>
             {this.state.boards && this.state.boards.map(function(board,i){
               return <option key={i} value={board.id}>{board.title}</option>
             })}

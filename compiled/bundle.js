@@ -101,7 +101,9 @@
 	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token,
 	      capturedImage: capturedImage,
-	      unsupported: false
+	      unsupported: false,
+	      activeBoard: JSON.parse(localStorage.activeBoard || 'null'),
+	      activeFolder: JSON.parse(localStorage.activeFolder || 'null')
 	    };
 	    return _this;
 	  }
@@ -297,6 +299,12 @@
 	      localStorage.token = token;
 	    }
 	  }, {
+	    key: 'backToActions',
+	    value: function backToActions() {
+	      localStorage.currentCaptureImage = '';
+	      this.setState({ status: 'actions' });
+	    }
+	  }, {
 	    key: 'handleUpload',
 	    value: function handleUpload(uploadedPost) {
 	      localStorage.currentCaptureImage = '';
@@ -312,6 +320,18 @@
 	      window.open(this.state.uploadedPost.link);
 	    }
 	  }, {
+	    key: 'handleChangeSelectorsState',
+	    value: function handleChangeSelectorsState(obj) {
+	      if (obj.folder) {
+	        localStorage.activeFolder = obj.folder;
+	        this.setState({ activeFolder: obj.folder });
+	      }
+	      if (obj.board) {
+	        localStorage.activeBoard = obj.board;
+	        this.setState({ activeBoard: obj.board });
+	      }
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -325,7 +345,14 @@
 	          'div',
 	          null,
 	          _react2.default.createElement('img', { src: this.state.capturedImage.link }),
-	          _react2.default.createElement(_selectAndUpload2.default, { handleUpload: this.handleUpload.bind(this), image: this.state.capturedImage, token: this.state.token })
+	          _react2.default.createElement(_selectAndUpload2.default, {
+	            backToActions: this.backToActions.bind(this),
+	            activeBoard: this.state.activeBoard,
+	            activeFolder: this.state.activeFolder,
+	            handleChangeSelectorsState: this.handleChangeSelectorsState.bind(this),
+	            handleUpload: this.handleUpload.bind(this),
+	            image: this.state.capturedImage,
+	            token: this.state.token })
 	        );
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
@@ -20849,8 +20876,8 @@
 	    _this.state = {
 	      folders: [],
 	      boards: [],
-	      activeFolder: null,
-	      activeBoard: null
+	      activeFolder: props.activeFolder,
+	      activeBoard: props.activeBoard
 	    };
 	    return _this;
 	  }
@@ -20859,12 +20886,17 @@
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
 	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
-	        (0, _utils.request)('http://api.codesign.io/folders/' + data1.results[0].id + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data2) {
+	        (0, _utils.request)('http://api.codesign.io/folders/' + (this.state.activeFolder || data1.results[0].id) + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data2) {
+	
 	          this.setState({
 	            folders: data1.results,
-	            activeFolder: data1.results[0].id,
+	            activeFolder: this.state.activeFolder && data1.results.map(function (res) {
+	              return res.id;
+	            }).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
 	            boards: data2.results,
-	            activeBoard: data2.results[0].id
+	            activeBoard: this.state.activeBoard && data2.results.map(function (res) {
+	              return res.id;
+	            }).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id
 	          });
 	        }).bind(this));
 	      }).bind(this));
@@ -20873,12 +20905,14 @@
 	    key: 'setFolder',
 	    value: function setFolder(e) {
 	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data) {
+	        this.props.handleChangeSelectorsState({ folder: e.target.value });
 	        this.setState({ activeFolder: e.target.value, boards: data.results, activeBoard: data.results[0].id });
 	      }).bind(this));
 	    }
 	  }, {
 	    key: 'setBoard',
 	    value: function setBoard(e) {
+	      this.props.handleChangeSelectorsState({ board: e.target.value });
 	      this.setState({
 	        activeBoard: e.target.value
 	      });
@@ -20939,8 +20973,7 @@
 	  }, {
 	    key: 'handleCancel',
 	    value: function handleCancel() {
-	      localStorage.currentCaptureImage = '';
-	      this.props.handleUpload();
+	      this.props.backToActions();
 	    }
 	  }, {
 	    key: 'render',
@@ -20959,7 +20992,7 @@
 	          { className: 'selectors' },
 	          _react2.default.createElement(
 	            'select',
-	            { onChange: this.setFolder.bind(this) },
+	            { value: this.state.activeFolder, onChange: this.setFolder.bind(this) },
 	            this.state.folders && this.state.folders.map(function (folder, i) {
 	              return _react2.default.createElement(
 	                'option',
@@ -20970,7 +21003,7 @@
 	          ),
 	          _react2.default.createElement(
 	            'select',
-	            { onChange: this.setBoard.bind(this) },
+	            { value: this.state.activeBoard, onChange: this.setBoard.bind(this) },
 	            this.state.boards && this.state.boards.map(function (board, i) {
 	              return _react2.default.createElement(
 	                'option',
