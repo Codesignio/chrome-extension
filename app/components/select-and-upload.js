@@ -40,28 +40,25 @@ export default class SelectAndUpload extends React.Component {
   }
 
   setBoard(e) {
-    this.props.handleChangeSelectorsState({board: e.target.value});
-    this.setState({
-      activeBoard: e.target.value
-    })
+      if (e.target.value !== "new_board") {
+        this.props.handleChangeSelectorsState({board: e.target.value});
+      };
+      this.setState({
+        activeBoard: e.target.value
+      });
   }
 
   logProgress(value){
     this.setState({progress: value})
   }
 
+  uploadImageProcess(){
 
-  uploadImage(){
     var token = this.props.token;
     var me = this;
     var capturedImage = this.props.image;
     var link = this.props.image.link;
     var activeBoard = this.state.activeBoard;
-    this.setState({status: 'progress', progress: 0});
-
-    request('http://api.codesign.io/boards/'+ activeBoard +'/posts/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data) {
-      me.state.posts  = data.results;
-    });
 
     request('http://api.codesign.io/boards/'+ activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
       title: capturedImage.url + " " + (new Date).toString()
@@ -115,6 +112,32 @@ export default class SelectAndUpload extends React.Component {
     });
   }
 
+
+  uploadImage(){
+    var token = this.props.token;
+    var me = this;
+    var activeBoard = this.state.activeBoard;
+    this.setState({status: 'progress', progress: 0});
+
+    if(activeBoard == 'new_board'){
+      request('http://api.codesign.io/folders/'+ this.state.activeFolder + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+        title: me.refs['new_board'].value
+      }, function (data) {
+        me.state.activeBoard = data.id;
+        me.props.handleChangeSelectorsState({board: data.id});
+        me.state.posts = [];
+        me.uploadImageProcess();
+      });
+
+    } else {
+
+      request('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', {"Authorization": 'Token ' + this.props.token}, null, function (data) {
+        me.state.posts = data.results;
+        me.uploadImageProcess()
+      });
+    }
+  }
+
   handleCancel(){
     this.props.backToActions();
   }
@@ -134,7 +157,9 @@ export default class SelectAndUpload extends React.Component {
             {this.state.boards && this.state.boards.map(function(board,i){
               return <option key={i} value={board.id}>{board.title}</option>
             })}
+            <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
           </select>
+          {this.state.activeBoard == 'new_board' && <input type="text" ref="new_board" placeholder="New folder name"/>}
         </div>
         <div className="buttons">
           <button id="cancelButton" onClick={this.handleCancel.bind(this)}>Cancel</button>

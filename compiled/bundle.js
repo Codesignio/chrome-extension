@@ -20938,7 +20938,9 @@
 	  }, {
 	    key: 'setBoard',
 	    value: function setBoard(e) {
-	      this.props.handleChangeSelectorsState({ board: e.target.value });
+	      if (e.target.value !== "new_board") {
+	        this.props.handleChangeSelectorsState({ board: e.target.value });
+	      };
 	      this.setState({
 	        activeBoard: e.target.value
 	      });
@@ -20949,18 +20951,14 @@
 	      this.setState({ progress: value });
 	    }
 	  }, {
-	    key: 'uploadImage',
-	    value: function uploadImage() {
+	    key: 'uploadImageProcess',
+	    value: function uploadImageProcess() {
+	
 	      var token = this.props.token;
 	      var me = this;
 	      var capturedImage = this.props.image;
 	      var link = this.props.image.link;
 	      var activeBoard = this.state.activeBoard;
-	      this.setState({ status: 'progress', progress: 0 });
-	
-	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, function (data) {
-	        me.state.posts = data.results;
-	      });
 	
 	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	        title: capturedImage.url + " " + new Date().toString()
@@ -21009,6 +21007,31 @@
 	      });
 	    }
 	  }, {
+	    key: 'uploadImage',
+	    value: function uploadImage() {
+	      var token = this.props.token;
+	      var me = this;
+	      var activeBoard = this.state.activeBoard;
+	      this.setState({ status: 'progress', progress: 0 });
+	
+	      if (activeBoard == 'new_board') {
+	        (0, _utils.request)('http://api.codesign.io/folders/' + this.state.activeFolder + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	          title: me.refs['new_board'].value
+	        }, function (data) {
+	          me.state.activeBoard = data.id;
+	          me.props.handleChangeSelectorsState({ board: data.id });
+	          me.state.posts = [];
+	          me.uploadImageProcess();
+	        });
+	      } else {
+	
+	        (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, function (data) {
+	          me.state.posts = data.results;
+	          me.uploadImageProcess();
+	        });
+	      }
+	    }
+	  }, {
 	    key: 'handleCancel',
 	    value: function handleCancel() {
 	      this.props.backToActions();
@@ -21048,8 +21071,14 @@
 	                { key: i, value: board.id },
 	                board.title
 	              );
-	            })
-	          )
+	            }),
+	            _react2.default.createElement(
+	              'option',
+	              { key: 'new board', className: 'new_board_option', value: 'new_board' },
+	              '                     Create new board'
+	            )
+	          ),
+	          this.state.activeBoard == 'new_board' && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New folder name' })
 	        ),
 	        _react2.default.createElement(
 	          'div',

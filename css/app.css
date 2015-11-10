@@ -161,6 +161,15 @@ img {
     flex: auto;
 }
 
+.new_board_option {
+}
+
+.selectors  input {
+    margin-top: 5px;
+    height: 20px;
+    border: none;
+}
+
 .uploadTitle {
     margin-top: 5px;
 }
