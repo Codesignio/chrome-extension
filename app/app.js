@@ -197,6 +197,7 @@ class App extends React.Component {
       var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
       var capturedImage = {link: url, name: name, size: capturedImageSize, url: me.state.contentURL.split('?')[0]};
       me.state.images.push(capturedImage);
+      localStorage.currentCaptureImage = JSON.stringify(capturedImage);
       localStorage.images = JSON.stringify(me.state.images);
       me.setState({status: 'captured', capturedImage: capturedImage});
     }
@@ -267,17 +268,17 @@ class App extends React.Component {
       return <div className="progress_bar" style={{width: this.state.progress}}></div>
     } else if (this.state.status == 'captured'){
       return (
-        <div>
+        [<div key="screenshot" className="screenshot">
           <img src={this.state.capturedImage.link}/>
-          <SelectAndUpload
-            backToActions={this.backToActions.bind(this)}
-            activeBoard={this.state.activeBoard}
-            activeFolder={this.state.activeFolder}
-            handleChangeSelectorsState={this.handleChangeSelectorsState.bind(this)}
-            handleUpload={this.handleUpload.bind(this)}
-            image={this.state.capturedImage}
-            token={this.state.token}/>
-        </div>
+        </div>, <SelectAndUpload
+          key="upload"
+          backToActions={this.backToActions.bind(this)}
+          activeBoard={this.state.activeBoard}
+          activeFolder={this.state.activeFolder}
+          handleChangeSelectorsState={this.handleChangeSelectorsState.bind(this)}
+          handleUpload={this.handleUpload.bind(this)}
+          image={this.state.capturedImage}
+          token={this.state.token}/>]
       )
     } else if (this.state.status == 'actions'){
       return (

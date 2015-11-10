@@ -124,7 +124,7 @@ export default class SelectAndUpload extends React.Component {
         title: me.refs['new_board'].value
       }, function (data) {
         me.state.activeBoard = data.id;
-        me.props.handleChangeSelectorsState({board: data.id});
+        localStorage.activeBoard = data.id;
         me.state.posts = [];
         me.uploadImageProcess();
       });

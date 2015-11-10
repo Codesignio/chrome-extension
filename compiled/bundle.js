@@ -274,6 +274,7 @@
 	        var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
 	        var capturedImage = { link: url, name: name, size: capturedImageSize, url: me.state.contentURL.split('?')[0] };
 	        me.state.images.push(capturedImage);
+	        localStorage.currentCaptureImage = JSON.stringify(capturedImage);
 	        localStorage.images = JSON.stringify(me.state.images);
 	        me.setState({ status: 'captured', capturedImage: capturedImage });
 	      }
@@ -353,19 +354,19 @@
 	      } else if (this.state.status == 'progress') {
 	        return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } });
 	      } else if (this.state.status == 'captured') {
-	        return _react2.default.createElement(
+	        return [_react2.default.createElement(
 	          'div',
-	          null,
-	          _react2.default.createElement('img', { src: this.state.capturedImage.link }),
-	          _react2.default.createElement(_selectAndUpload2.default, {
-	            backToActions: this.backToActions.bind(this),
-	            activeBoard: this.state.activeBoard,
-	            activeFolder: this.state.activeFolder,
-	            handleChangeSelectorsState: this.handleChangeSelectorsState.bind(this),
-	            handleUpload: this.handleUpload.bind(this),
-	            image: this.state.capturedImage,
-	            token: this.state.token })
-	        );
+	          { key: 'screenshot', className: 'screenshot' },
+	          _react2.default.createElement('img', { src: this.state.capturedImage.link })
+	        ), _react2.default.createElement(_selectAndUpload2.default, {
+	          key: 'upload',
+	          backToActions: this.backToActions.bind(this),
+	          activeBoard: this.state.activeBoard,
+	          activeFolder: this.state.activeFolder,
+	          handleChangeSelectorsState: this.handleChangeSelectorsState.bind(this),
+	          handleUpload: this.handleUpload.bind(this),
+	          image: this.state.capturedImage,
+	          token: this.state.token })];
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
@@ -21019,7 +21020,7 @@
 	          title: me.refs['new_board'].value
 	        }, function (data) {
 	          me.state.activeBoard = data.id;
-	          me.props.handleChangeSelectorsState({ board: data.id });
+	          localStorage.activeBoard = data.id;
 	          me.state.posts = [];
 	          me.uploadImageProcess();
 	        });
