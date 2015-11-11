@@ -1,0 +1,135 @@
+.codesign-Pin {
+    all: initial;
+    cursor: default;
+    position: absolute;
+    padding: 8.5px 10px 10px 8.5px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(233,33,37,.9);
+    color: #fff;
+    text-align: center;
+    font-size: 24px;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    box-shadow: 0 0 4px 0 #777;
+    outline: 0;
+}
+
+.codesign-Pin.codesign-movable .codesign-title {
+    all: initial;
+    cursor: move;
+}
+
+.codesignun-selectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.codesign-Task {
+    width: 276px;
+    margin-left: -121px;
+    margin-top: 17px;
+    font-size: 13px;
+    text-align: left;
+    color: #000;
+    box-shadow: 0 0 4px 0 #777;
+}
+
+.codesign-Task .codesign-task-box {
+    position: relative;
+    background-color: #fff;
+}
+
+.codesign-Task * {
+    outline: 0;
+}
+
+
+.codesign-Task .codesign-task-box:after, .codesign-Task .codesign-task-box:before {
+    bottom: 100%;
+    left: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.codesign-Task .codesign-top-wrapper {
+    padding: 14px;
+}
+
+.codesign-CommentBox .codesign-bottom-btn {
+    width: 50%;
+    padding: 10px;
+    font-size: 9pt;
+}
+
+.codesign-cs-btn-flat-gray {
+    background-color: #e6e6e6;
+}
+
+.codesign-cs-btn-flat-active {
+    background-color: #22bc85;
+    color: #fff;
+}
+
+
+.codesign-cs-btn-active, .codesign-cs-btn-block, .codesign-cs-btn-flat-active, .codesign-cs-btn-flat-gray, .codesign-cs-btn-gray {
+    padding: 13px 35px;
+    border: none;
+    text-decoration: none;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    outline: 0;
+    cursor: pointer;
+    font-family: avenir-next-medium;
+    font-size: 14px;
+    line-height: normal;
+}
+
+.codesign-CommentBox .codesign-comment .codesign-input {
+    color: #3c3c3c;
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    font-weight: 500;
+    font-size: 1pc;
+    padding: 11px 18px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: 0;
+    line-height: normal;
+
+    resize: none;
+    overflow: hidden;
+
+    font-size: 14px;
+    padding: 6px;
+    margin-top: 11px;
+}
+
+
+
+.codesign-doneButton {
+    bottom: 0;
+    right:0;
+    position: fixed;
+    cursor: pointer;
+    background-color: #37A037;
+    color: white;
+    width: 100px;
+    height: 30px;
+    margin: 10px;
+    line-height: 30px;
+    border-radius: 5px;
+}

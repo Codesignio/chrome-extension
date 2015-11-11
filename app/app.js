@@ -13,8 +13,6 @@ class App extends React.Component {
     var capturedImage = JSON.parse(localStorage.currentCaptureImage || 'null');
     this.state = {
       status: capturedImage ? 'captured': 'actions',
-      screenshot: null,
-      contentURL: '',
       images: JSON.parse(localStorage.images || '[]'),
       token: localStorage.token,
       capturedImage: capturedImage,
@@ -25,18 +23,23 @@ class App extends React.Component {
   }
 
   componentWillMount() {
-
+    chrome.browserAction.setBadgeText({text: ''});
     var me = this;
     chrome.tabs.getSelected(null, function(tab) {
       chrome.tabs.executeScript(tab.id, {code:"{}"}, function () {
         me.setState({unsupported: chrome.runtime.lastError !== undefined});
       })});
 
-    chrome.extension.onRequest.addListener(function (request, sender, callback) {
-      if (request.msg === 'capturePage') {
-        this.capturePage(request, sender, callback);
-      }
-    }.bind(this));
+    chrome.runtime.onMessage.addListener(
+      function(request, sender, sendResponse) {
+        if (request.msg === 'captured') {
+          chrome.browserAction.setBadgeText({text: ''});
+          this.state.images.push(request.capturedImage);
+          this.setState({capturedImage: request.capturedImage, status: 'captured'});
+        } else if (request.msg === 'progress'){
+          this.setState({status: 'progress', progress: request.progress})
+        }
+      }.bind(this));
   }
 
   takeScreenshoot(e) {
@@ -109,107 +112,7 @@ class App extends React.Component {
   }
 
   takeFullPageScreenshoot() {
-    var me =this;
-    chrome.tabs.getSelected(null, function (tab) {
-      var loaded = false;
-      chrome.tabs.executeScript(tab.id, {file: 'page.js'}, function () {
-        loaded = true;
-        this.sendScrollMessage(tab);
-      }.bind(me));
-    });
-  }
-
-  sendScrollMessage(tab) {
-    var me = this;
-    this.state.contentURL = tab.url;
-    this.state.screenshot = {};
-    chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function () {
-      this.openPage();
-    }.bind(me));
-  }
-
-  capturePage(data, sender, callback) {
-    this.setState({status: 'progress', progress: parseInt(data.complete * 100, 10) + '%'});
-    var screenshot = this.state.screenshot;
-    var canvas;
-
-    var scale = data.devicePixelRatio && data.devicePixelRatio !== 1 ?
-    1 / data.devicePixelRatio : 1;
-    if (scale !== 1) {
-      data.x = data.x / scale;
-      data.y = data.y / scale;
-      data.totalWidth = data.totalWidth / scale;
-      data.totalHeight = data.totalHeight / scale;
-    }
-    if (!screenshot.canvas) {
-      canvas = document.createElement('canvas');
-      canvas.width = data.totalWidth;
-      canvas.height = data.totalHeight;
-      screenshot.canvas = canvas;
-      screenshot.ctx = canvas.getContext('2d');
-    }
-
-    chrome.tabs.captureVisibleTab(
-      null, {format: 'png', quality: 100}, function (dataURI) {
-        if (dataURI) {
-          var image = new Image();
-          image.onload = function () {
-            screenshot.ctx.drawImage(image, data.x, data.y);
-            callback(true);
-          };
-          image.src = dataURI;
-        }
-      });
-  }
-
-  openPage() {
-    var screenshot = this.state.screenshot;
-
-    var dataURI = screenshot.canvas.toDataURL();
-
-    var capturedImageSize = {width: screenshot.canvas.width, height: screenshot.canvas.height};
-
-    var byteString = atob(dataURI.split(',')[1]);
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    var ab = new ArrayBuffer(byteString.length);
-    var ia = new Uint8Array(ab);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    var blob = new Blob([ab], {type: mimeString});
-    var size = blob.size + (1024 / 2);
-    var name = this.state.contentURL.split('?')[0].split('#')[0];
-    if (name) {
-      name = name
-        .replace(/^https?:\/\//, '')
-        .replace(/[^A-z0-9]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^[_\-]+/, '')
-        .replace(/[_\-]+$/, '');
-      name = '-' + name;
-    } else {
-      name = '';
-    }
-    name = 'screencapture' + name + '-' + Date.now() + '.png';
-
-    var me = this;
-    function onwriteend() {
-      var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-      var capturedImage = {link: url, name: name, size: capturedImageSize, url: me.state.contentURL.split('?')[0]};
-      me.state.images.push(capturedImage);
-      localStorage.currentCaptureImage = JSON.stringify(capturedImage);
-      localStorage.images = JSON.stringify(me.state.images);
-      me.setState({status: 'captured', capturedImage: capturedImage});
-    }
-
-    window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
-      fs.root.getFile(name, {create: true}, function (fileEntry) {
-        fileEntry.createWriter(function (fileWriter) {
-          fileWriter.onwriteend = onwriteend
-          fileWriter.write(blob);
-        });
-      });
-    });
+    chrome.runtime.sendMessage({msg: 'takeFullPageScreenshoot', token: this.state.token});
   }
 
   imgClick(url, e){
@@ -290,6 +193,7 @@ class App extends React.Component {
           <div className="actions">
             {this.state.unsupported ? <p>This page don't supported capture screenshot</p> :
               <div>
+                <button onClick={this.addComment.bind(this)}>Add comment</button>
                 <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
                 <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
                 <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
@@ -334,6 +238,18 @@ class App extends React.Component {
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/bundle.js'}, function () {
         window.close();
+      });
+    });
+  }
+
+  addComment(){
+    var me =this;
+    chrome.runtime.sendMessage({msg: 'token', token: this.state.token});
+    chrome.tabs.getSelected(null, function (tab) {
+      chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+        chrome.tabs.insertCSS(null, {file: 'pageStyles.css'}, function(){
+          window.close();
+        });
       });
     });
   }
