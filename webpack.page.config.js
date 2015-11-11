@@ -8,12 +8,14 @@ module.exports = {
   module: {
     loaders: [
       {
+        test: /\.js$/,
         test: path.join(__dirname, 'page-script'),
         loader: 'babel',
         query: {
           presets: ['es2015','react']
         }
-      }
+      },
+      { test: /\.css$/, loader: "raw-loader" },
     ]
   }
 };

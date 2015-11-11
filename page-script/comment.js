@@ -3,6 +3,46 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import assign from 'object-assign';
 import {request} from './../app/utils';
+import cssString from "raw!./../pageStyles.css";
+
+
+class Frame extends React.Component{
+
+  render() {
+    return React.createElement('iframe', assign({}, this.props, {children: undefined}));
+  }
+  componentDidMount() {
+    this.renderFrameContents();
+  }
+  renderFrameContents() {
+    var doc = ReactDOM.findDOMNode(this).contentDocument;
+    if(doc && doc.readyState === 'complete') {
+      if(!doc.getElementById('codesignStyle')){
+        var styleTag = doc.createElement('style');
+        styleTag.setAttribute('id', 'codesignStyle');
+        var styles = cssString.replace(/module.exports = "/, '');
+        styles = styles.replace(/\\n/g, ' ');
+        styleTag.innerHTML = styles;
+        doc.head.appendChild(styleTag);
+      }
+      var contents = React.createElement('div',
+        undefined,
+        this.props.head,
+        this.props.children
+      );
+
+      ReactDOM.render(contents, doc.body);
+    } else {
+      setTimeout(this.renderFrameContents, 0);
+    }
+  }
+  componentDidUpdate() {
+    this.renderFrameContents();
+  }
+  componentWillUnmount() {
+    React.unmountComponentAtNode(ReactDOM.findDOMNode(this).contentDocument.body);
+  }
+}
 
 class Comment extends React.Component {
   constructor(props){
@@ -84,7 +124,7 @@ class Comment extends React.Component {
       top: 0,
     };
 
-    return this.state.cancel ? null : <div id="snap-overlay" style={styles}
+    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
       {this.state.pins.map(function(pin){
         return (
@@ -113,6 +153,7 @@ class Comment extends React.Component {
 
       {this.state.pins.length && <div onClick={this.uploadPins.bind(this)} className="codesign-doneButton">FINISH</div>}
     </div>
+      </Frame>
 
   }
 }
