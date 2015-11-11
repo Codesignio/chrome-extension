@@ -205,7 +205,7 @@
 	    folders = data1.results;
 	
 	    (0, _utils.request)('http://api.codesign.io/folders/' + folders[0].id + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	      title: 'New Board'
+	      title: sendedrequest.pageTitle
 	    }, function (data) {
 	      uploadImageProcess(data.id, data.client_code);
 	    });

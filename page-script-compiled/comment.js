@@ -137,7 +137,8 @@
 	      var data = {
 	        msg: 'takeFullPageScreenshoot',
 	        pins: this.state.pins,
-	        url: document.location.toString()
+	        url: document.location.toString(),
+	        pageTitle: document.title
 	      };
 	      var me = this;
 	      chrome.extension.sendRequest(data, function () {});
@@ -219,7 +220,7 @@
 	        this.state.pins.length && _react2.default.createElement(
 	          'div',
 	          { onClick: this.uploadPins.bind(this), className: 'codesign-doneButton' },
-	          'Done'
+	          'FINISH'
 	        )
 	      );
 	    }

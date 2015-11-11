@@ -53,6 +53,7 @@ class Comment extends React.Component {
       msg: 'takeFullPageScreenshoot',
       pins: this.state.pins,
       url: document.location.toString(),
+      pageTitle: document.title
     };
     var me = this;
     chrome.extension.sendRequest(data, function() {
@@ -100,7 +101,7 @@ class Comment extends React.Component {
         )
       }.bind(this))}
 
-      {this.state.pins.length && <div onClick={this.uploadPins.bind(this)} className="codesign-doneButton">Done</div>}
+      {this.state.pins.length && <div onClick={this.uploadPins.bind(this)} className="codesign-doneButton">FINISH</div>}
     </div>
 
   }
