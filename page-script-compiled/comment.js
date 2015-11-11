@@ -95,9 +95,19 @@
 	  }
 	
 	  _createClass(Comment, [{
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {
+	      var me = this;
+	      chrome.extension.onRequest.addListener(function (request, sender, callback) {
+	        if (request.msg === 'contextMenu') {
+	          me.newPin((0, _objectAssign2.default)(codeSignMousePos, { fromContextMenu: true }));
+	        }
+	      });
+	    }
+	  }, {
 	    key: 'newPin',
 	    value: function newPin(e) {
-	      if (e.target.getAttribute('id') == 'snap-overlay') {
+	      if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay') {
 	        this.state.pins.forEach((function (pin) {
 	          if (!pin.text) {
 	            this.state.pins.splice(this.state.pins.indexOf(pin));

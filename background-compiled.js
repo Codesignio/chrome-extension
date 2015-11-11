@@ -55,7 +55,25 @@
 	var screenshot;
 	var sendedrequest;
 	var capturedImage;
-	var token;
+	var token = localStorage.token;
+	
+	chrome.contextMenus.create({
+	  "title": "Add Comment",
+	  "contexts": ["page"],
+	  "onclick": clickHandler
+	});
+	
+	function clickHandler(e) {
+	  chrome.tabs.getSelected(null, function (tab) {
+	    chrome.tabs.insertCSS(tab.id, { file: 'pageStyles.css' }, function () {
+	      chrome.tabs.sendRequest(tab.id, { msg: 'stopTrack' }, function () {
+	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
+	          chrome.tabs.sendRequest(tab.id, { msg: 'contextMenu' }, function () {});
+	        });
+	      });
+	    });
+	  });
+	}
 	
 	chrome.extension.onRequest.addListener(function (request, sender, callback) {
 	  if (request.msg === 'capturePart') {
@@ -277,6 +295,7 @@
 	                        chrome.browserAction.setBadgeText({ text: '' });
 	                        capturedImage = null;
 	                        sendedrequest = null;
+	                        chrome.tabs.sendRequest(tab.id, { msg: 'stopTrack' });
 	                      }
 	                    });
 	                  }

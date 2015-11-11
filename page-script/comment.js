@@ -15,8 +15,18 @@ class Comment extends React.Component {
     }
   }
 
+  componentWillMount() {
+    var me = this;
+    chrome.extension.onRequest.addListener(function (request, sender, callback) {
+      if (request.msg === 'contextMenu') {
+        me.newPin(assign(codeSignMousePos, {fromContextMenu: true}))
+      }
+    });
+
+  }
+
   newPin(e) {
-    if (e.target.getAttribute('id') == 'snap-overlay') {
+    if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay') {
       this.state.pins.forEach(function(pin){
         if(!pin.text){
           this.state.pins.splice(this.state.pins.indexOf(pin));

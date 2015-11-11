@@ -2,11 +2,30 @@ var canvas;
 var screenshot;
 var sendedrequest;
 var capturedImage;
-var token;
+var token = localStorage.token;
 
 import {request} from './app/utils';
 import {s3Upload} from './app/utils';
 import {dataURItoBlob} from './app/utils';
+
+chrome.contextMenus.create({
+  "title": "Add Comment",
+  "contexts": ["page"],
+  "onclick" : clickHandler
+});
+
+ function clickHandler(e) {
+   chrome.tabs.getSelected(null, function (tab) {
+     chrome.tabs.insertCSS(tab.id, {file: 'pageStyles.css'}, function () {
+       chrome.tabs.sendRequest(tab.id, {msg: 'stopTrack'}, function () {
+         chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+           chrome.tabs.sendRequest(tab.id, {msg: 'contextMenu'}, function () {
+           });
+         });
+       });
+     });
+   });
+ }
 
 
 
@@ -244,6 +263,7 @@ function uploadImageProcess(activeBoard, boardCode)
                         chrome.browserAction.setBadgeText({text: ''});
                         capturedImage = null;
                         sendedrequest = null;
+                        chrome.tabs.sendRequest(tab.id, {msg: 'stopTrack'});
                       }
 
                     });
