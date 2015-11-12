@@ -52,8 +52,106 @@ chrome.runtime.onMessage.addListener(
       });
     } else if (request.msg === 'token'){
       token = request.token
-    };
+    } else if (request.msg == 'uploadImages'){
+      uploadImages(request, sender, sendResponse)
+    }
   });
+
+
+function uploadImages(req, sender, sendResponse){
+  var token = localStorage.token;
+  var activeBoard = req.activeBoard;
+  var activeFolder = req.activeFolder;
+  var newBoardTitle = req.newBoardTitle;
+  var posts = [];
+
+  function logCallBack(value){
+    chrome.runtime.sendMessage({msg: 'upload_progress', value: value})
+  }
+
+  function doneCallBack(obj){
+    chrome.runtime.sendMessage({msg: 'upload_done', payload: obj})
+  }
+
+
+  if(activeBoard == 'new_board'){
+    request('http://api.codesign.io/folders/'+ activeFolder + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+      title: newBoardTitle
+    }, function (data) {
+      activeBoard = data.id;
+      uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack);
+    });
+
+  } else {
+
+    request('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', {"Authorization": 'Token ' + token}, null, function (data) {
+      posts = data.results;
+      uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack);
+    });
+  }
+}
+
+function uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack){
+
+    var token = localStorage.token;
+    var me = this;
+    var capturedImage = JSON.parse(localStorage.capturedImage);
+
+    request('http://api.codesign.io/boards/'+ activeBoard + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+      title: capturedImage.url + " " + (new Date).toString()
+    }, function (data) {
+      console.log(data);
+      var uploadedPost = {boardID: activeBoard, postID: data.id};
+      request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
+        console.log(data1);
+
+        window.webkitResolveLocalFileSystemURL(capturedImage.link, function(fileEntry){
+          console.log('fillllle');
+          fileEntry.file(function(file) {
+            s3Upload(data1.image_upload_url, file, logCallBack, function (data2) {
+
+              var canvas = document.createElement('canvas');
+              canvas.width = 250;
+              canvas.height = 150;
+              var image = new Image();
+              image.onload = function () {
+                canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
+
+                var blob =  dataURItoBlob(canvas.toDataURL());
+                s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {
+
+                  request('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
+                    image_upload_url:data1.image_upload_url,
+                    thumbnail_upload_url: data1.thumbnail_upload_url,
+                    width: capturedImage.size.width,
+                    height: capturedImage.size.height
+                  }, function (data3) {
+
+                    request('http://api.codesign.io/boards/'+ activeBoard + '/update_order/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
+                      keys: posts.map((post)=> post.id).concat(data.id)
+                    }, function () {
+                      doneCallBack(uploadedPost)
+                    });
+
+                  });
+
+                });
+
+              };
+              image.src = capturedImage.link;
+
+            });
+          });
+        });
+
+
+      });
+
+    });
+}
+
+
+
 
 function cropVisible(data, sender, callback) {
   canvas = document.createElement('canvas');
@@ -115,7 +213,7 @@ function openPage(data) {
     if (sendedrequest){
       uploadImageAndPins();
     } else {
-      localStorage.currentCaptureImage = JSON.stringify(capturedImage);
+      localStorage.capturedImage = JSON.stringify(capturedImage);
       var images = JSON.parse(localStorage.images || '[]');
       images.push(capturedImage);
       localStorage.images = JSON.stringify(images);

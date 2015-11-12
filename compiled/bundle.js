@@ -93,15 +93,13 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
 	
-	    var capturedImage = JSON.parse(localStorage.currentCaptureImage || 'null');
+	    var capturedImage = JSON.parse(localStorage.capturedImage || 'null');
 	    _this.state = {
 	      status: capturedImage ? 'captured' : 'actions',
 	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token,
 	      capturedImage: capturedImage,
-	      unsupported: false,
-	      activeBoard: JSON.parse(localStorage.activeBoard || 'null'),
-	      activeFolder: JSON.parse(localStorage.activeFolder || 'null')
+	      unsupported: false
 	    };
 	    return _this;
 	  }
@@ -171,7 +169,7 @@
 	                var capturedImage = { link: url, name: name, size: capturedImageSize, url: tab.url.split('?')[0] };
 	                me.state.images.push(capturedImage);
 	                localStorage.images = JSON.stringify(me.state.images);
-	                localStorage.currentCaptureImage = JSON.stringify(capturedImage);
+	                localStorage.capturedImage = JSON.stringify(capturedImage);
 	                me.setState({ status: 'captured', capturedImage: capturedImage });
 	              }
 	
@@ -208,13 +206,13 @@
 	  }, {
 	    key: 'backToActions',
 	    value: function backToActions() {
-	      localStorage.currentCaptureImage = '';
+	      localStorage.capturedImage = '';
 	      this.setState({ status: 'actions' });
 	    }
 	  }, {
 	    key: 'handleUpload',
 	    value: function handleUpload(uploadedPost) {
-	      localStorage.currentCaptureImage = '';
+	      localStorage.capturedImage = '';
 	      (0, _utils.request)('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', { "Authorization": 'Token ' + this.state.token }, null, (function (data) {
 	        var boardCode = data.results[0].code;
 	        this.setState({ status: 'uploaded', uploadedPost: { link: "http://www.codesign.io/board/" + boardCode + "?post=" + uploadedPost.postID } });
@@ -225,18 +223,6 @@
 	    value: function handleUploaded() {
 	      this.setState({ status: 'actions' });
 	      window.open(this.state.uploadedPost.link);
-	    }
-	  }, {
-	    key: 'handleChangeSelectorsState',
-	    value: function handleChangeSelectorsState(obj) {
-	      if (obj.folder) {
-	        localStorage.activeFolder = obj.folder;
-	        this.setState({ activeFolder: obj.folder });
-	      }
-	      if (obj.board) {
-	        localStorage.activeBoard = obj.board;
-	        this.setState({ activeBoard: obj.board });
-	      }
 	    }
 	  }, {
 	    key: 'logOut',
@@ -267,12 +253,8 @@
 	        ), _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
 	          backToActions: this.backToActions.bind(this),
-	          activeBoard: this.state.activeBoard,
-	          activeFolder: this.state.activeFolder,
-	          handleChangeSelectorsState: this.handleChangeSelectorsState.bind(this),
 	          handleUpload: this.handleUpload.bind(this),
-	          image: this.state.capturedImage,
-	          token: this.state.token })];
+	          image: this.state.capturedImage })];
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
@@ -20891,10 +20873,10 @@
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
 	
 	    _this.state = {
-	      folders: [],
-	      boards: [],
-	      activeFolder: props.activeFolder,
-	      activeBoard: props.activeBoard
+	      folders: JSON.parse(localStorage.folders || '[]'),
+	      boards: JSON.parse(localStorage.boards || '{}'),
+	      activeBoard: JSON.parse(localStorage.activeBoard || 'null'),
+	      activeFolder: JSON.parse(localStorage.activeFolder || 'null')
 	    };
 	    return _this;
 	  }
@@ -20902,18 +20884,21 @@
 	  _createClass(SelectAndUpload, [{
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
-	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data1) {
-	        (0, _utils.request)('http://api.codesign.io/folders/' + (this.state.activeFolder || data1.results[0].id) + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data2) {
+	      var token = localStorage.token;
+	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data1) {
+	        var activeFolder = this.state.activeFolder || data1.results[0].id;
+	        (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
 	
 	          var activeBoard = this.state.activeBoard && data2.results.map(function (res) {
 	            return res.id;
 	          }).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id;
+	          this.state.boards[activeFolder] = data2.results;
+	          localStorage.folders = JSON.stringify(data1.results);
 	          this.setState({
 	            folders: data1.results,
 	            activeFolder: this.state.activeFolder && data1.results.map(function (res) {
 	              return res.id;
 	            }).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
-	            boards: data2.results,
 	            activeBoard: activeBoard
 	          });
 	        }).bind(this));
@@ -20922,21 +20907,23 @@
 	  }, {
 	    key: 'setFolder',
 	    value: function setFolder(e) {
+	      var token = localStorage.token;
 	      this.setState({ activeFolder: e.target.value });
-	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, (function (data) {
-	        this.props.handleChangeSelectorsState({ folder: e.target.value });
-	        this.setState({ boards: data.results, activeBoard: data.results[0].id });
+	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data) {
+	        localStorage.activeFolder = e.target.value;
+	        this.state.boards[e.target.value] = data.results;
+	        localStorage.boards = JSON.stringify(this.state.boards);
+	        this.setState({ activeBoard: data.results[0].id });
 	      }).bind(this));
 	    }
 	  }, {
 	    key: 'setBoard',
 	    value: function setBoard(e) {
+	
 	      if (e.target.value !== "new_board") {
-	        this.props.handleChangeSelectorsState({ board: e.target.value });
-	        this.setState({ newBoard: false });
-	      } else {
-	        this.setState({ newBoard: true });
+	        localStorage.activeBoard = e.target.value;
 	      }
+	
 	      this.setState({
 	        activeBoard: e.target.value
 	      });
@@ -20947,85 +20934,31 @@
 	      this.setState({ progress: value });
 	    }
 	  }, {
-	    key: 'uploadImageProcess',
-	    value: function uploadImageProcess() {
-	
-	      var token = this.props.token;
-	      var me = this;
-	      var capturedImage = this.props.image;
-	      var link = this.props.image.link;
-	      var activeBoard = this.state.activeBoard;
-	
-	      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	        title: capturedImage.url + " " + new Date().toString()
-	      }, function (data) {
-	        console.log(data);
-	        var uploadedPost = { boardID: activeBoard, postID: data.id };
-	        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
-	          console.log(data1);
-	
-	          window.webkitResolveLocalFileSystemURL(link, function (fileEntry) {
-	            fileEntry.file(function (file) {
-	              (0, _utils.s3Upload)(data1.image_upload_url, file, me.logProgress.bind(me), function (data2) {
-	
-	                var canvas = document.createElement('canvas');
-	                canvas.width = 250;
-	                canvas.height = 150;
-	                var image = new Image();
-	                image.onload = function () {
-	                  canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
-	
-	                  var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
-	                  (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, me.logProgress.bind(me), function () {
-	
-	                    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	                      image_upload_url: data1.image_upload_url,
-	                      thumbnail_upload_url: data1.thumbnail_upload_url,
-	                      width: capturedImage.size.width,
-	                      height: capturedImage.size.height
-	                    }, function (data3) {
-	
-	                      (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/update_order/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	                        keys: me.state.posts.map(function (post) {
-	                          return post.id;
-	                        }).concat(data.id)
-	                      }, function () {
-	                        me.props.handleUpload(uploadedPost);
-	                      });
-	                    });
-	                  });
-	                };
-	                image.src = link;
-	              });
-	            });
-	          });
-	        });
-	      });
-	    }
-	  }, {
 	    key: 'uploadImage',
 	    value: function uploadImage() {
-	      var token = this.props.token;
 	      var me = this;
-	      var activeBoard = this.state.activeBoard;
+	
 	      this.setState({ status: 'progress', progress: 0 });
+	      chrome.runtime.sendMessage({
+	        msg: 'uploadImages',
+	        folders: this.state.folders,
+	        activeBoard: this.state.activeBoard,
+	        activeFolder: this.state.activeFolder,
+	        newBoardTitle: this.state.activeBoard == 'new_board' && me.refs['new_board'].value
 	
-	      if (activeBoard == 'new_board') {
-	        (0, _utils.request)('http://api.codesign.io/folders/' + this.state.activeFolder + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	          title: me.refs['new_board'].value
-	        }, function (data) {
-	          me.props.handleChangeSelectorsState({ board: data.id });
-	          me.setState({ activeBoard: data.id });
-	          me.state.posts = [];
-	          me.uploadImageProcess();
-	        });
-	      } else {
+	      });
 	
-	        (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + this.props.token }, null, function (data) {
-	          me.state.posts = data.results;
-	          me.uploadImageProcess();
-	        });
-	      }
+	      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	        if (request.msg == 'upload_progress') {
+	          me.logProgress(request.value);
+	        }
+	      });
+	
+	      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	        if (request.msg == 'upload_done') {
+	          me.props.handleUpload(request.payload);
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'handleCancel',
@@ -21060,8 +20993,8 @@
 	          ),
 	          _react2.default.createElement(
 	            'select',
-	            { value: this.state.newBoard ? 'new_board' : this.state.activeBoard, onChange: this.setBoard.bind(this) },
-	            this.state.boards && this.state.boards.map(function (board, i) {
+	            { value: this.state.activeBoard, onChange: this.setBoard.bind(this) },
+	            this.state.boards[this.state.activeFolder] && this.state.boards[this.state.activeFolder].map(function (board, i) {
 	              return _react2.default.createElement(
 	                'option',
 	                { key: i, value: board.id },
@@ -21074,7 +21007,7 @@
 	              '                  Create new board'
 	            )
 	          ),
-	          this.state.newBoard && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New board name' })
+	          this.state.activeBoard == 'new_board' && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New board name' })
 	        ),
 	        _react2.default.createElement(
 	          'div',

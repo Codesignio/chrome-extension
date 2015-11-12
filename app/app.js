@@ -10,15 +10,13 @@ import SelectAndUpload from './components/select-and-upload';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    var capturedImage = JSON.parse(localStorage.currentCaptureImage || 'null');
+    var capturedImage = JSON.parse(localStorage.capturedImage || 'null');
     this.state = {
       status: capturedImage ? 'captured': 'actions',
       images: JSON.parse(localStorage.images || '[]'),
       token: localStorage.token,
       capturedImage: capturedImage,
       unsupported: false,
-      activeBoard: JSON.parse(localStorage.activeBoard || 'null'),
-      activeFolder: JSON.parse(localStorage.activeFolder || 'null')
     }
   }
 
@@ -90,7 +88,7 @@ class App extends React.Component {
               var capturedImage = {link: url, name: name, size: capturedImageSize, url: tab.url.split('?')[0]};
               me.state.images.push(capturedImage);
               localStorage.images = JSON.stringify(me.state.images);
-              localStorage.currentCaptureImage = JSON.stringify(capturedImage);
+              localStorage.capturedImage = JSON.stringify(capturedImage);
               me.setState({status: 'captured', capturedImage: capturedImage});
             }
 
@@ -126,12 +124,12 @@ class App extends React.Component {
   }
 
   backToActions(){
-    localStorage.currentCaptureImage = '';
+    localStorage.capturedImage = '';
     this.setState({status: 'actions'});
   }
 
   handleUpload(uploadedPost){
-    localStorage.currentCaptureImage = '';
+    localStorage.capturedImage = '';
     request('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', {"Authorization": 'Token ' + this.state.token}, null, function (data) {
       var boardCode = data.results[0].code;
       this.setState({status: 'uploaded', uploadedPost: {link: "http://www.codesign.io/board/" + boardCode + "?post="+ uploadedPost.postID}})
@@ -140,17 +138,6 @@ class App extends React.Component {
   handleUploaded(){
     this.setState({status: 'actions'});
     window.open(this.state.uploadedPost.link);
-  }
-
-  handleChangeSelectorsState(obj){
-    if (obj.folder){
-      localStorage.activeFolder = obj.folder;
-      this.setState({activeFolder: obj.folder})
-    }
-    if (obj.board){
-      localStorage.activeBoard = obj.board;
-      this.setState({activeBoard: obj.board})
-    }
   }
 
   logOut(){
@@ -176,12 +163,8 @@ class App extends React.Component {
         </div>, <SelectAndUpload
           key="upload"
           backToActions={this.backToActions.bind(this)}
-          activeBoard={this.state.activeBoard}
-          activeFolder={this.state.activeFolder}
-          handleChangeSelectorsState={this.handleChangeSelectorsState.bind(this)}
           handleUpload={this.handleUpload.bind(this)}
-          image={this.state.capturedImage}
-          token={this.state.token}/>]
+          image={this.state.capturedImage}/>]
       )
     } else if (this.state.status == 'actions'){
       return (
