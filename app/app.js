@@ -247,10 +247,8 @@ class App extends React.Component {
     chrome.runtime.sendMessage({msg: 'token', token: this.state.token});
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
-        chrome.tabs.insertCSS(null, {file: 'pageStyles.css'}, function(){
           window.close();
         });
-      });
     });
   }
 }
