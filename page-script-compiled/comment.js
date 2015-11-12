@@ -144,10 +144,7 @@
 	
 	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Comment).call(this, props));
 	
-	    var cursor = document.body.style.cursor;
-	    document.body.style.cursor = "crosshair";
 	    _this2.state = {
-	      cursor: cursor,
 	      pins: [],
 	      screenPos: {
 	        y: window.parent.document.body.scrollTop + window.innerHeight,
@@ -233,7 +230,6 @@
 	      me.setState({ cancel: true });
 	      var elem = document.getElementById('snap-overlay');
 	      elem.parentNode.removeChild(el);
-	      document.body.style.cursor = this.state.cursor;
 	    }
 	  }, {
 	    key: 'render',
@@ -259,7 +255,7 @@
 	        { style: { width: document.body.scrollWidth, height: document.body.scrollHeight } },
 	        _react2.default.createElement(
 	          'div',
-	          { id: 'snap-overlay', style: styles,
+	          { id: 'snap-overlay', style: (0, _objectAssign2.default)(styles, { cursor: 'crosshair' }),
 	            onClick: this.newPin.bind(this) },
 	          this.state.pins.map((function (pin) {
 	            return _react2.default.createElement(

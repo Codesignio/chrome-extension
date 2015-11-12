@@ -48,10 +48,7 @@ class Frame extends React.Component{
 class Comment extends React.Component {
   constructor(props){
     super(props);
-    var cursor = document.body.style.cursor;
-    document.body.style.cursor = "crosshair";
     this.state = {
-      cursor: cursor,
       pins: [],
       screenPos: {
         y: window.parent.document.body.scrollTop + window.innerHeight,
@@ -129,7 +126,6 @@ class Comment extends React.Component {
     me.setState({cancel: true});
     var elem = document.getElementById('snap-overlay');
     elem.parentNode.removeChild(el);
-    document.body.style.cursor = this.state.cursor;
   }
 
   render() {
@@ -149,7 +145,7 @@ class Comment extends React.Component {
       left: this.state.screenPos.x - 150
     };
 
-    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight}}><div id="snap-overlay" style={styles}
+    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight}}><div id="snap-overlay" style={assign(styles, {cursor: 'crosshair'}) }
                 onClick={this.newPin.bind(this)}>
       {this.state.pins.map(function(pin){
         return (
