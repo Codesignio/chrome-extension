@@ -22,6 +22,7 @@ class Frame extends React.Component{
         styleTag.setAttribute('id', 'codesignStyle');
         var styles = cssString.replace(/module.exports = "/, '');
         styles = styles.replace(/\\n/g, ' ');
+        styles = styles.replace(/\\"/g, '"');
         styleTag.innerHTML = styles;
         doc.head.appendChild(styleTag);
       }
@@ -63,6 +64,14 @@ class Comment extends React.Component {
       }
     });
 
+  }
+
+  componentDidMount(){
+    window.addEventListener('scroll', this.onScrollHandler.bind(this))
+  }
+
+  onScrollHandler(){
+    this.setState({});
   }
 
   newPin(e) {
@@ -124,24 +133,33 @@ class Comment extends React.Component {
       top: 0,
     };
 
+    var doneButtonStyle = {
+      backgroundColor: 'green',
+      position: 'absolute',
+      top: window.parent.document.body.scrollTop,
+      left: window.parent.document.body.scrollLeft
+    };
+
     return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
       {this.state.pins.map(function(pin){
         return (
-          <div className="codesign-Pin codesign-movable" style={{top: pin.y, left: pin.x, position: 'absolute'}}>
-            <span className="codesign-title codesign-unselectable">1</span>
+          <div className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}}>
+            <span className="title unselectable">1</span>
             <div>
-              <div className="codesign-Task">
-                <div className="codesign-task-box">
-                  <div className="codesign-CommentBox">
-                    <div className="codesign-top-wrapper">
-                      <div className="codesign-comment">
-                        {pin.added ? <div>{pin.text}</div> : <textarea className="codesign-input" value={pin.text} onChange={this.textChange.bind(this, pin)} />}
+              <div className="Task">
+                <div className="task-box">
+                  <div>
+                  <div className="CommentBox">
+                      <div className="top-wrapper">
+                        <div className="comment">
+                          {pin.added ? <div>{pin.text}</div> : <textarea className="input" value={pin.text} onChange={this.textChange.bind(this, pin)} />}
+                        </div>
                       </div>
-                      {!pin.added && <div className="codesign-create-buttons">
-                        <button className="codesign-bottom-btn codesign-cs-btn-flat-active" onClick={this.addPin.bind(this, pin)}>Add</button>
-                        <button className="codesign-bottom-btn codesign-cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
-                      </div>}
+                    {!pin.added && <div className="create-buttons">
+                      <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin)}>Add</button>
+                      <button className="bottom-btn cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
+                    </div>}
                     </div>
                   </div>
                 </div>
@@ -151,7 +169,7 @@ class Comment extends React.Component {
         )
       }.bind(this))}
 
-      {this.state.pins.length && <div onClick={this.uploadPins.bind(this)} className="codesign-doneButton">FINISH</div>}
+      {this.state.pins.length ? <div onClick={this.uploadPins.bind(this)} className="doneButton cs-btn-flat-active" style={doneButtonStyle}>FINISH</div> : null}
     </div>
       </Frame>
 
