@@ -148,7 +148,11 @@
 	    document.body.style.cursor = "crosshair";
 	    _this2.state = {
 	      cursor: cursor,
-	      pins: []
+	      pins: [],
+	      screenPos: {
+	        y: window.parent.document.body.scrollTop + window.innerHeight,
+	        x: window.parent.document.body.scrollLeft + window.innerWidth
+	      }
 	    };
 	    return _this2;
 	  }
@@ -171,7 +175,12 @@
 	  }, {
 	    key: 'onScrollHandler',
 	    value: function onScrollHandler() {
-	      this.setState({});
+	      this.setState({
+	        screenPos: {
+	          y: window.parent.document.body.scrollTop + window.innerHeight,
+	          x: window.parent.document.body.scrollLeft + window.innerWidth
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'newPin',
@@ -241,8 +250,8 @@
 	      var doneButtonStyle = {
 	        backgroundColor: 'green',
 	        position: 'absolute',
-	        top: window.parent.document.body.scrollTop,
-	        left: window.parent.document.body.scrollLeft
+	        top: this.state.screenPos.y - 70,
+	        left: this.state.screenPos.x - 150
 	      };
 	
 	      return this.state.cancel ? null : _react2.default.createElement(

@@ -52,7 +52,11 @@ class Comment extends React.Component {
     document.body.style.cursor = "crosshair";
     this.state = {
       cursor: cursor,
-      pins: []
+      pins: [],
+      screenPos: {
+        y: window.parent.document.body.scrollTop + window.innerHeight,
+        x: window.parent.document.body.scrollLeft + window.innerWidth
+      }
     }
   }
 
@@ -71,7 +75,12 @@ class Comment extends React.Component {
   }
 
   onScrollHandler(){
-    this.setState({});
+    this.setState({
+      screenPos: {
+        y: window.parent.document.body.scrollTop + window.innerHeight,
+        x: window.parent.document.body.scrollLeft + window.innerWidth
+      }
+    });
   }
 
   newPin(e) {
@@ -136,8 +145,8 @@ class Comment extends React.Component {
     var doneButtonStyle = {
       backgroundColor: 'green',
       position: 'absolute',
-      top: window.parent.document.body.scrollTop,
-      left: window.parent.document.body.scrollLeft
+      top: this.state.screenPos.y - 70,
+      left: this.state.screenPos.x - 150
     };
 
     return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight}}><div id="snap-overlay" style={styles}
