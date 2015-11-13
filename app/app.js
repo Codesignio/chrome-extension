@@ -49,6 +49,7 @@ class App extends React.Component {
           chrome.tabs.sendRequest(tab.id, {msg: 'removeOverlay'}, function () {
             chrome.runtime.sendMessage({msg: 'takeFullPageScreenshoot'});
             me.setState({status: 'progress'})
+            localStorage.currentAction = "";
           });
       });
     }

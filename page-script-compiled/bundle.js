@@ -214,7 +214,7 @@
 	        url: document.location.toString()
 	      };
 	      var me = this;
-	      chrome.extension.sendRequest(data, function () {});
+	      chrome.extension.sendRequest(data);
 	      me.setState({ cancel: true });
 	      var elem = document.getElementById('snap-overlay');
 	      elem.parentNode.removeChild(el);

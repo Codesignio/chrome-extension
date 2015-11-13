@@ -54,13 +54,7 @@ chrome.runtime.onMessage.addListener(
     } else if (request.msg === 'token'){
       token = request.token
     } else if (request.msg == 'uploadImages'){
-      if(sendedrequest){
-        uploadImageAndPins();
-      } else {
-        uploadImages(request, sender, sendResponse)
-      }
-    } else if (request.msg == 'uploadImageAndPins'){
-      uploadImageAndPins();
+      uploadImages(request, sender, sendResponse)
     }
   });
 
@@ -100,7 +94,10 @@ function uploadImageProcess2(activeBoard,posts, logCallBack){
     var me = this;
     var capturedImage = JSON.parse(localStorage.capturedImage);
 
-    request('http://api.codesign.io/boards/'+ activeBoard.id + '/posts/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+    request('http://api.codesign.io/boards/'+ activeBoard.id + '/posts/', 'POST', {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, {
       title: capturedImage.url + " " + (new Date).toString()
     }, function (data) {
       console.log(data);
@@ -122,7 +119,10 @@ function uploadImageProcess2(activeBoard,posts, logCallBack){
                 var blob =  dataURItoBlob(canvas.toDataURL());
                 s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {
 
-                  request('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
+                  request('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {
+                    "Authorization": 'Token ' + token,
+                    "Content-Type": "application/json;charset=UTF-8"
+                  }, {
                     image_upload_url:data1.image_upload_url,
                     thumbnail_upload_url: data1.thumbnail_upload_url,
                     width: capturedImage.size.width,
@@ -132,8 +132,51 @@ function uploadImageProcess2(activeBoard,posts, logCallBack){
                     request('http://api.codesign.io/boards/'+ activeBoard.id + '/update_order/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
                       keys: posts.map((post)=> post.id).concat(data.id)
                     }, function () {
-                      localStorage.capturedImage = '';
-                      window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+
+
+                      if(sendedrequest){
+
+                        var reqCount = 0;
+                        for (var i = 0; i < sendedrequest.pins.length;i++) {
+                          var pin = sendedrequest.pins[i];
+                          request('http://api.codesign.io/posts/' + data.id + '/tasks/', 'POST', {
+                            "Authorization": 'Token ' + token,
+                            "Content-Type": "application/json;charset=UTF-8"
+                          }, {
+                            marker: {
+                              geometry: {
+                                left: pin.x/capturedImage.size.width * 100,
+                                top: pin.y/capturedImage.size.height * 100
+                              },
+                              measure: 'pixel',
+                              shape: "PN"
+                            },
+                            title: pin.text
+                          }, function (data3) {
+                            reqCount++;
+                            if (reqCount == sendedrequest.pins.length){
+
+                              localStorage.capturedImage = '';
+                              window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+                              chrome.browserAction.setBadgeText({text: ''});
+                              capturedImage = null;
+                              sendedrequest = null;
+
+                            }
+
+                          });
+                        }
+
+
+                      } else {
+                        localStorage.capturedImage = '';
+                        window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+                        chrome.browserAction.setBadgeText({text: ''});
+                        capturedImage = null;
+                        sendedrequest = null;
+                      }
+
+
                     });
 
                   });
@@ -168,7 +211,6 @@ function cropVisible(data, sender, callback) {
         image.onload = function () {
           canvas.getContext('2d').drawImage(image, data.left+1, data.top+1, data.width, data.height, 0, 0, data.width, data.height);
           openPage(data);
-          callback(true);
         };
         image.src = dataURI;
       }
@@ -211,18 +253,20 @@ function openPage(data) {
 
   function onwriteend() {
     var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-    capturedImage = {link: url, size: capturedImageSize || {width: data.width, height: data.height}, url: data.url.split('?')[0]};
+    capturedImage = {
+      link: url,
+      size: capturedImageSize || {width: data.width, height: data.height},
+      url: data.url.split('?')[0]
+    };
 
-      localStorage.capturedImage = JSON.stringify(capturedImage);
-      var images = JSON.parse(localStorage.images || '[]');
-      images.push(capturedImage);
-      localStorage.images = JSON.stringify(images);
-      chrome.runtime.sendMessage({msg: 'captured', capturedImage: capturedImage});
-      chrome.browserAction.setBadgeText({text: capturedImageSize ? '': 'done'});
-
-
-    //canvas = null;
-    //screenshot = null;
+    localStorage.capturedImage = JSON.stringify(capturedImage);
+    var images = JSON.parse(localStorage.images || '[]');
+    images.push(capturedImage);
+    localStorage.images = JSON.stringify(images);
+    chrome.runtime.sendMessage({msg: 'captured', capturedImage: capturedImage});
+    chrome.browserAction.setBadgeText({text: capturedImageSize ? '' : 'done'});
+    canvas = null;
+    screenshot = null;
   }
 
   window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
@@ -277,107 +321,6 @@ function capturePage(data, sender, callback) {
     });
 }
 
-
-function uploadImageAndPins(){;
-
-  var folders;
-  request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
-    folders = data1.results;
-
-    request('http://api.codesign.io/folders/'+ folders[0].id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-      title: sendedrequest.pageTitle
-    }, function (data) {
-      uploadImageProcess(data.id, data.client_code);
-    });
-  })
-
-
-}
-
 function logProgress(percent){
   chrome.browserAction.setBadgeText({text: percent+'%'});
-}
-
-function uploadImageProcess(activeBoard, boardCode)
-{
-  var link = capturedImage.link;
-
-  request('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', {
-    "Authorization": 'Token ' + token,
-    "Content-Type": "application/json;charset=UTF-8"
-  }, {
-    title: capturedImage.url + " " + (new Date).toString()
-  }, function (data) {
-    console.log(data);
-    request('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
-      console.log(data1);
-
-      window.webkitResolveLocalFileSystemURL(link, function (fileEntry) {
-        fileEntry.file(function (file) {
-          s3Upload(data1.image_upload_url, file, logProgress, function (data2) {
-
-            var canvas = document.createElement('canvas');
-            canvas.width = 250;
-            canvas.height = 150;
-            var image = new Image();
-            image.onload = function () {
-              canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
-
-              var blob = dataURItoBlob(canvas.toDataURL());
-              s3Upload(data1.thumbnail_upload_url, blob, logProgress, function () {
-
-                request('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', {
-                  "Authorization": 'Token ' + token,
-                  "Content-Type": "application/json;charset=UTF-8"
-                }, {
-                  image_upload_url: data1.image_upload_url,
-                  thumbnail_upload_url: data1.thumbnail_upload_url,
-                  width: capturedImage.size.width,
-                  height: capturedImage.size.height
-                }, function (data3) {
-
-                  var reqCount = 0;
-
-                  for (var i = 0; i < sendedrequest.pins.length;i++) {
-                    var pin = sendedrequest.pins[i];
-                    request('http://api.codesign.io/posts/' + data.id + '/tasks/', 'POST', {
-                      "Authorization": 'Token ' + token,
-                      "Content-Type": "application/json;charset=UTF-8"
-                    }, {
-                      marker: {
-                        geometry: {
-                          left: pin.x/capturedImage.size.width * 100,
-                          top: pin.y/capturedImage.size.height * 100
-                        },
-                        measure: 'pixel',
-                        shape: "PN"
-                      },
-                      title: pin.text
-                    }, function (data3) {
-                      reqCount++;
-                      if (reqCount == sendedrequest.pins.length){
-                        chrome.tabs.create({url: 'http://www.codesign.io/board/' + JSON.parse(localStorage.activeBoard).client_code});
-                        chrome.browserAction.setBadgeText({text: ''});
-                        capturedImage = null;
-                        sendedrequest = null;
-                      }
-
-                    });
-                  }
-
-                });
-
-              });
-
-            };
-            image.src = link;
-
-          });
-        });
-      });
-
-
-    });
-
-  });
 }

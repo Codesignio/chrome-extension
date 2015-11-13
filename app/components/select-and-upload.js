@@ -82,6 +82,7 @@ export default class SelectAndUpload extends React.Component {
   }
 
   handleCancel(){
+    localStorage.capturedImage = '';
     this.props.backToActions();
   }
 

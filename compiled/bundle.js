@@ -134,6 +134,7 @@
 	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
 	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshoot' });
 	            me.setState({ status: 'progress' });
+	            localStorage.currentAction = "";
 	          });
 	        });
 	      }
@@ -20954,6 +20955,7 @@
 	  }, {
 	    key: 'handleCancel',
 	    value: function handleCancel() {
+	      localStorage.capturedImage = '';
 	      this.props.backToActions();
 	    }
 	  }, {
