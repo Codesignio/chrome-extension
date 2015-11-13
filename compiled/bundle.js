@@ -99,7 +99,8 @@
 	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token,
 	      capturedImage: capturedImage,
-	      unsupported: false
+	      unsupported: false,
+	      currentAction: localStorage.currentAction
 	    };
 	    return _this;
 	  }
@@ -107,7 +108,6 @@
 	  _createClass(App, [{
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
-	      chrome.browserAction.setBadgeText({ text: '' });
 	      var me = this;
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { code: "{}" }, function () {
@@ -124,6 +124,19 @@
 	          this.setState({ status: 'progress', progress: request.progress });
 	        }
 	      }).bind(this));
+	    }
+	  }, {
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var me = this;
+	      if (this.state.currentAction == 'comment') {
+	        chrome.tabs.getSelected(null, function (tab) {
+	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
+	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshoot' });
+	            me.setState({ status: 'progress' });
+	          });
+	        });
+	      }
 	    }
 	  }, {
 	    key: 'takeScreenshoot',

@@ -17,11 +17,11 @@ class App extends React.Component {
       token: localStorage.token,
       capturedImage: capturedImage,
       unsupported: false,
+      currentAction: localStorage.currentAction
     }
   }
 
   componentWillMount() {
-    chrome.browserAction.setBadgeText({text: ''});
     var me = this;
     chrome.tabs.getSelected(null, function(tab) {
       chrome.tabs.executeScript(tab.id, {code:"{}"}, function () {
@@ -38,6 +38,18 @@ class App extends React.Component {
           this.setState({status: 'progress', progress: request.progress})
         }
       }.bind(this));
+  }
+
+  componentDidMount(){
+    var me = this;
+    if(this.state.currentAction == 'comment'){
+      chrome.tabs.getSelected(null, function (tab) {
+          chrome.tabs.sendRequest(tab.id, {msg: 'removeOverlay'}, function () {
+            chrome.runtime.sendMessage({msg: 'takeFullPageScreenshoot'});
+            me.setState({status: 'progress'})
+          });
+      });
+    }
   }
 
   takeScreenshoot(e) {

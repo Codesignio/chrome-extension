@@ -113,10 +113,14 @@
 	          styles = styles.replace(/\\"/g, '"');
 	          styleTag.innerHTML = styles;
 	          doc.head.appendChild(styleTag);
+	          var contentTag = doc.createElement('div');
+	          contentTag.setAttribute('style', 'width: 100%; height: 100%;');
+	          contentTag.setAttribute('id', 'contentTag');
+	          doc.body.appendChild(contentTag);
 	        }
 	        var contents = _react2.default.createElement('div', undefined, this.props.head, this.props.children);
 	
-	        _reactDom2.default.render(contents, doc.body);
+	        _reactDom2.default.render(contents, doc.getElementById('contentTag'));
 	      } else {
 	        setTimeout(this.renderFrameContents, 0);
 	      }
@@ -125,11 +129,6 @@
 	    key: 'componentDidUpdate',
 	    value: function componentDidUpdate() {
 	      this.renderFrameContents();
-	    }
-	  }, {
-	    key: 'componentWillUnmount',
-	    value: function componentWillUnmount() {
-	      _react2.default.unmountComponentAtNode(_reactDom2.default.findDOMNode(this).contentDocument.body);
 	    }
 	  }]);
 	
@@ -161,6 +160,11 @@
 	      chrome.extension.onRequest.addListener(function (request, sender, callback) {
 	        if (request.msg === 'contextMenu') {
 	          me.newPin((0, _objectAssign2.default)(codeSignMousePos, { fromContextMenu: true }));
+	        } else if (request.msg == 'removeOverlay') {
+	          me.setState({ cancel: true });
+	          var elem = document.getElementById('snap-overlay');
+	          elem.parentNode.removeChild(el);
+	          callback();
 	        }
 	      });
 	    }
@@ -201,6 +205,13 @@
 	    value: function addPin(pin) {
 	      pin.added = true;
 	      this.setState({});
+	      var data = {
+	        msg: 'addPin',
+	        pins: this.state.pins,
+	        url: document.location.toString(),
+	        pageTitle: document.title
+	      };
+	      chrome.extension.sendRequest(data);
 	    }
 	  }, {
 	    key: 'cancelPin',
@@ -215,23 +226,6 @@
 	      this.setState({});
 	    }
 	  }, {
-	    key: 'uploadPins',
-	    value: function uploadPins(e) {
-	      e.stopPropagation();
-	      e.preventDefault();
-	      var data = {
-	        msg: 'takeFullPageScreenshoot',
-	        pins: this.state.pins,
-	        url: document.location.toString(),
-	        pageTitle: document.title
-	      };
-	      var me = this;
-	      chrome.extension.sendRequest(data, function () {});
-	      me.setState({ cancel: true });
-	      var elem = document.getElementById('snap-overlay');
-	      elem.parentNode.removeChild(el);
-	    }
-	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var styles = {
@@ -243,28 +237,21 @@
 	        top: 0
 	      };
 	
-	      var doneButtonStyle = {
-	        backgroundColor: 'green',
-	        position: 'absolute',
-	        top: this.state.screenPos.y - 70,
-	        left: this.state.screenPos.x - 150
-	      };
-	
 	      return this.state.cancel ? null : _react2.default.createElement(
 	        Frame,
-	        { style: { width: document.body.scrollWidth, height: document.body.scrollHeight } },
+	        { style: { width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none' } },
 	        _react2.default.createElement(
 	          'div',
 	          { id: 'snap-overlay', style: (0, _objectAssign2.default)(styles, { cursor: 'crosshair' }),
 	            onClick: this.newPin.bind(this) },
-	          this.state.pins.map((function (pin) {
+	          this.state.pins.map((function (pin, i) {
 	            return _react2.default.createElement(
 	              'div',
-	              { className: 'Pin movable', style: { top: pin.y, left: pin.x, position: 'absolute' } },
+	              { key: i, className: 'Pin movable', style: { top: pin.y, left: pin.x, position: 'absolute' } },
 	              _react2.default.createElement(
 	                'span',
 	                { className: 'title unselectable' },
-	                '1'
+	                i + 1
 	              ),
 	              _react2.default.createElement(
 	                'div',
@@ -314,12 +301,7 @@
 	                )
 	              )
 	            );
-	          }).bind(this)),
-	          this.state.pins.length ? _react2.default.createElement(
-	            'div',
-	            { onClick: this.uploadPins.bind(this), className: 'doneButton cs-btn-flat-active', style: doneButtonStyle },
-	            'FINISH'
-	          ) : null
+	          }).bind(this))
 	        )
 	      );
 	    }

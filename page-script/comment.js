@@ -25,6 +25,10 @@ class Frame extends React.Component{
         styles = styles.replace(/\\"/g, '"');
         styleTag.innerHTML = styles;
         doc.head.appendChild(styleTag);
+        var contentTag = doc.createElement('div');
+        contentTag.setAttribute('style', 'width: 100%; height: 100%;');
+        contentTag.setAttribute('id', 'contentTag');
+        doc.body.appendChild(contentTag);
       }
       var contents = React.createElement('div',
         undefined,
@@ -32,16 +36,13 @@ class Frame extends React.Component{
         this.props.children
       );
 
-      ReactDOM.render(contents, doc.body);
+      ReactDOM.render(contents, doc.getElementById('contentTag'));
     } else {
       setTimeout(this.renderFrameContents, 0);
     }
   }
   componentDidUpdate() {
     this.renderFrameContents();
-  }
-  componentWillUnmount() {
-    React.unmountComponentAtNode(ReactDOM.findDOMNode(this).contentDocument.body);
   }
 }
 
@@ -62,6 +63,11 @@ class Comment extends React.Component {
     chrome.extension.onRequest.addListener(function (request, sender, callback) {
       if (request.msg === 'contextMenu') {
         me.newPin(assign(codeSignMousePos, {fromContextMenu: true}))
+      } else if(request.msg == 'removeOverlay'){
+        me.setState({cancel: true});
+        var elem = document.getElementById('snap-overlay');
+        elem.parentNode.removeChild(el);
+        callback();
       }
     });
 
@@ -99,6 +105,13 @@ class Comment extends React.Component {
   addPin(pin){
     pin.added = true;
     this.setState({});
+    var data = {
+      msg: 'addPin',
+      pins: this.state.pins,
+      url: document.location.toString(),
+      pageTitle: document.title
+    };
+    chrome.extension.sendRequest(data);
   }
 
   cancelPin(pin){
@@ -111,23 +124,6 @@ class Comment extends React.Component {
     this.setState({})
   }
 
-  uploadPins(e){
-    e.stopPropagation();
-    e.preventDefault();
-    var data = {
-      msg: 'takeFullPageScreenshoot',
-      pins: this.state.pins,
-      url: document.location.toString(),
-      pageTitle: document.title
-    };
-    var me = this;
-    chrome.extension.sendRequest(data, function() {
-    });
-    me.setState({cancel: true});
-    var elem = document.getElementById('snap-overlay');
-    elem.parentNode.removeChild(el);
-  }
-
   render() {
     var styles = {
       width: '100%',
@@ -138,19 +134,12 @@ class Comment extends React.Component {
       top: 0,
     };
 
-    var doneButtonStyle = {
-      backgroundColor: 'green',
-      position: 'absolute',
-      top: this.state.screenPos.y - 70,
-      left: this.state.screenPos.x - 150
-    };
-
-    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight}}><div id="snap-overlay" style={assign(styles, {cursor: 'crosshair'}) }
+    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={assign(styles, {cursor: 'crosshair'}) }
                 onClick={this.newPin.bind(this)}>
-      {this.state.pins.map(function(pin){
+      {this.state.pins.map(function(pin, i){
         return (
-          <div className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}}>
-            <span className="title unselectable">1</span>
+          <div key={i} className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}}>
+            <span className="title unselectable">{i+1}</span>
             <div>
               <div className="Task">
                 <div className="task-box">
@@ -173,8 +162,6 @@ class Comment extends React.Component {
           </div>
         )
       }.bind(this))}
-
-      {this.state.pins.length ? <div onClick={this.uploadPins.bind(this)} className="doneButton cs-btn-flat-active" style={doneButtonStyle}>FINISH</div> : null}
     </div>
       </Frame>
 

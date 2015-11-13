@@ -65,10 +65,8 @@
 	
 	function clickHandler(e) {
 	  chrome.tabs.getSelected(null, function (tab) {
-	    chrome.tabs.sendRequest(tab.id, { msg: 'stopTrack' }, function () {
-	      chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
-	        chrome.tabs.sendRequest(tab.id, { msg: 'contextMenu' }, function () {});
-	      });
+	    chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
+	      chrome.tabs.sendRequest(tab.id, { msg: 'contextMenu' }, function () {});
 	    });
 	  });
 	}
@@ -79,12 +77,15 @@
 	  } else if (request.msg === 'capturePage') {
 	    capturePage(request, sender, callback);
 	  } else if (request.msg === 'takeFullPageScreenshoot') {
-	    sendedrequest = request;
 	    chrome.tabs.getSelected(null, function (tab) {
 	      chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
 	        sendScrollMessage(tab);
 	      });
 	    });
+	  } else if (request.msg == 'addPin') {
+	    sendedrequest = request;
+	    localStorage.currentAction = 'comment';
+	    chrome.browserAction.setBadgeText({ text: request.pins.length.toString() });
 	  }
 	});
 	
@@ -98,7 +99,13 @@
 	  } else if (request.msg === 'token') {
 	    token = request.token;
 	  } else if (request.msg == 'uploadImages') {
-	    uploadImages(request, sender, sendResponse);
+	    if (sendedrequest) {
+	      uploadImageAndPins();
+	    } else {
+	      uploadImages(request, sender, sendResponse);
+	    }
+	  } else if (request.msg == 'uploadImageAndPins') {
+	    uploadImageAndPins();
 	  }
 	});
 	
@@ -237,18 +244,15 @@
 	    var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
 	    capturedImage = { link: url, size: capturedImageSize || { width: data.width, height: data.height }, url: data.url.split('?')[0] };
 	
-	    if (sendedrequest) {
-	      uploadImageAndPins();
-	    } else {
-	      localStorage.capturedImage = JSON.stringify(capturedImage);
-	      var images = JSON.parse(localStorage.images || '[]');
-	      images.push(capturedImage);
-	      localStorage.images = JSON.stringify(images);
-	      chrome.runtime.sendMessage({ msg: 'captured', capturedImage: capturedImage });
-	      chrome.browserAction.setBadgeText({ text: capturedImageSize ? '' : 'done' });
-	    }
-	    canvas = null;
-	    screenshot = null;
+	    localStorage.capturedImage = JSON.stringify(capturedImage);
+	    var images = JSON.parse(localStorage.images || '[]');
+	    images.push(capturedImage);
+	    localStorage.images = JSON.stringify(images);
+	    chrome.runtime.sendMessage({ msg: 'captured', capturedImage: capturedImage });
+	    chrome.browserAction.setBadgeText({ text: capturedImageSize ? '' : 'done' });
+	
+	    //canvas = null;
+	    //screenshot = null;
 	  }
 	
 	  window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
@@ -380,7 +384,6 @@
 	                        chrome.browserAction.setBadgeText({ text: '' });
 	                        capturedImage = null;
 	                        sendedrequest = null;
-	                        chrome.tabs.sendRequest(tab.id, { msg: 'stopTrack' });
 	                      }
 	                    });
 	                  }
