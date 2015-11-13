@@ -6,6 +6,10 @@
     font-size: 100%;
     vertical-align: baseline;
     box-sizing: border-box;
+
+
+    font-family: Avenir;
+    -webkit-font-smoothing: subpixel-antialiased;
 }
 body {
     line-height: 1;
@@ -220,12 +224,6 @@ html {
 
 
 
-
-
-
-.body {
-    font-family: Avenir, arial, sans-serif;
-}
 
 .login-form {
     background-color: white;
