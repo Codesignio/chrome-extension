@@ -157,11 +157,6 @@ class App extends React.Component {
     localStorage.token = '';
   }
 
-  openMenu(e){
-    this.setState({menu: !this.state.menu});
-    e.stopPropagation();
-  }
-
   renderPopup(){
 
     if (!this.state.token){
@@ -180,20 +175,23 @@ class App extends React.Component {
       )
     } else if (this.state.status == 'actions'){
       return (
-        <div id="screenshot-app" onClick={()=> this.setState({menu: false})}>
-          <div className="menu-icon" onClick={this.openMenu.bind(this)}></div>
-          {this.state.menu && <div className="menu">
-            <div className="menu-item logOut" onClick={this.logOut.bind(this)}>Log out</div>
-          </div>}
+        <div id="screenshot-app">
           <div className="actions">
             {this.state.unsupported ? <p>This page don't supported capture screenshot</p> :
-              <div>
-                <button onClick={this.addComment.bind(this)}>Add comment</button>
-                <button onClick={this.snapScreen.bind(this)}>Snap screen area</button>
-                <button onClick={this.takeScreenshoot.bind(this)}>Snap visible part</button>
-                <button onClick={this.takeFullPageScreenshoot.bind(this)}>Snap a full page</button>
-              </div>}
-            <button onClick={()=> this.setState({status: 'list'})}>List Images</button>
+                [<div onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>,
+                <div onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
+                <div onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,
+                <div onClick={this.addComment.bind(this)}><span>Add comment</span></div>
+              ]}
+          </div>
+          <div className="title-and-links">
+            <p>codesign.io</p>
+            <p>Simplest feedback tool</p>
+            <div className="links">
+              <a href="http://www.codesign.io/dashboard/" target="_blank">Dashboard</a>
+              <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>List Images</a>
+              <a className="logOut" onClick={this.logOut.bind(this)}>Log out</a>
+            </div>
           </div>
         </div>
       )

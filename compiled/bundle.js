@@ -244,12 +244,6 @@
 	      localStorage.token = '';
 	    }
 	  }, {
-	    key: 'openMenu',
-	    value: function openMenu(e) {
-	      this.setState({ menu: !this.state.menu });
-	      e.stopPropagation();
-	    }
-	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -271,19 +265,7 @@
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
-	          { id: 'screenshot-app', onClick: function onClick() {
-	              return _this2.setState({ menu: false });
-	            } },
-	          _react2.default.createElement('div', { className: 'menu-icon', onClick: this.openMenu.bind(this) }),
-	          this.state.menu && _react2.default.createElement(
-	            'div',
-	            { className: 'menu' },
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'menu-item logOut', onClick: this.logOut.bind(this) },
-	              'Log out'
-	            )
-	          ),
+	          { id: 'screenshot-app' },
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'actions' },
@@ -291,36 +273,73 @@
 	              'p',
 	              null,
 	              'This page don\'t supported capture screenshot'
-	            ) : _react2.default.createElement(
+	            ) : [_react2.default.createElement(
 	              'div',
-	              null,
+	              { onClick: this.takeFullPageScreenshoot.bind(this) },
 	              _react2.default.createElement(
-	                'button',
-	                { onClick: this.addComment.bind(this) },
-	                'Add comment'
-	              ),
-	              _react2.default.createElement(
-	                'button',
-	                { onClick: this.snapScreen.bind(this) },
-	                'Snap screen area'
-	              ),
-	              _react2.default.createElement(
-	                'button',
-	                { onClick: this.takeScreenshoot.bind(this) },
-	                'Snap visible part'
-	              ),
-	              _react2.default.createElement(
-	                'button',
-	                { onClick: this.takeFullPageScreenshoot.bind(this) },
+	                'span',
+	                null,
 	                'Snap a full page'
 	              )
+	            ), _react2.default.createElement(
+	              'div',
+	              { onClick: this.takeScreenshoot.bind(this) },
+	              _react2.default.createElement(
+	                'span',
+	                null,
+	                'Snap visible part'
+	              )
+	            ), _react2.default.createElement(
+	              'div',
+	              { onClick: this.snapScreen.bind(this) },
+	              _react2.default.createElement(
+	                'span',
+	                null,
+	                'Snap screen area'
+	              )
+	            ), _react2.default.createElement(
+	              'div',
+	              { onClick: this.addComment.bind(this) },
+	              _react2.default.createElement(
+	                'span',
+	                null,
+	                'Add comment'
+	              )
+	            )]
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'title-and-links' },
+	            _react2.default.createElement(
+	              'p',
+	              null,
+	              'codesign.io'
 	            ),
 	            _react2.default.createElement(
-	              'button',
-	              { onClick: function onClick() {
-	                  return _this2.setState({ status: 'list' });
-	                } },
-	              'List Images'
+	              'p',
+	              null,
+	              'Simplest feedback tool'
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'links' },
+	              _react2.default.createElement(
+	                'a',
+	                { href: 'http://www.codesign.io/dashboard/', target: '_blank' },
+	                'Dashboard'
+	              ),
+	              _react2.default.createElement(
+	                'a',
+	                { className: 'imagesList', onClick: function onClick() {
+	                    return _this2.setState({ status: 'list' });
+	                  } },
+	                'List Images'
+	              ),
+	              _react2.default.createElement(
+	                'a',
+	                { className: 'logOut', onClick: this.logOut.bind(this) },
+	                'Log out'
+	              )
 	            )
 	          )
 	        );
@@ -20957,7 +20976,7 @@
 	        folders: this.state.folders,
 	        activeBoard: this.state.activeBoard,
 	        activeFolder: this.state.activeFolder,
-	        newBoardTitle: this.state.activeBoard == 'new_board' && me.refs['new_board'].value
+	        newBoardTitle: "New Board"
 	
 	      });
 	
@@ -20979,20 +20998,55 @@
 	      this.props.backToActions();
 	    }
 	  }, {
+	    key: 'toogleSelectors',
+	    value: function toogleSelectors() {
+	      this.setState({
+	        edit: !this.state.edit
+	      });
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'uploadWidget' },
 	        _react2.default.createElement(
-	          'p',
-	          { className: 'uploadTitle' },
-	          'Place to upload'
+	          'button',
+	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
+	          'UPLOAD IMAGES'
 	        ),
 	        this.state.status == 'progress' && _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } }),
-	        _react2.default.createElement(
+	        !this.state.edit ? _react2.default.createElement(
+	          'div',
+	          { className: 'selectors-titles' },
+	          this.state.activeBoard == 'new_board' ? [_react2.default.createElement(
+	            'p',
+	            null,
+	            'Wiil creating new board'
+	          ), _react2.default.createElement(
+	            'p',
+	            null,
+	            'in folder: ',
+	            /*this.state.folders.filter((fol)=>fol.id == this.state.activeFolder)[0].title */'My Boards'
+	          )] : [_react2.default.createElement(
+	            'p',
+	            null,
+	            'Folder: ',
+	            this.state.activeFolder
+	          ), _react2.default.createElement(
+	            'p',
+	            null,
+	            'Board: ',
+	            this.state.activeBoard
+	          )]
+	        ) : _react2.default.createElement(
 	          'div',
 	          { className: 'selectors' },
+	          _react2.default.createElement(
+	            'p',
+	            null,
+	            'FOLDER'
+	          ),
 	          _react2.default.createElement(
 	            'select',
 	            { value: this.state.activeFolder, onChange: this.setFolder.bind(this) },
@@ -21003,6 +21057,11 @@
 	                folder.title
 	              );
 	            })
+	          ),
+	          _react2.default.createElement(
+	            'p',
+	            null,
+	            'BOARD'
 	          ),
 	          _react2.default.createElement(
 	            'select',
@@ -21019,21 +21078,25 @@
 	              { key: 'new board', className: 'new_board_option', value: 'new_board' },
 	              '                  Create new board'
 	            )
-	          ),
-	          this.state.activeBoard == 'new_board' && _react2.default.createElement('input', { type: 'text', ref: 'new_board', placeholder: 'New board name' })
+	          )
 	        ),
 	        _react2.default.createElement(
 	          'div',
-	          { className: 'buttons' },
+	          { className: 'upload-actions' },
 	          _react2.default.createElement(
-	            'button',
-	            { id: 'cancelButton', onClick: this.handleCancel.bind(this) },
+	            'a',
+	            { onClick: this.toogleSelectors.bind(this) },
+	            this.state.edit ? 'Save' : 'Edit'
+	          ),
+	          _react2.default.createElement(
+	            'a',
+	            { onClick: this.handleCancel.bind(this) },
 	            'Cancel'
 	          ),
 	          _react2.default.createElement(
-	            'button',
-	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	            'Upload'
+	            'a',
+	            null,
+	            '+ Make one more snap'
 	          )
 	        )
 	      );
