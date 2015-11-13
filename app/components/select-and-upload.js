@@ -56,16 +56,9 @@ export default class SelectAndUpload extends React.Component {
       });
   }
 
-  logProgress(value){
-    this.setState({progress: value})
-  }
-
 
   uploadImage(){
-    var me = this;
 
-
-    this.setState({status: 'progress', progress: 0});
     chrome.runtime.sendMessage({
       msg: 'uploadImages',
       folders: this.state.folders,
@@ -73,18 +66,6 @@ export default class SelectAndUpload extends React.Component {
       activeFolder: this.state.activeFolder,
       newBoardTitle: "New Board"
 
-    });
-
-    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-      if (request.msg == 'upload_progress'){
-        me.logProgress(request.value)
-      }
-    });
-
-    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-      if (request.msg == 'upload_done'){
-        me.props.handleUpload(request.payload)
-      }
     });
   }
 
@@ -102,10 +83,9 @@ export default class SelectAndUpload extends React.Component {
     return (
       <div className="uploadWidget">
         <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD IMAGES</button>
-        {this.state.status == 'progress' && <div className="progress_bar" style={{width: this.state.progress}}></div>}
         { !this.state.edit ? <div className="selectors-titles">
-          {this.state.activeBoard == 'new_board' ? [<p>Wiil creating new board</p>,<p>in folder: {/*this.state.folders.filter((fol)=>fol.id == this.state.activeFolder)[0].title */'My Boards'}</p>] :
-          [<p>Folder: {this.state.activeFolder}</p>, <p>Board: {this.state.activeBoard}</p>]}
+          {this.state.activeBoard == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: {/*this.state.folders.filter((fol)=>fol.id == this.state.activeFolder)[0].title */'My Boards'}</p>] :
+          [<p key="1">Folder: {this.state.activeFolder}</p>, <p key="2">Board: {this.state.activeBoard}</p>]}
         </div> : <div className="selectors">
           <p>FOLDER</p>
           <select value={this.state.activeFolder} onChange={this.setFolder.bind(this)}>

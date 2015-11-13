@@ -30,14 +30,18 @@ class App extends React.Component {
 
     chrome.runtime.onMessage.addListener(
       function(request, sender, sendResponse) {
-        if (request.msg === 'captured') {
+        if (request.msg == 'captured') {
           chrome.browserAction.setBadgeText({text: ''});
-          this.state.images.push(request.capturedImage);
-          this.setState({capturedImage: request.capturedImage, status: 'captured'});
-        } else if (request.msg === 'progress'){
-          this.setState({status: 'progress', progress: request.progress})
+          me.state.images.push(request.capturedImage);
+          me.setState({capturedImage: request.capturedImage, status: 'captured'});
+        } else if (request.msg == 'progress'){
+          me.setState({status: 'progress', progress: request.progress})
+        } else if (request.msg == 'upload_done'){
+          me.handleUpload()
         }
       }.bind(this));
+
+
   }
 
   componentDidMount(){
@@ -50,6 +54,11 @@ class App extends React.Component {
           });
       });
     }
+  }
+
+  handleUpload(payload){
+    localStorage.capturedImage = '';
+    window.open("http://www.codesign.io/board/" + localStorage.activeBoard.client_code);
   }
 
   takeScreenshoot(e) {
@@ -136,20 +145,7 @@ class App extends React.Component {
   }
 
   backToActions(){
-    localStorage.capturedImage = '';
     this.setState({status: 'actions'});
-  }
-
-  handleUpload(uploadedPost){
-    localStorage.capturedImage = '';
-    request('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', {"Authorization": 'Token ' + this.state.token}, null, function (data) {
-      var boardCode = data.results[0].code;
-      this.setState({status: 'uploaded', uploadedPost: {link: "http://www.codesign.io/board/" + boardCode + "?post="+ uploadedPost.postID}})
-    }.bind(this))
-  }
-  handleUploaded(){
-    this.setState({status: 'actions'});
-    window.open(this.state.uploadedPost.link);
   }
 
   logOut(){
@@ -170,7 +166,7 @@ class App extends React.Component {
         </div>, <SelectAndUpload
           key="upload"
           backToActions={this.backToActions.bind(this)}
-          handleUpload={this.handleUpload.bind(this)}
+          handleUpload={this.backToActions.bind(this)}
           image={this.state.capturedImage}/>]
       )
     } else if (this.state.status == 'actions'){
@@ -178,10 +174,10 @@ class App extends React.Component {
         <div id="screenshot-app">
           <div className="actions">
             {this.state.unsupported ? <p>This page don't supported capture screenshot</p> :
-                [<div onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>,
-                <div onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
-                <div onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,
-                <div onClick={this.addComment.bind(this)}><span>Add comment</span></div>
+                [<div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>,
+                <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
+                <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,
+                <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div>
               ]}
           </div>
           <div className="title-and-links">
@@ -204,15 +200,6 @@ class App extends React.Component {
             }.bind(this))}
           </div>
           <button className="basicButton" onClick={()=> this.setState({status: 'actions'})}>Back</button>
-        </div>
-      )
-    } else if(this.state.status == 'uploaded'){
-      return (
-        <div id="screenshot-app">
-          <div className="actions">
-            <button onClick={()=> this.setState({status: 'actions'})}>Back to actions</button>
-            <button onClick={this.handleUploaded.bind(this)}>Go to Board</button>
-          </div>
         </div>
       )
     }

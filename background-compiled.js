@@ -117,11 +117,7 @@
 	  var posts = [];
 	
 	  function logCallBack(value) {
-	    chrome.runtime.sendMessage({ msg: 'upload_progress', value: value });
-	  }
-	
-	  function doneCallBack(obj) {
-	    chrome.runtime.sendMessage({ msg: 'upload_done', payload: obj });
+	    chrome.runtime.sendMessage({ msg: 'progress', progress: value });
 	  }
 	
 	  if (activeBoard == 'new_board') {
@@ -129,18 +125,18 @@
 	      title: newBoardTitle
 	    }, function (data) {
 	      activeBoard = data.id;
-	      uploadImageProcess2(activeBoard, posts, logCallBack, doneCallBack);
+	      uploadImageProcess2(activeBoard, posts, logCallBack);
 	    });
 	  } else {
 	
 	    (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
 	      posts = data.results;
-	      uploadImageProcess2(activeBoard, posts, logCallBack, doneCallBack);
+	      uploadImageProcess2(activeBoard, posts, logCallBack);
 	    });
 	  }
 	}
 	
-	function uploadImageProcess2(activeBoard, posts, logCallBack, doneCallBack) {
+	function uploadImageProcess2(activeBoard, posts, logCallBack) {
 	
 	  var token = localStorage.token;
 	  var me = this;
@@ -150,7 +146,6 @@
 	    title: capturedImage.url + " " + new Date().toString()
 	  }, function (data) {
 	    console.log(data);
-	    var uploadedPost = { boardID: activeBoard, postID: data.id };
 	    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
 	      console.log(data1);
 	
@@ -181,7 +176,7 @@
 	                      return post.id;
 	                    }).concat(data.id)
 	                  }, function () {
-	                    doneCallBack(uploadedPost);
+	                    chrome.runtime.sendMessage({ msg: 'upload_done' });
 	                  });
 	                });
 	              });

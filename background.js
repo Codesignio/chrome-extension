@@ -73,11 +73,7 @@ function uploadImages(req, sender, sendResponse){
   var posts = [];
 
   function logCallBack(value){
-    chrome.runtime.sendMessage({msg: 'upload_progress', value: value})
-  }
-
-  function doneCallBack(obj){
-    chrome.runtime.sendMessage({msg: 'upload_done', payload: obj})
+    chrome.runtime.sendMessage({msg: 'progress', progress: value})
   }
 
 
@@ -86,19 +82,19 @@ function uploadImages(req, sender, sendResponse){
       title: newBoardTitle
     }, function (data) {
       activeBoard = data.id;
-      uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack);
+      uploadImageProcess2(activeBoard,posts, logCallBack);
     });
 
   } else {
 
     request('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', {"Authorization": 'Token ' + token}, null, function (data) {
       posts = data.results;
-      uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack);
+      uploadImageProcess2(activeBoard,posts, logCallBack);
     });
   }
 }
 
-function uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack){
+function uploadImageProcess2(activeBoard,posts, logCallBack){
 
     var token = localStorage.token;
     var me = this;
@@ -108,7 +104,6 @@ function uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack){
       title: capturedImage.url + " " + (new Date).toString()
     }, function (data) {
       console.log(data);
-      var uploadedPost = {boardID: activeBoard, postID: data.id};
       request('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
         console.log(data1);
 
@@ -137,7 +132,7 @@ function uploadImageProcess2(activeBoard,posts, logCallBack, doneCallBack){
                     request('http://api.codesign.io/boards/'+ activeBoard + '/update_order/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
                       keys: posts.map((post)=> post.id).concat(data.id)
                     }, function () {
-                      doneCallBack(uploadedPost)
+                      chrome.runtime.sendMessage({msg: 'upload_done'})
                     });
 
                   });

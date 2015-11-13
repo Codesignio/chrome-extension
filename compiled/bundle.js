@@ -116,12 +116,14 @@
 	      });
 	
 	      chrome.runtime.onMessage.addListener((function (request, sender, sendResponse) {
-	        if (request.msg === 'captured') {
+	        if (request.msg == 'captured') {
 	          chrome.browserAction.setBadgeText({ text: '' });
-	          this.state.images.push(request.capturedImage);
-	          this.setState({ capturedImage: request.capturedImage, status: 'captured' });
-	        } else if (request.msg === 'progress') {
-	          this.setState({ status: 'progress', progress: request.progress });
+	          me.state.images.push(request.capturedImage);
+	          me.setState({ capturedImage: request.capturedImage, status: 'captured' });
+	        } else if (request.msg == 'progress') {
+	          me.setState({ status: 'progress', progress: request.progress });
+	        } else if (request.msg == 'upload_done') {
+	          me.handleUpload();
 	        }
 	      }).bind(this));
 	    }
@@ -137,6 +139,12 @@
 	          });
 	        });
 	      }
+	    }
+	  }, {
+	    key: 'handleUpload',
+	    value: function handleUpload(payload) {
+	      localStorage.capturedImage = '';
+	      window.open("http://www.codesign.io/board/" + localStorage.activeBoard.client_code);
 	    }
 	  }, {
 	    key: 'takeScreenshoot',
@@ -219,23 +227,7 @@
 	  }, {
 	    key: 'backToActions',
 	    value: function backToActions() {
-	      localStorage.capturedImage = '';
 	      this.setState({ status: 'actions' });
-	    }
-	  }, {
-	    key: 'handleUpload',
-	    value: function handleUpload(uploadedPost) {
-	      localStorage.capturedImage = '';
-	      (0, _utils.request)('http://api.codesign.io/boards/' + uploadedPost.boardID + '/codes/', 'GET', { "Authorization": 'Token ' + this.state.token }, null, (function (data) {
-	        var boardCode = data.results[0].code;
-	        this.setState({ status: 'uploaded', uploadedPost: { link: "http://www.codesign.io/board/" + boardCode + "?post=" + uploadedPost.postID } });
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'handleUploaded',
-	    value: function handleUploaded() {
-	      this.setState({ status: 'actions' });
-	      window.open(this.state.uploadedPost.link);
 	    }
 	  }, {
 	    key: 'logOut',
@@ -260,7 +252,7 @@
 	        ), _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
 	          backToActions: this.backToActions.bind(this),
-	          handleUpload: this.handleUpload.bind(this),
+	          handleUpload: this.backToActions.bind(this),
 	          image: this.state.capturedImage })];
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
@@ -275,7 +267,7 @@
 	              'This page don\'t supported capture screenshot'
 	            ) : [_react2.default.createElement(
 	              'div',
-	              { onClick: this.takeFullPageScreenshoot.bind(this) },
+	              { key: '1', onClick: this.takeFullPageScreenshoot.bind(this) },
 	              _react2.default.createElement(
 	                'span',
 	                null,
@@ -283,7 +275,7 @@
 	              )
 	            ), _react2.default.createElement(
 	              'div',
-	              { onClick: this.takeScreenshoot.bind(this) },
+	              { key: '2', onClick: this.takeScreenshoot.bind(this) },
 	              _react2.default.createElement(
 	                'span',
 	                null,
@@ -291,7 +283,7 @@
 	              )
 	            ), _react2.default.createElement(
 	              'div',
-	              { onClick: this.snapScreen.bind(this) },
+	              { key: '3', onClick: this.snapScreen.bind(this) },
 	              _react2.default.createElement(
 	                'span',
 	                null,
@@ -299,7 +291,7 @@
 	              )
 	            ), _react2.default.createElement(
 	              'div',
-	              { onClick: this.addComment.bind(this) },
+	              { key: '4', onClick: this.addComment.bind(this) },
 	              _react2.default.createElement(
 	                'span',
 	                null,
@@ -360,27 +352,6 @@
 	                return _this2.setState({ status: 'actions' });
 	              } },
 	            'Back'
-	          )
-	        );
-	      } else if (this.state.status == 'uploaded') {
-	        return _react2.default.createElement(
-	          'div',
-	          { id: 'screenshot-app' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'actions' },
-	            _react2.default.createElement(
-	              'button',
-	              { onClick: function onClick() {
-	                  return _this2.setState({ status: 'actions' });
-	                } },
-	              'Back to actions'
-	            ),
-	            _react2.default.createElement(
-	              'button',
-	              { onClick: this.handleUploaded.bind(this) },
-	              'Go to Board'
-	            )
 	          )
 	        );
 	      }
@@ -20961,16 +20932,9 @@
 	      });
 	    }
 	  }, {
-	    key: 'logProgress',
-	    value: function logProgress(value) {
-	      this.setState({ progress: value });
-	    }
-	  }, {
 	    key: 'uploadImage',
 	    value: function uploadImage() {
-	      var me = this;
 	
-	      this.setState({ status: 'progress', progress: 0 });
 	      chrome.runtime.sendMessage({
 	        msg: 'uploadImages',
 	        folders: this.state.folders,
@@ -20978,18 +20942,6 @@
 	        activeFolder: this.state.activeFolder,
 	        newBoardTitle: "New Board"
 	
-	      });
-	
-	      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	        if (request.msg == 'upload_progress') {
-	          me.logProgress(request.value);
-	        }
-	      });
-	
-	      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	        if (request.msg == 'upload_done') {
-	          me.props.handleUpload(request.payload);
-	        }
 	      });
 	    }
 	  }, {
@@ -21015,27 +20967,26 @@
 	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
 	          'UPLOAD IMAGES'
 	        ),
-	        this.state.status == 'progress' && _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } }),
 	        !this.state.edit ? _react2.default.createElement(
 	          'div',
 	          { className: 'selectors-titles' },
 	          this.state.activeBoard == 'new_board' ? [_react2.default.createElement(
 	            'p',
-	            null,
+	            { key: '1' },
 	            'Wiil creating new board'
 	          ), _react2.default.createElement(
 	            'p',
-	            null,
+	            { key: '2' },
 	            'in folder: ',
 	            /*this.state.folders.filter((fol)=>fol.id == this.state.activeFolder)[0].title */'My Boards'
 	          )] : [_react2.default.createElement(
 	            'p',
-	            null,
+	            { key: '1' },
 	            'Folder: ',
 	            this.state.activeFolder
 	          ), _react2.default.createElement(
 	            'p',
-	            null,
+	            { key: '2' },
 	            'Board: ',
 	            this.state.activeBoard
 	          )]
