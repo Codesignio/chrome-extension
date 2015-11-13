@@ -35,7 +35,7 @@ export default class LoginForm extends React.Component {
         <p>or <a className="google-login">Google</a>, <a className="github-login">Github</a></p>
         <p className="email-login">or Log in with Email</p>
         <form onSubmit={this.handleSubmit.bind(this)}>
-          <input type="text" ref="email" placeholder="Email"/>
+          <input type="email" ref="email" placeholder="Email"/>
           <input type="password" ref="password" placeholder="Password"/>
           <input type="submit" value="Log in"/>
         </form>

@@ -263,7 +263,7 @@
 	            { className: 'actions' },
 	            this.state.unsupported ? _react2.default.createElement(
 	              'p',
-	              null,
+	              { className: 'unsupported' },
 	              'This page don\'t supported capture screenshot'
 	            ) : [_react2.default.createElement(
 	              'div',
@@ -20814,7 +20814,7 @@
 	        _react2.default.createElement(
 	          'form',
 	          { onSubmit: this.handleSubmit.bind(this) },
-	          _react2.default.createElement('input', { type: 'text', ref: 'email', placeholder: 'Email' }),
+	          _react2.default.createElement('input', { type: 'email', ref: 'email', placeholder: 'Email' }),
 	          _react2.default.createElement('input', { type: 'password', ref: 'password', placeholder: 'Password' }),
 	          _react2.default.createElement('input', { type: 'submit', value: 'Log in' })
 	        ),
@@ -20878,8 +20878,8 @@
 	    _this.state = {
 	      folders: JSON.parse(localStorage.folders || '[]'),
 	      boards: JSON.parse(localStorage.boards || '{}'),
-	      activeBoard: JSON.parse(localStorage.activeBoard || 'null'),
-	      activeFolder: JSON.parse(localStorage.activeFolder || 'null')
+	      activeBoard: JSON.parse(localStorage.activeBoard || '{}'),
+	      activeFolder: JSON.parse(localStorage.activeFolder || '{}')
 	    };
 	    return _this;
 	  }
@@ -20889,21 +20889,30 @@
 	    value: function componentWillMount() {
 	      var token = localStorage.token;
 	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data1) {
-	        var activeFolder = this.state.activeFolder || data1.results[0].id;
-	        (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
+	        var folderExist = this.state.activeFolder.id && data1.results.map(function (f) {
+	          return f.id;
+	        }).indexOf(this.state.activeFolder.id) > -1;
+	        var activeFolder = folderExist ? this.state.activeFolder : data1.results[0];
 	
-	          var activeBoard = this.state.activeBoard && data2.results.map(function (res) {
-	            return res.id;
-	          }).indexOf(this.state.activeBoard) > -1 ? this.state.activeBoard : data2.results[0].id;
-	          this.state.boards[activeFolder] = data2.results;
-	          localStorage.folders = JSON.stringify(data1.results);
+	        this.setState({
+	          folders: data1.results,
+	          activeFolder: activeFolder,
+	          edit: !folderExist
+	        });
+	        localStorage.folders = JSON.stringify(data1.results);
+	
+	        (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
+	          var boardExist = this.state.activeBoard.id && (data2.results.map(function (b) {
+	            return b.id;
+	          }).indexOf(this.state.activeBoard) > -1 || this.state.activeBoard.id == 'new_board');
+	          var activeBoard = boardExist ? this.state.activeBoard : data2.results[0];
+	
+	          this.state.boards[activeFolder.id] = data2.results;
 	          this.setState({
-	            folders: data1.results,
-	            activeFolder: this.state.activeFolder && data1.results.map(function (res) {
-	              return res.id;
-	            }).indexOf(this.state.activeFolder) > -1 ? this.state.activeFolder : data1.results[0].id,
-	            activeBoard: activeBoard
+	            activeBoard: activeBoard,
+	            edit: !boardExist
 	          });
+	          localStorage.boards = JSON.stringify(this.state.boards);
 	        }).bind(this));
 	      }).bind(this));
 	    }
@@ -20911,24 +20920,31 @@
 	    key: 'setFolder',
 	    value: function setFolder(e) {
 	      var token = localStorage.token;
-	      this.setState({ activeFolder: e.target.value });
-	      (0, _utils.request)('http://api.codesign.io/folders/' + e.target.value + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data) {
-	        localStorage.activeFolder = e.target.value;
-	        this.state.boards[e.target.value] = data.results;
+	      var activeFolder = this.state.folders.filter(function (f) {
+	        return f.id == parseInt(e.target.value);
+	      })[0];
+	      this.setState({ activeFolder: activeFolder });
+	      (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data) {
+	        localStorage.activeFolder = JSON.stringify(activeFolder);
+	        this.state.boards[activeFolder.id] = data.results;
 	        localStorage.boards = JSON.stringify(this.state.boards);
-	        this.setState({ activeBoard: data.results[0].id });
+	        this.setState({ activeBoard: data.results[0] });
 	      }).bind(this));
 	    }
 	  }, {
 	    key: 'setBoard',
 	    value: function setBoard(e) {
-	
+	      var activeBoard;
 	      if (e.target.value !== "new_board") {
-	        localStorage.activeBoard = e.target.value;
+	        activeBoard = this.state.boards[this.state.activeFolder.id].filter(function (b) {
+	          return b.id == parseInt(e.target.value);
+	        })[0];
+	      } else {
+	        activeBoard = { id: "new_board" };
 	      }
-	
+	      localStorage.activeBoard = JSON.stringify(activeBoard);
 	      this.setState({
-	        activeBoard: e.target.value
+	        activeBoard: activeBoard
 	      });
 	    }
 	  }, {
@@ -20939,8 +20955,7 @@
 	        msg: 'uploadImages',
 	        folders: this.state.folders,
 	        activeBoard: this.state.activeBoard,
-	        activeFolder: this.state.activeFolder,
-	        newBoardTitle: "New Board"
+	        activeFolder: this.state.activeFolder
 	
 	      });
 	    }
@@ -20967,30 +20982,7 @@
 	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
 	          'UPLOAD IMAGES'
 	        ),
-	        !this.state.edit ? _react2.default.createElement(
-	          'div',
-	          { className: 'selectors-titles' },
-	          this.state.activeBoard == 'new_board' ? [_react2.default.createElement(
-	            'p',
-	            { key: '1' },
-	            'Wiil creating new board'
-	          ), _react2.default.createElement(
-	            'p',
-	            { key: '2' },
-	            'in folder: ',
-	            /*this.state.folders.filter((fol)=>fol.id == this.state.activeFolder)[0].title */'My Boards'
-	          )] : [_react2.default.createElement(
-	            'p',
-	            { key: '1' },
-	            'Folder: ',
-	            this.state.activeFolder
-	          ), _react2.default.createElement(
-	            'p',
-	            { key: '2' },
-	            'Board: ',
-	            this.state.activeBoard
-	          )]
-	        ) : _react2.default.createElement(
+	        this.state.edit || !this.state.activeFolder.id ? _react2.default.createElement(
 	          'div',
 	          { className: 'selectors' },
 	          _react2.default.createElement(
@@ -21000,7 +20992,7 @@
 	          ),
 	          _react2.default.createElement(
 	            'select',
-	            { value: this.state.activeFolder, onChange: this.setFolder.bind(this) },
+	            { value: this.state.activeFolder.id, onChange: this.setFolder.bind(this) },
 	            this.state.folders && this.state.folders.map(function (folder, i) {
 	              return _react2.default.createElement(
 	                'option',
@@ -21016,8 +21008,8 @@
 	          ),
 	          _react2.default.createElement(
 	            'select',
-	            { value: this.state.activeBoard, onChange: this.setBoard.bind(this) },
-	            this.state.boards[this.state.activeFolder] && this.state.boards[this.state.activeFolder].map(function (board, i) {
+	            { value: this.state.activeBoard.id, onChange: this.setBoard.bind(this) },
+	            this.state.boards[this.state.activeFolder.id] && this.state.boards[this.state.activeFolder.id].map(function (board, i) {
 	              return _react2.default.createElement(
 	                'option',
 	                { key: i, value: board.id },
@@ -21030,6 +21022,29 @@
 	              '                  Create new board'
 	            )
 	          )
+	        ) : _react2.default.createElement(
+	          'div',
+	          { className: 'selectors-titles' },
+	          this.state.activeBoard.id == 'new_board' ? [_react2.default.createElement(
+	            'p',
+	            { key: '1' },
+	            'Wiil creating new board'
+	          ), _react2.default.createElement(
+	            'p',
+	            { key: '2' },
+	            'in folder: ',
+	            this.state.activeFolder.title
+	          )] : [_react2.default.createElement(
+	            'p',
+	            { key: '1' },
+	            'Folder: ',
+	            this.state.activeFolder.title
+	          ), _react2.default.createElement(
+	            'p',
+	            { key: '2' },
+	            'Board: ',
+	            this.state.activeBoard.title
+	          )]
 	        ),
 	        _react2.default.createElement(
 	          'div',

@@ -140,6 +140,10 @@ html {
     font-weight: 300;
 }
 
+.actions .unsupported {
+    margin: 10px;
+}
+
 .actions > div {
     cursor: pointer;
     flex: auto ;
@@ -223,6 +227,7 @@ html {
 }
 
 .login-form {
+    background-color: white;
     padding-left: 20px;
     padding-right: 20px;
     padding-bottom: 10px;

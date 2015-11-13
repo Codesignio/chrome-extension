@@ -113,16 +113,15 @@
 	  var token = localStorage.token;
 	  var activeBoard = req.activeBoard;
 	  var activeFolder = req.activeFolder;
-	  var newBoardTitle = req.newBoardTitle;
 	  var posts = [];
 	
 	  function logCallBack(value) {
 	    chrome.runtime.sendMessage({ msg: 'progress', progress: value });
 	  }
 	
-	  if (activeBoard == 'new_board') {
+	  if (activeBoard.id == 'new_board') {
 	    (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	      title: newBoardTitle
+	      title: "New Board"
 	    }, function (data) {
 	      activeBoard = data.id;
 	      uploadImageProcess2(activeBoard, posts, logCallBack);

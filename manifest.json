@@ -1,6 +1,6 @@
 {
-  "name": "Screenshotter",
-  "description": "Capture webpage screenshots",
+  "name": "CodeSign.io browser plugin",
+  "description": "Simplest feedback tool",
   "version": "1.0",
   "permissions": [
     "tabs",
@@ -15,5 +15,16 @@
   "background": {
     "scripts": ["background-compiled.js"]
   },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "content_scripts":[
+    {
+      "matches":["*://*/*","file:///*"],
+      "js":["trackMousePos.js"]
+    }
+  ],
   "manifest_version": 2
 }

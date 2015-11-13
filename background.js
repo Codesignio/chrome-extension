@@ -69,7 +69,6 @@ function uploadImages(req, sender, sendResponse){
   var token = localStorage.token;
   var activeBoard = req.activeBoard;
   var activeFolder = req.activeFolder;
-  var newBoardTitle = req.newBoardTitle;
   var posts = [];
 
   function logCallBack(value){
@@ -77,9 +76,9 @@ function uploadImages(req, sender, sendResponse){
   }
 
 
-  if(activeBoard == 'new_board'){
+  if(activeBoard.id == 'new_board'){
     request('http://api.codesign.io/folders/'+ activeFolder + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-      title: newBoardTitle
+      title: "New Board"
     }, function (data) {
       activeBoard = data.id;
       uploadImageProcess2(activeBoard,posts, logCallBack);
