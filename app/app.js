@@ -36,8 +36,6 @@ class App extends React.Component {
           me.setState({capturedImage: request.capturedImage, status: 'captured'});
         } else if (request.msg == 'progress'){
           me.setState({status: 'progress', progress: request.progress})
-        } else if (request.msg == 'upload_done'){
-          me.handleUpload()
         }
       }.bind(this));
 
@@ -54,11 +52,6 @@ class App extends React.Component {
           });
       });
     }
-  }
-
-  handleUpload(payload){
-    localStorage.capturedImage = '';
-    window.open("http://www.codesign.io/board/" + localStorage.activeBoard.client_code);
   }
 
   takeScreenshoot(e) {

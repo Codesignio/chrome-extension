@@ -122,8 +122,6 @@
 	          me.setState({ capturedImage: request.capturedImage, status: 'captured' });
 	        } else if (request.msg == 'progress') {
 	          me.setState({ status: 'progress', progress: request.progress });
-	        } else if (request.msg == 'upload_done') {
-	          me.handleUpload();
 	        }
 	      }).bind(this));
 	    }
@@ -139,12 +137,6 @@
 	          });
 	        });
 	      }
-	    }
-	  }, {
-	    key: 'handleUpload',
-	    value: function handleUpload(payload) {
-	      localStorage.capturedImage = '';
-	      window.open("http://www.codesign.io/board/" + localStorage.activeBoard.client_code);
 	    }
 	  }, {
 	    key: 'takeScreenshoot',
@@ -20904,7 +20896,7 @@
 	        (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
 	          var boardExist = this.state.activeBoard.id && (data2.results.map(function (b) {
 	            return b.id;
-	          }).indexOf(this.state.activeBoard) > -1 || this.state.activeBoard.id == 'new_board');
+	          }).indexOf(this.state.activeBoard.id) > -1 || this.state.activeBoard.id == 'new_board');
 	          var activeBoard = boardExist ? this.state.activeBoard : data2.results[0];
 	
 	          this.state.boards[activeFolder.id] = data2.results;

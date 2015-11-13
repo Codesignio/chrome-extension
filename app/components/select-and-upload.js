@@ -28,7 +28,7 @@ export default class SelectAndUpload extends React.Component {
       localStorage.folders = JSON.stringify( data1.results);
 
       request('http://api.codesign.io/folders/'+ activeFolder.id + '/boards/', 'GET', {"Authorization": 'Token ' + token}, null, function (data2) {
-        var boardExist = this.state.activeBoard.id && (data2.results.map((b)=> b.id).indexOf(this.state.activeBoard) > -1 || this.state.activeBoard.id == 'new_board');
+        var boardExist = this.state.activeBoard.id && (data2.results.map((b)=> b.id).indexOf(this.state.activeBoard.id) > -1 || this.state.activeBoard.id == 'new_board');
         var activeBoard = boardExist ? this.state.activeBoard : data2.results[0];
 
 

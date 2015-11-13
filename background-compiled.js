@@ -120,15 +120,16 @@
 	  }
 	
 	  if (activeBoard.id == 'new_board') {
-	    (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	    (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	      title: "New Board"
 	    }, function (data) {
-	      activeBoard = data.id;
+	      activeBoard = data;
+	      localStorage.activeBoard = JSON.stringify(data);
 	      uploadImageProcess2(activeBoard, posts, logCallBack);
 	    });
 	  } else {
 	
-	    (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
+	    (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/posts/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
 	      posts = data.results;
 	      uploadImageProcess2(activeBoard, posts, logCallBack);
 	    });
@@ -141,7 +142,7 @@
 	  var me = this;
 	  var capturedImage = JSON.parse(localStorage.capturedImage);
 	
-	  (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	  (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/posts/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	    title: capturedImage.url + " " + new Date().toString()
 	  }, function (data) {
 	    console.log(data);
@@ -170,12 +171,13 @@
 	                  height: capturedImage.size.height
 	                }, function (data3) {
 	
-	                  (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard + '/update_order/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	                  (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/update_order/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
 	                    keys: posts.map(function (post) {
 	                      return post.id;
 	                    }).concat(data.id)
 	                  }, function () {
-	                    chrome.runtime.sendMessage({ msg: 'upload_done' });
+	                    localStorage.capturedImage = '';
+	                    window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
 	                  });
 	                });
 	              });
@@ -374,7 +376,7 @@
 	                    }, function (data3) {
 	                      reqCount++;
 	                      if (reqCount == sendedrequest.pins.length) {
-	                        chrome.tabs.create({ url: 'http://www.codesign.io/board/' + boardCode });
+	                        chrome.tabs.create({ url: 'http://www.codesign.io/board/' + JSON.parse(localStorage.activeBoard).client_code });
 	                        chrome.browserAction.setBadgeText({ text: '' });
 	                        capturedImage = null;
 	                        sendedrequest = null;
