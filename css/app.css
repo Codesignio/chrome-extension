@@ -332,3 +332,49 @@ img {
     overflow: auto;
     max-height: 500px;
 }
+
+#images-list {
+    background-color: white;
+}
+
+.back-to-actions {
+    cursor: pointer;
+    background-color: #5fb583;
+    height: 35px;
+    text-align: center;
+    line-height: 35px;
+    color: white;
+
+    color: white;
+    font-size: 20px;
+    font-weight: 300;
+}
+
+#images-list .image {
+    border: 1px solid whitesmoke;
+    padding: 5px;
+}
+
+.image-actions {
+    display: flex;
+}
+
+.image-actions > div {
+    cursor: pointer;
+    flex: auto;
+
+    height: 15px;
+    text-align: center;
+    line-height: 15px;
+
+    color: white;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.image-actions > div:first-child {
+    background-color: #222;
+}
+.image-actions > div:nth-child(2) {
+    background-color: #5fb583;
+}

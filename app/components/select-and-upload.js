@@ -114,8 +114,8 @@ export default class SelectAndUpload extends React.Component {
             })}
           </select>
         </div> : <div className="selectors-titles">
-          {this.state.activeBoard.id == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: {this.state.activeFolder.title}</p>] :
-            [<p key="1">Folder: {this.state.activeFolder.title}</p>, <p key="2">Board: {this.state.activeBoard.title}</p>]}
+          {this.state.activeBoard.id == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: "{this.state.activeFolder.title}"</p>] :
+            [<p key="1">Upload images to existing "{this.state.activeBoard.title}" board</p>, <p key="2">in "{this.state.activeFolder.title}" folder.</p>]}
         </div>}
         <div className="upload-actions">
           <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>

@@ -200,6 +200,20 @@
 	      localStorage.token = '';
 	    }
 	  }, {
+	    key: 'removeImage',
+	    value: function removeImage(img) {
+	      this.state.images.splice(this.state.images.indexOf(img), 1);
+	      localStorage.images = JSON.stringify(this.state.images);
+	      this.setState({});
+	    }
+	  }, {
+	    key: 'uploadImage',
+	    value: function uploadImage(img) {
+	      this.state.capturedImages.push(img);
+	      localStorage.capturedImages = JSON.stringify(this.state.capturedImages);
+	      this.setState({ status: 'captured' });
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -319,12 +333,30 @@
 	            'div',
 	            { className: 'images' },
 	            this.state.images && this.state.images.concat([]).reverse().map((function (img, i) {
-	              return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
+	              return _react2.default.createElement(
+	                'div',
+	                { key: i, className: 'image' },
+	                _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link) }),
+	                _react2.default.createElement(
+	                  'div',
+	                  { className: 'image-actions' },
+	                  _react2.default.createElement(
+	                    'div',
+	                    { onClick: this.removeImage.bind(this, img) },
+	                    'Remove'
+	                  ),
+	                  _react2.default.createElement(
+	                    'div',
+	                    { onClick: this.uploadImage.bind(this, img) },
+	                    'Upload'
+	                  )
+	                )
+	              );
 	            }).bind(this))
 	          ),
 	          _react2.default.createElement(
-	            'button',
-	            { className: 'basicButton', onClick: function onClick() {
+	            'div',
+	            { className: 'back-to-actions', onClick: function onClick() {
 	                return _this2.setState({ status: 'actions' });
 	              } },
 	            'Back'
@@ -20994,18 +21026,21 @@
 	          ), _react2.default.createElement(
 	            'p',
 	            { key: '2' },
-	            'in folder: ',
-	            this.state.activeFolder.title
+	            'in folder: "',
+	            this.state.activeFolder.title,
+	            '"'
 	          )] : [_react2.default.createElement(
 	            'p',
 	            { key: '1' },
-	            'Folder: ',
-	            this.state.activeFolder.title
+	            'Upload images to existing "',
+	            this.state.activeBoard.title,
+	            '" board'
 	          ), _react2.default.createElement(
 	            'p',
 	            { key: '2' },
-	            'Board: ',
-	            this.state.activeBoard.title
+	            'in "',
+	            this.state.activeFolder.title,
+	            '" folder.'
 	          )]
 	        ),
 	        _react2.default.createElement(

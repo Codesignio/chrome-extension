@@ -112,6 +112,18 @@ class App extends React.Component {
     localStorage.token = '';
   }
 
+  removeImage(img){
+    this.state.images.splice(this.state.images.indexOf(img), 1);
+    localStorage.images = JSON.stringify(this.state.images);
+    this.setState({});
+  }
+
+  uploadImage(img){
+    this.state.capturedImages.push(img);
+    localStorage.capturedImages = JSON.stringify(this.state.capturedImages);
+    this.setState({status: 'captured'});
+  }
+
   renderPopup(){
 
     if (!this.state.token){
@@ -156,10 +168,18 @@ class App extends React.Component {
         <div id="images-list">
           <div className="images">
             {this.state.images && this.state.images.concat([]).reverse().map(function (img, i) {
-              return <img key={i} src={img.link} onClick={this.imgClick.bind(this, img.link)} style={{heght: 500}}/>
+              return (
+                <div key={i} className="image">
+                  <img src={img.link} onClick={this.imgClick.bind(this, img.link)}/>
+                  <div className="image-actions">
+                    <div onClick={this.removeImage.bind(this, img)}>Remove</div>
+                    <div onClick={this.uploadImage.bind(this, img)}>Upload</div>
+                  </div>
+                </div>
+              )
             }.bind(this))}
           </div>
-          <button className="basicButton" onClick={()=> this.setState({status: 'actions'})}>Back</button>
+          <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>Back</div>
         </div>
       )
     }
