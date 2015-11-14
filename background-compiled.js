@@ -54,8 +54,6 @@
 	var screenshot = {};
 	var sendedrequest = {};
 	var cropData = null;
-	var capturedImages = [];
-	var images = [];
 	
 	chrome.contextMenus.create({
 	  "title": "Add Comment",
@@ -210,6 +208,8 @@
 	      pageTitle: sendedrequest.pageTitle
 	    };
 	
+	    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
+	    var images = JSON.parse(localStorage.images || '[]');
 	    images.push(capturedImage);
 	    capturedImages.push(capturedImage);
 	    localStorage.capturedImages = JSON.stringify(capturedImages);
@@ -325,8 +325,6 @@
 	                                window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
 	                                chrome.browserAction.setBadgeText({ text: '' });
 	                                localStorage.capturedImages = '[]';
-	                                capturedImages = null;
-	                                sendedrequest = {};
 	                              }
 	                            }
 	                          });
@@ -339,8 +337,6 @@
 	                          window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
 	                          chrome.browserAction.setBadgeText({ text: '' });
 	                          localStorage.capturedImages = '[]';
-	                          capturedImages = null;
-	                          sendedrequest = {};
 	                        }
 	                      }
 	                    });

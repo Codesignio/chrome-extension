@@ -1,8 +1,6 @@
 var screenshot = {};
 var sendedrequest = {};
 var cropData = null;
-var capturedImages = [];
-var images = [];
 
 import {request} from './app/utils';
 import {s3Upload} from './app/utils';
@@ -178,7 +176,8 @@ function screenshotCaptured(screenshot, pageUrl){
       pageTitle: sendedrequest.pageTitle
     };
 
-
+    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
+    var images = JSON.parse(localStorage.images || '[]');
     images.push(capturedImage);
     capturedImages.push(capturedImage);
     localStorage.capturedImages = JSON.stringify(capturedImages);
@@ -306,8 +305,6 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                                 window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
                                 chrome.browserAction.setBadgeText({text: ''});
                                 localStorage.capturedImages = '[]';
-                                capturedImages = null;
-                                sendedrequest = {};
                               }
 
                             }
@@ -324,8 +321,6 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                           window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
                           chrome.browserAction.setBadgeText({text: ''});
                           localStorage.capturedImages = '[]';
-                          capturedImages = null;
-                          sendedrequest = {};
                         }
 
                       }

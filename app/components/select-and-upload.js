@@ -98,7 +98,7 @@ export default class SelectAndUpload extends React.Component {
   render(){
     return (
       <div className="uploadWidget">
-        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length ? this.state.images.length + ' IMAGES' : null}</button>
+        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : null}</button>
         { this.state.edit || !this.state.activeFolder.id ? <div className="selectors">
           <p>FOLDER</p>
           <select value={this.state.activeFolder.id} onChange={this.setFolder.bind(this)}>

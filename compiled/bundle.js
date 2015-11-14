@@ -20942,7 +20942,7 @@
 	          'button',
 	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
 	          'UPLOAD ',
-	          this.state.images.length ? this.state.images.length + ' IMAGES' : null
+	          this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : null
 	        ),
 	        this.state.edit || !this.state.activeFolder.id ? _react2.default.createElement(
 	          'div',
