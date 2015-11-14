@@ -20971,18 +20971,18 @@
 	          _react2.default.createElement(
 	            'select',
 	            { value: this.state.activeBoard.id, onChange: this.setBoard.bind(this) },
+	            _react2.default.createElement(
+	              'option',
+	              { key: 'new board', className: 'new_board_option', value: 'new_board' },
+	              '                Create new board'
+	            ),
 	            this.state.boards[this.state.activeFolder.id] && this.state.boards[this.state.activeFolder.id].map(function (board, i) {
 	              return _react2.default.createElement(
 	                'option',
 	                { key: i, value: board.id },
 	                board.title
 	              );
-	            }),
-	            _react2.default.createElement(
-	              'option',
-	              { key: 'new board', className: 'new_board_option', value: 'new_board' },
-	              '                  Create new board'
-	            )
+	            })
 	          )
 	        ) : _react2.default.createElement(
 	          'div',

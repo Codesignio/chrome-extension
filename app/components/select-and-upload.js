@@ -108,10 +108,10 @@ export default class SelectAndUpload extends React.Component {
           </select>
           <p>BOARD</p>
           <select value={this.state.activeBoard.id} onChange={this.setBoard.bind(this)}>
+            <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
             {this.state.boards[this.state.activeFolder.id] && this.state.boards[this.state.activeFolder.id].map(function(board,i){
               return <option key={i} value={board.id}>{board.title}</option>
             })}
-            <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
           </select>
         </div> : <div className="selectors-titles">
           {this.state.activeBoard.id == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: {this.state.activeFolder.title}</p>] :
