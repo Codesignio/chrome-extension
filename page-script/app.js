@@ -14,6 +14,19 @@ class Snap extends React.Component {
     }
   }
 
+  componentWillMount() {
+    var me = this;
+    chrome.extension.onRequest.addListener(function (request, sender, callback) {
+     if(request.msg == 'removeOverlay'){
+        me.setState({cancel: true});
+        var elem = document.getElementById('snap-overlay');
+        elem.parentNode.removeChild(el);
+        callback();
+      }
+    });
+  }
+
+
   componentDidMount(){
     document.addEventListener('keydown', this.onKeyDown.bind(this))
   }
@@ -46,16 +59,24 @@ class Snap extends React.Component {
 
   handleMouseUp(e){
     if (this.state.select){
-      this.setState({
-        left: this.state.inverseX ? this.state.mouseX : this.state.startX,
-        top: this.state.inverseY ? this.state.mouseY : this.state.startY,
-      });
+      this.state.left =  this.state.inverseX ? this.state.mouseX : this.state.startX;
+      this.state.top = this.state.inverseY ? this.state.mouseY : this.state.startY;
       document.body.style.cursor = this.state.cursor;
     }
-    this.setState({
-      select: false,
-      resize: false,
-    })
+
+    this.state.select = false;
+    this.state.resize = false;
+    this.setState({});
+
+    chrome.extension.sendRequest({
+      msg: 'cropData',
+      width: this.state.width,
+      height: this.state.height,
+      left: this.state.left - document.body.scrollLeft,
+      top: this.state.top - document.body.scrollTop,
+      url: document.location.toString()
+    });
+
   }
 
   handleMouseMove(e){
@@ -122,25 +143,6 @@ class Snap extends React.Component {
     })
   }
 
-  snapSelection(e){
-    e.stopPropagation();
-    e.preventDefault();
-    var data = {
-      msg: 'capturePart',
-      width: this.state.width,
-      height: this.state.height,
-      left: this.state.left - document.body.scrollLeft,
-      top: this.state.top - document.body.scrollTop,
-      url: document.location.toString(),
-    };
-    var me = this;
-    chrome.extension.sendRequest(data);
-    me.setState({cancel: true})
-    var elem = document.getElementById('snap-overlay');
-    elem.parentNode.removeChild(el);
-
-  }
-
   startDrag(e){
     e.preventDefault();
     e.stopPropagation();
@@ -170,23 +172,24 @@ class Snap extends React.Component {
     };
 
     var resizerStyle = {
-      position: 'absolute',
-    }
+      position: 'absolute'
+    };
     return this.state.cancel ? null : <div id="snap-overlay" style={styles}
            onMouseDown={this.handleMouseDown.bind(this)}
            onMouseMove={this.handleMouseMove.bind(this)}
            onMouseUp={this.handleMouseUp.bind(this)}>
 
       {this.state.width && <div className="selection" onMouseDown={this.startDrag.bind(this)} style={assign({},selectionStyle)}>
-          {this.state.select || this.state.resize ? null : [<div key="button" onMouseDown={this.snapSelection.bind(this)} style={{margin: 'auto', width: '100px', height: '20px', textAlign: 'center', lineHeight: '20px', color: 'white', backgroundColor: '#37A037', borderRadius: '0px', position: 'relative', top: '-30px', margin: 'auto', cursor: 'pointer'}}>Snap</div>,
-          <div key="resizer top" onMouseDown={this.startResize.bind(this, 'top')} className="resizer top" style={assign({}, resizerStyle, {top: 0, width: '100%', height: '2px', cursor: 'ns-resize'})}></div>,
-          <div key="resizer bottom" onMouseDown={this.startResize.bind(this, 'bottom')} className="resizer bottom" style={assign({}, resizerStyle, {bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize'})}></div>,
-          <div key="resizer left" onMouseDown={this.startResize.bind(this, 'left')} className="resizer left" style={assign({}, resizerStyle, {left: 0, width: '2px', height: '100%', cursor: 'ew-resize'})}></div>,
-          <div key="resizer right" onMouseDown={this.startResize.bind(this, 'right')} className="resizer right" style={assign({}, resizerStyle, {right: 0, width: '2px', height: '100%', cursor: 'ew-resize'})}></div>,
-          <div key="resizer top-left" onMouseDown={this.startResize.bind(this, 'top-left')} className="resizer top-left" style={assign({}, resizerStyle, {top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize'})}></div>,
-          <div key="resizer top-right" onMouseDown={this.startResize.bind(this, 'top-right')} className="resizer top-right" style={assign({}, resizerStyle, {top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize'})}></div>,
-          <div key="resizer bottom-right" onMouseDown={this.startResize.bind(this, 'bottom-right')} className="resizer bottom-right" style={assign({}, resizerStyle, {bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize'})}></div>,
-          <div key="resizer bottom-left" onMouseDown={this.startResize.bind(this, 'bottom-left')} className="resizer bottom-left" style={assign({}, resizerStyle, {bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize'})}></div>]}
+          {this.state.select || this.state.resize ? null : [
+            <div key="resizer top" onMouseDown={this.startResize.bind(this, 'top')} className="resizer top" style={assign({}, resizerStyle, {top: 0, width: '100%', height: '2px', cursor: 'ns-resize'})}></div>,
+            <div key="resizer bottom" onMouseDown={this.startResize.bind(this, 'bottom')} className="resizer bottom" style={assign({}, resizerStyle, {bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize'})}></div>,
+            <div key="resizer left" onMouseDown={this.startResize.bind(this, 'left')} className="resizer left" style={assign({}, resizerStyle, {left: 0, width: '2px', height: '100%', cursor: 'ew-resize'})}></div>,
+            <div key="resizer right" onMouseDown={this.startResize.bind(this, 'right')} className="resizer right" style={assign({}, resizerStyle, {right: 0, width: '2px', height: '100%', cursor: 'ew-resize'})}></div>,
+            <div key="resizer top-left" onMouseDown={this.startResize.bind(this, 'top-left')} className="resizer top-left" style={assign({}, resizerStyle, {top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize'})}></div>,
+            <div key="resizer top-right" onMouseDown={this.startResize.bind(this, 'top-right')} className="resizer top-right" style={assign({}, resizerStyle, {top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize'})}></div>,
+            <div key="resizer bottom-right" onMouseDown={this.startResize.bind(this, 'bottom-right')} className="resizer bottom-right" style={assign({}, resizerStyle, {bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize'})}></div>,
+            <div key="resizer bottom-left" onMouseDown={this.startResize.bind(this, 'bottom-left')} className="resizer bottom-left" style={assign({}, resizerStyle, {bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize'})}></div>
+          ]}
         </div>}
       </div>
 

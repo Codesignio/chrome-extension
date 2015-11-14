@@ -51,11 +51,11 @@
 	
 	var _utils = __webpack_require__(/*! ./app/utils */ 1);
 	
-	var canvas;
-	var screenshot;
-	var sendedrequest;
-	var capturedImage;
-	var token = localStorage.token;
+	var screenshot = {};
+	var sendedrequest = {};
+	var cropData = null;
+	var capturedImages = [];
+	var images = [];
 	
 	chrome.contextMenus.create({
 	  "title": "Add Comment",
@@ -72,16 +72,12 @@
 	}
 	
 	chrome.extension.onRequest.addListener(function (request, sender, callback) {
-	  if (request.msg === 'capturePart') {
-	    cropVisible(request, sender, callback);
-	  } else if (request.msg === 'capturePage') {
+	  if (request.msg === 'capturePage') {
 	    capturePage(request, sender, callback);
-	  } else if (request.msg === 'takeFullPageScreenshoot') {
-	    chrome.tabs.getSelected(null, function (tab) {
-	      chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
-	        sendScrollMessage(tab);
-	      });
-	    });
+	  } else if (request.msg === 'cropData') {
+	    cropData = request;
+	    localStorage.currentAction = 'crop';
+	    chrome.browserAction.setBadgeText({ text: 'crop' });
 	  } else if (request.msg == 'addPin') {
 	    sendedrequest = request;
 	    localStorage.currentAction = 'comment';
@@ -90,18 +86,140 @@
 	});
 	
 	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	  if (request.msg === 'takeFullPageScreenshoot') {
-	    chrome.tabs.getSelected(null, function (tab) {
-	      chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
-	        sendScrollMessage(tab);
-	      });
-	    });
-	  } else if (request.msg === 'token') {
-	    token = request.token;
+	  if (request.msg === 'takeFullPageScreenshot') {
+	    takeFullPageScreenshot();
+	  } else if (request.msg === 'takeVisiblePageScreenshot') {
+	    takeVisibleScreenshot();
 	  } else if (request.msg == 'uploadImages') {
 	    uploadImages(request, sender, sendResponse);
 	  }
 	});
+	
+	function takeFullPageScreenshot() {
+	  chrome.tabs.getSelected(null, function (tab) {
+	    chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
+	      chrome.tabs.sendRequest(tab.id, { msg: 'scrollPage' }, function () {
+	        screenshotCaptured(screenshot, tab.url);
+	      });
+	    });
+	  });
+	}
+	
+	function takeVisibleScreenshot() {
+	  captureVisible(function (canvas) {
+	    chrome.tabs.getSelected(null, function (tab) {
+	      screenshotCaptured({ canvas: canvas }, tab.url);
+	    });
+	  });
+	}
+	
+	function capturePage(data, sender, callback) {
+	  var progressStatus = parseInt(data.complete * 100, 10) + '%';
+	  chrome.runtime.sendMessage({ msg: 'progress', progress: progressStatus });
+	  chrome.browserAction.setBadgeText({ text: progressStatus });
+	
+	  var scale = data.devicePixelRatio && data.devicePixelRatio !== 1 ? 1 / data.devicePixelRatio : 1;
+	  if (scale !== 1) {
+	    data.x = data.x / scale;
+	    data.y = data.y / scale;
+	    data.totalWidth = data.totalWidth / scale;
+	    data.totalHeight = data.totalHeight / scale;
+	  }
+	  if (!screenshot.canvas) {
+	    screenshot.canvas = document.createElement('canvas');
+	    screenshot.canvas.width = data.totalWidth;
+	    screenshot.canvas.height = data.totalHeight;
+	  }
+	
+	  captureVisible(function () {
+	    callback(true);
+	  }, { left: data.x, top: data.y });
+	}
+	
+	function captureVisible(callBack, canvasPos) {
+	  chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
+	
+	    if (dataURI) {
+	      var image = new Image();
+	      image.onload = function () {
+	
+	        if (screenshot.canvas) {
+	          screenshot.canvas.getContext('2d').drawImage(image, canvasPos.left, canvasPos.top);
+	          callBack();
+	        } else {
+	          var capturedImageSize = { width: this.width, height: this.height, left: 0, top: 0 };
+	          if (cropData) capturedImageSize = cropData;
+	
+	          var canvas = document.createElement('canvas');
+	          canvas.width = capturedImageSize.width;
+	          canvas.height = capturedImageSize.height;
+	          canvas.getContext('2d').drawImage(image, capturedImageSize.left, capturedImageSize.top, capturedImageSize.width, capturedImageSize.height, 0, 0, capturedImageSize.width, capturedImageSize.height);
+	
+	          callBack(canvas);
+	          console.log(canvas);
+	        }
+	      };
+	      image.src = dataURI;
+	    }
+	  });
+	}
+	
+	function storeFromDataCanvas(canvas, pageUrl, callBack) {
+	  var dataURI = canvas.toDataURL();
+	  var byteString = atob(dataURI.split(',')[1]);
+	  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+	  var ab = new ArrayBuffer(byteString.length);
+	  var ia = new Uint8Array(ab);
+	  for (var i = 0; i < byteString.length; i++) {
+	    ia[i] = byteString.charCodeAt(i);
+	  }
+	  var blob = new Blob([ab], { type: mimeString });
+	  var size = blob.size + 1024 / 2;
+	
+	  var name = pageUrl.split('?')[0].split('#')[0];
+	  if (name) {
+	    name = name.replace(/^https?:\/\//, '').replace(/[^A-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^[_\-]+/, '').replace(/[_\-]+$/, '');
+	    name = '-' + name;
+	  } else {
+	    name = '';
+	  }
+	  name = 'screencapture' + name + '-' + Date.now() + '.png';
+	  var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
+	
+	  window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
+	    fs.root.getFile(name, { create: true }, function (fileEntry) {
+	      fileEntry.createWriter(function (fileWriter) {
+	        fileWriter.onwriteend = function () {
+	          return callBack(url);
+	        };
+	        fileWriter.write(blob);
+	      });
+	    });
+	  });
+	}
+	
+	function screenshotCaptured(screenshot, pageUrl) {
+	  console.log(screenshot);
+	  storeFromDataCanvas(screenshot.canvas, pageUrl, function (fileUrl) {
+	
+	    var capturedImage = {
+	      link: fileUrl,
+	      size: { width: screenshot.canvas.width, height: screenshot.canvas.height },
+	      url: pageUrl.split('?')[0],
+	      pins: sendedrequest.pins,
+	      pageTitle: sendedrequest.pageTitle
+	    };
+	
+	    images.push(capturedImage);
+	    capturedImages.push(capturedImage);
+	    localStorage.capturedImages = JSON.stringify(capturedImages);
+	    localStorage.images = JSON.stringify(images);
+	    chrome.runtime.sendMessage({ msg: 'captured', capturedImage: capturedImage });
+	    screenshot.canvas = null;
+	    sendedrequest = {};
+	    cropData = null;
+	  });
+	}
 	
 	function uploadImages(req, sender, sendResponse) {
 	  var token = localStorage.token;
@@ -119,227 +237,123 @@
 	    }, function (data) {
 	      activeBoard = data;
 	      localStorage.activeBoard = JSON.stringify(data);
-	      uploadImageProcess2(activeBoard, posts, logCallBack);
+	      uploadImageProcess(activeBoard, posts, logCallBack);
 	    });
 	  } else {
 	
 	    (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/posts/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
 	      posts = data.results;
-	      uploadImageProcess2(activeBoard, posts, logCallBack);
+	      uploadImageProcess(activeBoard, posts, logCallBack);
 	    });
 	  }
 	}
 	
-	function uploadImageProcess2(activeBoard, posts, logCallBack) {
+	function uploadImageProcess(activeBoard, posts, logCallBack) {
 	
 	  var token = localStorage.token;
-	  var me = this;
-	  var capturedImage = JSON.parse(localStorage.capturedImage);
+	  var capturedImages = JSON.parse(localStorage.capturedImages);
 	
-	  (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/posts/', 'POST', {
-	    "Authorization": 'Token ' + token,
-	    "Content-Type": "application/json;charset=UTF-8"
-	  }, {
-	    title: capturedImage.url + " " + new Date().toString()
-	  }, function (data) {
-	    console.log(data);
-	    (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
-	      console.log(data1);
+	  var capImgCount = 0;
+	  capturedImages.forEach(function (capturedImage) {
 	
-	      window.webkitResolveLocalFileSystemURL(capturedImage.link, function (fileEntry) {
-	        console.log('fillllle');
-	        fileEntry.file(function (file) {
-	          (0, _utils.s3Upload)(data1.image_upload_url, file, logCallBack, function (data2) {
+	    (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/posts/', 'POST', {
+	      "Authorization": 'Token ' + token,
+	      "Content-Type": "application/json;charset=UTF-8"
+	    }, {
+	      title: capturedImage.url + " " + new Date().toString()
+	    }, function (data) {
+	      console.log(data);
+	      (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/get_upload_url/?filename=' + capturedImage.name + '&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', { "Authorization": 'Token ' + token }, null, function (data1) {
+	        console.log(data1);
 	
-	            var canvas = document.createElement('canvas');
-	            canvas.width = 250;
-	            canvas.height = 150;
-	            var image = new Image();
-	            image.onload = function () {
-	              canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
+	        window.webkitResolveLocalFileSystemURL(capturedImage.link, function (fileEntry) {
+	          console.log('fillllle');
+	          fileEntry.file(function (file) {
+	            (0, _utils.s3Upload)(data1.image_upload_url, file, logCallBack, function (data2) {
 	
-	              var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
-	              (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, logCallBack, function () {
+	              var canvas = document.createElement('canvas');
+	              canvas.width = 250;
+	              canvas.height = 150;
+	              var image = new Image();
+	              image.onload = function () {
+	                canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
 	
-	                (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', {
-	                  "Authorization": 'Token ' + token,
-	                  "Content-Type": "application/json;charset=UTF-8"
-	                }, {
-	                  image_upload_url: data1.image_upload_url,
-	                  thumbnail_upload_url: data1.thumbnail_upload_url,
-	                  width: capturedImage.size.width,
-	                  height: capturedImage.size.height
-	                }, function (data3) {
+	                var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
+	                (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, logCallBack, function () {
 	
-	                  (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/update_order/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	                    keys: posts.map(function (post) {
-	                      return post.id;
-	                    }).concat(data.id)
-	                  }, function () {
+	                  (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/images/', 'POST', {
+	                    "Authorization": 'Token ' + token,
+	                    "Content-Type": "application/json;charset=UTF-8"
+	                  }, {
+	                    image_upload_url: data1.image_upload_url,
+	                    thumbnail_upload_url: data1.thumbnail_upload_url,
+	                    width: capturedImage.size.width,
+	                    height: capturedImage.size.height
+	                  }, function (data3) {
 	
-	                    if (sendedrequest) {
+	                    (0, _utils.request)('http://api.codesign.io/boards/' + activeBoard.id + '/update_order/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+	                      keys: posts.map(function (post) {
+	                        return post.id;
+	                      }).concat(data.id)
+	                    }, function () {
 	
-	                      var reqCount = 0;
-	                      for (var i = 0; i < sendedrequest.pins.length; i++) {
-	                        var pin = sendedrequest.pins[i];
-	                        (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/tasks/', 'POST', {
-	                          "Authorization": 'Token ' + token,
-	                          "Content-Type": "application/json;charset=UTF-8"
-	                        }, {
-	                          marker: {
-	                            geometry: {
-	                              left: pin.x / capturedImage.size.width * 100,
-	                              top: pin.y / capturedImage.size.height * 100
+	                      if (capturedImage.pins) {
+	
+	                        var reqCount = 0;
+	                        for (var i = 0; i < capturedImage.pins.length; i++) {
+	                          var pin = capturedImage.pins[i];
+	                          (0, _utils.request)('http://api.codesign.io/posts/' + data.id + '/tasks/', 'POST', {
+	                            "Authorization": 'Token ' + token,
+	                            "Content-Type": "application/json;charset=UTF-8"
+	                          }, {
+	                            marker: {
+	                              geometry: {
+	                                left: pin.x / capturedImage.size.width * 100,
+	                                top: pin.y / capturedImage.size.height * 100
+	                              },
+	                              measure: 'pixel',
+	                              shape: "PN"
 	                            },
-	                            measure: 'pixel',
-	                            shape: "PN"
-	                          },
-	                          title: pin.text
-	                        }, function (data3) {
-	                          reqCount++;
-	                          if (reqCount == sendedrequest.pins.length) {
+	                            title: pin.text
+	                          }, function (data3) {
+	                            reqCount++;
+	                            if (reqCount == capturedImage.pins.length) {
 	
-	                            localStorage.capturedImage = '';
-	                            window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
-	                            chrome.browserAction.setBadgeText({ text: '' });
-	                            capturedImage = null;
-	                            sendedrequest = null;
-	                          }
-	                        });
+	                              capImgCount++;
+	
+	                              if (capImgCount == capturedImages.length) {
+	                                window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+	                                chrome.browserAction.setBadgeText({ text: '' });
+	                                localStorage.capturedImages = '[]';
+	                                capturedImages = null;
+	                                sendedrequest = {};
+	                              }
+	                            }
+	                          });
+	                        }
+	                      } else {
+	
+	                        capImgCount++;
+	
+	                        if (capImgCount == capturedImages.length) {
+	                          window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+	                          chrome.browserAction.setBadgeText({ text: '' });
+	                          localStorage.capturedImages = '[]';
+	                          capturedImages = null;
+	                          sendedrequest = {};
+	                        }
 	                      }
-	                    } else {
-	                      localStorage.capturedImage = '';
-	                      window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
-	                      chrome.browserAction.setBadgeText({ text: '' });
-	                      capturedImage = null;
-	                      sendedrequest = null;
-	                    }
+	                    });
 	                  });
 	                });
-	              });
-	            };
-	            image.src = capturedImage.link;
+	              };
+	              image.src = capturedImage.link;
+	            });
 	          });
 	        });
 	      });
 	    });
 	  });
-	}
-	
-	function cropVisible(data, sender, callback) {
-	  canvas = document.createElement('canvas');
-	  canvas.width = data.width;
-	  canvas.height = data.height;
-	
-	  chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
-	    if (dataURI) {
-	      var image = new Image();
-	      image.onload = function () {
-	        canvas.getContext('2d').drawImage(image, data.left + 1, data.top + 1, data.width, data.height, 0, 0, data.width, data.height);
-	        openPage(data);
-	      };
-	      image.src = dataURI;
-	    }
-	  });
-	}
-	
-	function openPage(data) {
-	  var capturedImageSize;
-	  var dataURI;
-	  if (screenshot) {
-	    dataURI = screenshot.canvas.toDataURL();
-	    capturedImageSize = { width: screenshot.canvas.width, height: screenshot.canvas.height };
-	  } else {
-	    dataURI = canvas.toDataURL();
-	  }
-	
-	  var byteString = atob(dataURI.split(',')[1]);
-	  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-	  var ab = new ArrayBuffer(byteString.length);
-	  var ia = new Uint8Array(ab);
-	  for (var i = 0; i < byteString.length; i++) {
-	    ia[i] = byteString.charCodeAt(i);
-	  }
-	  var blob = new Blob([ab], { type: mimeString });
-	  var size = blob.size + 1024 / 2;
-	  var name = data.url.split('?')[0].split('#')[0];
-	  if (name) {
-	    name = name.replace(/^https?:\/\//, '').replace(/[^A-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^[_\-]+/, '').replace(/[_\-]+$/, '');
-	    name = '-' + name;
-	  } else {
-	    name = '';
-	  }
-	  name = 'screencapture' + name + '-' + Date.now() + '.png';
-	
-	  function onwriteend() {
-	    var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	    capturedImage = {
-	      link: url,
-	      size: capturedImageSize || { width: data.width, height: data.height },
-	      url: data.url.split('?')[0]
-	    };
-	
-	    localStorage.capturedImage = JSON.stringify(capturedImage);
-	    var images = JSON.parse(localStorage.images || '[]');
-	    images.push(capturedImage);
-	    localStorage.images = JSON.stringify(images);
-	    chrome.runtime.sendMessage({ msg: 'captured', capturedImage: capturedImage });
-	    chrome.browserAction.setBadgeText({ text: capturedImageSize ? '' : 'done' });
-	    canvas = null;
-	    screenshot = null;
-	  }
-	
-	  window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
-	    fs.root.getFile(name, { create: true }, function (fileEntry) {
-	      fileEntry.createWriter(function (fileWriter) {
-	        fileWriter.onwriteend = onwriteend;
-	        fileWriter.write(blob);
-	      });
-	    });
-	  });
-	}
-	
-	function sendScrollMessage(tab) {
-	  screenshot = {};
-	  chrome.tabs.sendRequest(tab.id, { msg: 'scrollPage' }, function () {
-	    openPage({ url: tab.url });
-	  });
-	}
-	
-	function capturePage(data, sender, callback) {
-	  var progressStatus = parseInt(data.complete * 100, 10) + '%';
-	  chrome.runtime.sendMessage({ msg: 'progress', progress: progressStatus });
-	  chrome.browserAction.setBadgeText({ text: progressStatus });
-	
-	  var scale = data.devicePixelRatio && data.devicePixelRatio !== 1 ? 1 / data.devicePixelRatio : 1;
-	  if (scale !== 1) {
-	    data.x = data.x / scale;
-	    data.y = data.y / scale;
-	    data.totalWidth = data.totalWidth / scale;
-	    data.totalHeight = data.totalHeight / scale;
-	  }
-	  if (!screenshot.canvas) {
-	    canvas = document.createElement('canvas');
-	    canvas.width = data.totalWidth;
-	    canvas.height = data.totalHeight;
-	    screenshot.canvas = canvas;
-	    screenshot.ctx = canvas.getContext('2d');
-	  }
-	
-	  chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
-	    if (dataURI) {
-	      var image = new Image();
-	      image.onload = function () {
-	        screenshot.ctx.drawImage(image, data.x, data.y);
-	        callback(true);
-	      };
-	      image.src = dataURI;
-	    }
-	  });
-	}
-	
-	function logProgress(percent) {
-	  chrome.browserAction.setBadgeText({ text: percent + '%' });
 	}
 
 /***/ },

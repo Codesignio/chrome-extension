@@ -10,7 +10,8 @@ export default class SelectAndUpload extends React.Component {
       folders: JSON.parse(localStorage.folders || '[]'),
       boards: JSON.parse(localStorage.boards || '{}'),
       activeBoard: JSON.parse(localStorage.activeBoard || '{}'),
-      activeFolder: JSON.parse(localStorage.activeFolder || '{}')
+      activeFolder: JSON.parse(localStorage.activeFolder || '{}'),
+      images: props.images
     }
   }
 
@@ -82,7 +83,9 @@ export default class SelectAndUpload extends React.Component {
   }
 
   handleCancel(){
-    localStorage.capturedImage = '';
+    var capturedImages = JSON.parse(localStorage.capturedImages);
+    capturedImages.pop();
+    localStorage.capturedImages = JSON.stringify(capturedImages);
     this.props.backToActions();
   }
 
@@ -95,7 +98,7 @@ export default class SelectAndUpload extends React.Component {
   render(){
     return (
       <div className="uploadWidget">
-        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD IMAGES</button>
+        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length ? this.state.images.length + ' IMAGES' : null}</button>
         { this.state.edit || !this.state.activeFolder.id ? <div className="selectors">
           <p>FOLDER</p>
           <select value={this.state.activeFolder.id} onChange={this.setFolder.bind(this)}>
@@ -117,7 +120,7 @@ export default class SelectAndUpload extends React.Component {
         <div className="upload-actions">
           <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
           <a onClick={this.handleCancel.bind(this)}>Cancel</a>
-          <a>+ Make one more snap</a>
+          <a onClick={()=> this.props.backToActions()}>+ Make one more snap</a>
         </div>
       </div>
     )

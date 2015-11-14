@@ -70,7 +70,6 @@ class Comment extends React.Component {
         callback();
       }
     });
-
   }
 
   componentDidMount(){

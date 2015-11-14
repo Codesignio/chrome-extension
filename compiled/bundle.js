@@ -93,12 +93,12 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
 	
-	    var capturedImage = JSON.parse(localStorage.capturedImage || 'null');
+	    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
 	    _this.state = {
-	      status: capturedImage ? 'captured' : 'actions',
+	      status: capturedImages.length ? 'captured' : 'actions',
 	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token,
-	      capturedImage: capturedImage,
+	      capturedImages: capturedImages,
 	      unsupported: false,
 	      currentAction: localStorage.currentAction
 	    };
@@ -119,7 +119,8 @@
 	        if (request.msg == 'captured') {
 	          chrome.browserAction.setBadgeText({ text: '' });
 	          me.state.images.push(request.capturedImage);
-	          me.setState({ capturedImage: request.capturedImage, status: 'captured' });
+	          me.state.capturedImages.push(request.capturedImage);
+	          me.setState({ status: 'captured' });
 	        } else if (request.msg == 'progress') {
 	          me.setState({ status: 'progress', progress: request.progress });
 	        }
@@ -132,7 +133,15 @@
 	      if (this.state.currentAction == 'comment') {
 	        chrome.tabs.getSelected(null, function (tab) {
 	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
-	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshoot' });
+	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
+	            me.setState({ status: 'progress' });
+	            localStorage.currentAction = "";
+	          });
+	        });
+	      } else if (this.state.currentAction == 'crop') {
+	        chrome.tabs.getSelected(null, function (tab) {
+	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
+	            chrome.runtime.sendMessage({ msg: 'takeVisiblePageScreenshot' });
 	            me.setState({ status: 'progress' });
 	            localStorage.currentAction = "";
 	          });
@@ -142,69 +151,30 @@
 	  }, {
 	    key: 'takeScreenshoot',
 	    value: function takeScreenshoot(e) {
-	      var me = this;
-	      chrome.tabs.captureVisibleTab(null, { format: 'png', quality: 100 }, function (dataURI) {
-	
-	        if (dataURI) {
-	          var image = new Image();
-	          image.onload = function () {
-	            var canvas = document.createElement('canvas');
-	            var capturedImageSize = { width: this.width, height: this.height };
-	            canvas.width = this.width;
-	            canvas.height = this.height;
-	
-	            canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
-	
-	            var canvasURI = canvas.toDataURL();
-	
-	            var byteString = atob(canvasURI.split(',')[1]);
-	            var mimeString = canvasURI.split(',')[0].split(':')[1].split(';')[0];
-	            var ab = new ArrayBuffer(byteString.length);
-	            var ia = new Uint8Array(ab);
-	            for (var i = 0; i < byteString.length; i++) {
-	              ia[i] = byteString.charCodeAt(i);
-	            }
-	            var blob = new Blob([ab], { type: mimeString });
-	            var size = blob.size + 1024 / 2;
-	
-	            chrome.tabs.getSelected(null, function (tab) {
-	
-	              var name = tab.url.split('?')[0].split('#')[0];
-	              if (name) {
-	                name = name.replace(/^https?:\/\//, '').replace(/[^A-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^[_\-]+/, '').replace(/[_\-]+$/, '');
-	                name = '-' + name;
-	              } else {
-	                name = '';
-	              }
-	              name = 'screencapture' + name + '-' + Date.now() + '.png';
-	
-	              function onwriteend() {
-	                var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-	                var capturedImage = { link: url, name: name, size: capturedImageSize, url: tab.url.split('?')[0] };
-	                me.state.images.push(capturedImage);
-	                localStorage.images = JSON.stringify(me.state.images);
-	                localStorage.capturedImage = JSON.stringify(capturedImage);
-	                me.setState({ status: 'captured', capturedImage: capturedImage });
-	              }
-	
-	              window.webkitRequestFileSystem(window.TEMPORARY, size, function (fs) {
-	                fs.root.getFile(name, { create: true }, function (fileEntry) {
-	                  fileEntry.createWriter(function (fileWriter) {
-	                    fileWriter.onwriteend = onwriteend;
-	                    fileWriter.write(blob);
-	                  });
-	                });
-	              });
-	            });
-	          };
-	          image.src = dataURI;
-	        }
-	      });
+	      chrome.runtime.sendMessage({ msg: 'takeVisiblePageScreenshot' });
 	    }
 	  }, {
 	    key: 'takeFullPageScreenshoot',
 	    value: function takeFullPageScreenshoot() {
-	      chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshoot', token: this.state.token });
+	      chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
+	    }
+	  }, {
+	    key: 'snapScreen',
+	    value: function snapScreen() {
+	      chrome.tabs.getSelected(null, function (tab) {
+	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {
+	          window.close();
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'addComment',
+	    value: function addComment() {
+	      chrome.tabs.getSelected(null, function (tab) {
+	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
+	          window.close();
+	        });
+	      });
 	    }
 	  }, {
 	    key: 'imgClick',
@@ -220,6 +190,7 @@
 	  }, {
 	    key: 'backToActions',
 	    value: function backToActions() {
+	      this.state.capturedImages = JSON.parse(localStorage.capturedImages || '[]');
 	      this.setState({ status: 'actions' });
 	    }
 	  }, {
@@ -241,12 +212,14 @@
 	        return [_react2.default.createElement(
 	          'div',
 	          { key: 'screenshot', className: 'screenshot' },
-	          _react2.default.createElement('img', { src: this.state.capturedImage.link })
+	          this.state.capturedImages.concat([]).reverse().map(function (img, i) {
+	            return _react2.default.createElement('img', { key: i, src: img.link });
+	          })
 	        ), _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
 	          backToActions: this.backToActions.bind(this),
 	          handleUpload: this.backToActions.bind(this),
-	          image: this.state.capturedImage })];
+	          images: this.state.capturedImages })];
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
@@ -290,9 +263,19 @@
 	                null,
 	                'Add comment'
 	              )
-	            )]
+	            ), this.state.capturedImages.length ? _react2.default.createElement(
+	              'div',
+	              { className: 'back-to-upload', key: '5', onClick: function onClick() {
+	                  return _this2.setState({ status: 'captured' });
+	                } },
+	              _react2.default.createElement(
+	                'span',
+	                null,
+	                'Back to uploads'
+	              )
+	            ) : null]
 	          ),
-	          _react2.default.createElement(
+	          !this.state.capturedImages.length ? _react2.default.createElement(
 	            'div',
 	            { className: 'title-and-links' },
 	            _react2.default.createElement(
@@ -326,7 +309,7 @@
 	                'Log out'
 	              )
 	            )
-	          )
+	          ) : null
 	        );
 	      } else if (this.state.status == 'list') {
 	        return _react2.default.createElement(
@@ -335,7 +318,7 @@
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'images' },
-	            this.state.images && this.state.images.map((function (img, i) {
+	            this.state.images && this.state.images.concat([]).reverse().map((function (img, i) {
 	              return _react2.default.createElement('img', { key: i, src: img.link, onClick: this.imgClick.bind(this, img.link), style: { heght: 500 } });
 	            }).bind(this))
 	          ),
@@ -357,27 +340,6 @@
 	        { id: 'popup' },
 	        this.renderPopup()
 	      );
-	    }
-	  }, {
-	    key: 'snapScreen',
-	    value: function snapScreen() {
-	      var me = this;
-	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {
-	          window.close();
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'addComment',
-	    value: function addComment() {
-	      var me = this;
-	      chrome.runtime.sendMessage({ msg: 'token', token: this.state.token });
-	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
-	          window.close();
-	        });
-	      });
 	    }
 	  }]);
 	
@@ -20866,15 +20828,16 @@
 	  function SelectAndUpload(props) {
 	    _classCallCheck(this, SelectAndUpload);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
 	
-	    _this.state = {
+	    _this2.state = {
 	      folders: JSON.parse(localStorage.folders || '[]'),
 	      boards: JSON.parse(localStorage.boards || '{}'),
 	      activeBoard: JSON.parse(localStorage.activeBoard || '{}'),
-	      activeFolder: JSON.parse(localStorage.activeFolder || '{}')
+	      activeFolder: JSON.parse(localStorage.activeFolder || '{}'),
+	      images: props.images
 	    };
-	    return _this;
+	    return _this2;
 	  }
 	
 	  _createClass(SelectAndUpload, [{
@@ -20955,7 +20918,9 @@
 	  }, {
 	    key: 'handleCancel',
 	    value: function handleCancel() {
-	      localStorage.capturedImage = '';
+	      var capturedImages = JSON.parse(localStorage.capturedImages);
+	      capturedImages.pop();
+	      localStorage.capturedImages = JSON.stringify(capturedImages);
 	      this.props.backToActions();
 	    }
 	  }, {
@@ -20968,13 +20933,16 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      var _this = this;
+	
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'uploadWidget' },
 	        _react2.default.createElement(
 	          'button',
 	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	          'UPLOAD IMAGES'
+	          'UPLOAD ',
+	          this.state.images.length ? this.state.images.length + ' IMAGES' : null
 	        ),
 	        this.state.edit || !this.state.activeFolder.id ? _react2.default.createElement(
 	          'div',
@@ -21055,7 +21023,9 @@
 	          ),
 	          _react2.default.createElement(
 	            'a',
-	            null,
+	            { onClick: function onClick() {
+	                return _this.props.backToActions();
+	              } },
 	            '+ Make one more snap'
 	          )
 	        )

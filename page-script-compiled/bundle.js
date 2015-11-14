@@ -93,6 +93,19 @@
 	  }
 	
 	  _createClass(Snap, [{
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {
+	      var me = this;
+	      chrome.extension.onRequest.addListener(function (request, sender, callback) {
+	        if (request.msg == 'removeOverlay') {
+	          me.setState({ cancel: true });
+	          var elem = document.getElementById('snap-overlay');
+	          elem.parentNode.removeChild(el);
+	          callback();
+	        }
+	      });
+	    }
+	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      document.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -130,15 +143,22 @@
 	    key: 'handleMouseUp',
 	    value: function handleMouseUp(e) {
 	      if (this.state.select) {
-	        this.setState({
-	          left: this.state.inverseX ? this.state.mouseX : this.state.startX,
-	          top: this.state.inverseY ? this.state.mouseY : this.state.startY
-	        });
+	        this.state.left = this.state.inverseX ? this.state.mouseX : this.state.startX;
+	        this.state.top = this.state.inverseY ? this.state.mouseY : this.state.startY;
 	        document.body.style.cursor = this.state.cursor;
 	      }
-	      this.setState({
-	        select: false,
-	        resize: false
+	
+	      this.state.select = false;
+	      this.state.resize = false;
+	      this.setState({});
+	
+	      chrome.extension.sendRequest({
+	        msg: 'cropData',
+	        width: this.state.width,
+	        height: this.state.height,
+	        left: this.state.left - document.body.scrollLeft,
+	        top: this.state.top - document.body.scrollTop,
+	        url: document.location.toString()
 	      });
 	    }
 	  }, {
@@ -201,25 +221,6 @@
 	      });
 	    }
 	  }, {
-	    key: 'snapSelection',
-	    value: function snapSelection(e) {
-	      e.stopPropagation();
-	      e.preventDefault();
-	      var data = {
-	        msg: 'capturePart',
-	        width: this.state.width,
-	        height: this.state.height,
-	        left: this.state.left - document.body.scrollLeft,
-	        top: this.state.top - document.body.scrollTop,
-	        url: document.location.toString()
-	      };
-	      var me = this;
-	      chrome.extension.sendRequest(data);
-	      me.setState({ cancel: true });
-	      var elem = document.getElementById('snap-overlay');
-	      elem.parentNode.removeChild(el);
-	    }
-	  }, {
 	    key: 'startDrag',
 	    value: function startDrag(e) {
 	      e.preventDefault();
@@ -260,11 +261,7 @@
 	        this.state.width && _react2.default.createElement(
 	          'div',
 	          { className: 'selection', onMouseDown: this.startDrag.bind(this), style: (0, _objectAssign2.default)({}, selectionStyle) },
-	          this.state.select || this.state.resize ? null : [_react2.default.createElement(
-	            'div',
-	            { key: 'button', onMouseDown: this.snapSelection.bind(this), style: { margin: 'auto', width: '100px', height: '20px', textAlign: 'center', lineHeight: '20px', color: 'white', backgroundColor: '#37A037', borderRadius: '0px', position: 'relative', top: '-30px', margin: 'auto', cursor: 'pointer' } },
-	            'Snap'
-	          ), _react2.default.createElement('div', { key: 'resizer top', onMouseDown: this.startResize.bind(this, 'top'), className: 'resizer top', style: (0, _objectAssign2.default)({}, resizerStyle, { top: 0, width: '100%', height: '2px', cursor: 'ns-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom', onMouseDown: this.startResize.bind(this, 'bottom'), className: 'resizer bottom', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize' }) }), _react2.default.createElement('div', { key: 'resizer left', onMouseDown: this.startResize.bind(this, 'left'), className: 'resizer left', style: (0, _objectAssign2.default)({}, resizerStyle, { left: 0, width: '2px', height: '100%', cursor: 'ew-resize' }) }), _react2.default.createElement('div', { key: 'resizer right', onMouseDown: this.startResize.bind(this, 'right'), className: 'resizer right', style: (0, _objectAssign2.default)({}, resizerStyle, { right: 0, width: '2px', height: '100%', cursor: 'ew-resize' }) }), _react2.default.createElement('div', { key: 'resizer top-left', onMouseDown: this.startResize.bind(this, 'top-left'), className: 'resizer top-left', style: (0, _objectAssign2.default)({}, resizerStyle, { top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize' }) }), _react2.default.createElement('div', { key: 'resizer top-right', onMouseDown: this.startResize.bind(this, 'top-right'), className: 'resizer top-right', style: (0, _objectAssign2.default)({}, resizerStyle, { top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom-right', onMouseDown: this.startResize.bind(this, 'bottom-right'), className: 'resizer bottom-right', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom-left', onMouseDown: this.startResize.bind(this, 'bottom-left'), className: 'resizer bottom-left', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize' }) })]
+	          this.state.select || this.state.resize ? null : [_react2.default.createElement('div', { key: 'resizer top', onMouseDown: this.startResize.bind(this, 'top'), className: 'resizer top', style: (0, _objectAssign2.default)({}, resizerStyle, { top: 0, width: '100%', height: '2px', cursor: 'ns-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom', onMouseDown: this.startResize.bind(this, 'bottom'), className: 'resizer bottom', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize' }) }), _react2.default.createElement('div', { key: 'resizer left', onMouseDown: this.startResize.bind(this, 'left'), className: 'resizer left', style: (0, _objectAssign2.default)({}, resizerStyle, { left: 0, width: '2px', height: '100%', cursor: 'ew-resize' }) }), _react2.default.createElement('div', { key: 'resizer right', onMouseDown: this.startResize.bind(this, 'right'), className: 'resizer right', style: (0, _objectAssign2.default)({}, resizerStyle, { right: 0, width: '2px', height: '100%', cursor: 'ew-resize' }) }), _react2.default.createElement('div', { key: 'resizer top-left', onMouseDown: this.startResize.bind(this, 'top-left'), className: 'resizer top-left', style: (0, _objectAssign2.default)({}, resizerStyle, { top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize' }) }), _react2.default.createElement('div', { key: 'resizer top-right', onMouseDown: this.startResize.bind(this, 'top-right'), className: 'resizer top-right', style: (0, _objectAssign2.default)({}, resizerStyle, { top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom-right', onMouseDown: this.startResize.bind(this, 'bottom-right'), className: 'resizer bottom-right', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize' }) }), _react2.default.createElement('div', { key: 'resizer bottom-left', onMouseDown: this.startResize.bind(this, 'bottom-left'), className: 'resizer bottom-left', style: (0, _objectAssign2.default)({}, resizerStyle, { bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize' }) })]
 	        )
 	      );
 	    }

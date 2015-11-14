@@ -51,6 +51,10 @@ html {
     padding: 20px;
 }
 
+.back-to-upload {
+    background-color: #222;
+}
+
 #uploadButton{
     height: 45px;
     width: 100%;
@@ -321,6 +325,7 @@ img {
     display: block;
     width: 200px;
     border: 1px solid whitesmoke;
+    margin-bottom: 15px;
 }
 
 .images {
