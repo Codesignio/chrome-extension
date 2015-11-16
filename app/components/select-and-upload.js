@@ -12,7 +12,7 @@ export default class SelectAndUpload extends React.Component {
       activeBoard: JSON.parse(localStorage.activeBoard || '{"id": "new_board"}'),
       activeFolder: JSON.parse(localStorage.activeFolder || '{"id": -1, "title": "My boards"}'),
       selectActiveFolder: {id: 1, title: "My boards"},
-      images: props.images
+      images: props.images,
     }
   }
 
@@ -65,11 +65,15 @@ export default class SelectAndUpload extends React.Component {
     });
   }
 
-  handleCancel(){
-    var capturedImages = JSON.parse(localStorage.capturedImages);
-    capturedImages.pop();
-    localStorage.capturedImages = JSON.stringify(capturedImages);
-    this.props.backToActions();
+  handleRemove(){
+    this.state.images.pop();
+    localStorage.capturedImages = JSON.stringify(this.state.images);
+    if (!this.state.images.length){
+      this.props.backToActions()
+    } else {
+      this.setState({})
+    }
+
   }
 
   toogleSelectors(e){
@@ -99,30 +103,35 @@ export default class SelectAndUpload extends React.Component {
 
   render(){
     return (
-      <div className="uploadWidget">
-        <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : null}</button>
-        { this.state.edit ? <div className="selectors">
-          <p>FOLDER</p>
-          <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
-            {this.state.folders && this.state.folders.map(function(folder, i){
-              return <option key={i} value={folder.id}>{folder.title}</option>
-            })}
-          </select>
-          <p>BOARD</p>
-          <select defaultValue={this.state.activeBoard.id} ref="boardsSelect">
-            <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
-            {this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function(board,i){
-              return <option key={i} value={board.id}>{board.title}</option>
-            })}
-          </select>
-        </div> : <div className="selectors-titles">
-          {this.state.activeBoard.id == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: "{this.state.activeFolder.title}"</p>] :
-            [<p key="1">Upload images to existing "{this.state.activeBoard.title}" board</p>, <p key="2">in "{this.state.activeFolder.title}" folder.</p>]}
-        </div>}
-        <div className="upload-actions">
-          <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
-          {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
-          <a onClick={()=> this.props.backToActions()}>+ Make one more snap</a>
+      <div>
+        <div key="screenshot" className="screenshot">
+          {this.state.images.concat([]).reverse().map((img, i) => <div className="image"><img key={i} src={img.link}/><div onClick={this.handleRemove.bind(this)} className="removeIcon"></div></div>)}
+        </div>
+        <div className="uploadWidget">
+          <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : null}</button>
+          { this.state.edit ? <div className="selectors">
+            <p>FOLDER</p>
+            <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
+              {this.state.folders && this.state.folders.map(function(folder, i){
+                return <option key={i} value={folder.id}>{folder.title}</option>
+              })}
+            </select>
+            <p>BOARD</p>
+            <select defaultValue={this.state.activeBoard.id} ref="boardsSelect">
+              <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
+              {this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function(board,i){
+                return <option key={i} value={board.id}>{board.title}</option>
+              })}
+            </select>
+          </div> : <div className="selectors-titles">
+            {this.state.activeBoard.id == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: "{this.state.activeFolder.title}"</p>] :
+              [<p key="1">Upload images to existing "{this.state.activeBoard.title}" board</p>, <p key="2">in "{this.state.activeFolder.title}" folder.</p>]}
+          </div>}
+          <div className="upload-actions">
+            <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
+            {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
+            <a onClick={()=> this.props.backToActions()}>+ Make one more snap</a>
+          </div>
         </div>
       </div>
     )

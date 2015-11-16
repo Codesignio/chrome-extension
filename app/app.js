@@ -132,13 +132,11 @@ class App extends React.Component {
       return <div className="progress_bar" style={{width: this.state.progress}}></div>
     } else if (this.state.status == 'captured'){
       return (
-        [<div key="screenshot" className="screenshot">
-          {this.state.capturedImages.concat([]).reverse().map((img, i) => <img key={i} src={img.link}/>)}
-        </div>, <SelectAndUpload
+        <SelectAndUpload
           key="upload"
           backToActions={this.backToActions.bind(this)}
           handleUpload={this.backToActions.bind(this)}
-          images={this.state.capturedImages}/>]
+          images={this.state.capturedImages}/>
       )
     } else if (this.state.status == 'actions'){
       return (

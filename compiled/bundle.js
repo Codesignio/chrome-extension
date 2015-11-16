@@ -223,17 +223,11 @@
 	      } else if (this.state.status == 'progress') {
 	        return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } });
 	      } else if (this.state.status == 'captured') {
-	        return [_react2.default.createElement(
-	          'div',
-	          { key: 'screenshot', className: 'screenshot' },
-	          this.state.capturedImages.concat([]).reverse().map(function (img, i) {
-	            return _react2.default.createElement('img', { key: i, src: img.link });
-	          })
-	        ), _react2.default.createElement(_selectAndUpload2.default, {
+	        return _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
 	          backToActions: this.backToActions.bind(this),
 	          handleUpload: this.backToActions.bind(this),
-	          images: this.state.capturedImages })];
+	          images: this.state.capturedImages });
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
@@ -20930,12 +20924,15 @@
 	      });
 	    }
 	  }, {
-	    key: 'handleCancel',
-	    value: function handleCancel() {
-	      var capturedImages = JSON.parse(localStorage.capturedImages);
-	      capturedImages.pop();
-	      localStorage.capturedImages = JSON.stringify(capturedImages);
-	      this.props.backToActions();
+	    key: 'handleRemove',
+	    value: function handleRemove() {
+	      this.state.images.pop();
+	      localStorage.capturedImages = JSON.stringify(this.state.images);
+	      if (!this.state.images.length) {
+	        this.props.backToActions();
+	      } else {
+	        this.setState({});
+	      }
 	    }
 	  }, {
 	    key: 'toogleSelectors',
@@ -20974,101 +20971,117 @@
 	
 	      return _react2.default.createElement(
 	        'div',
-	        { className: 'uploadWidget' },
+	        null,
 	        _react2.default.createElement(
-	          'button',
-	          { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	          'UPLOAD ',
-	          this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : null
-	        ),
-	        this.state.edit ? _react2.default.createElement(
 	          'div',
-	          { className: 'selectors' },
+	          { key: 'screenshot', className: 'screenshot' },
+	          this.state.images.concat([]).reverse().map(function (img, i) {
+	            return _react2.default.createElement(
+	              'div',
+	              { className: 'image' },
+	              _react2.default.createElement('img', { key: i, src: img.link }),
+	              _react2.default.createElement('div', { onClick: _this2.handleRemove.bind(_this2), className: 'removeIcon' })
+	            );
+	          })
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'uploadWidget' },
 	          _react2.default.createElement(
-	            'p',
-	            null,
-	            'FOLDER'
+	            'button',
+	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
+	            'UPLOAD ',
+	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : null
 	          ),
-	          _react2.default.createElement(
-	            'select',
-	            { defaultValue: this.state.activeFolder.id, ref: 'foldersSelect', onChange: this.setFolder.bind(this) },
-	            this.state.folders && this.state.folders.map(function (folder, i) {
-	              return _react2.default.createElement(
-	                'option',
-	                { key: i, value: folder.id },
-	                folder.title
-	              );
-	            })
-	          ),
-	          _react2.default.createElement(
-	            'p',
-	            null,
-	            'BOARD'
-	          ),
-	          _react2.default.createElement(
-	            'select',
-	            { defaultValue: this.state.activeBoard.id, ref: 'boardsSelect' },
+	          this.state.edit ? _react2.default.createElement(
+	            'div',
+	            { className: 'selectors' },
 	            _react2.default.createElement(
-	              'option',
-	              { key: 'new board', className: 'new_board_option', value: 'new_board' },
-	              '                Create new board'
+	              'p',
+	              null,
+	              'FOLDER'
 	            ),
-	            this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function (board, i) {
-	              return _react2.default.createElement(
+	            _react2.default.createElement(
+	              'select',
+	              { defaultValue: this.state.activeFolder.id, ref: 'foldersSelect', onChange: this.setFolder.bind(this) },
+	              this.state.folders && this.state.folders.map(function (folder, i) {
+	                return _react2.default.createElement(
+	                  'option',
+	                  { key: i, value: folder.id },
+	                  folder.title
+	                );
+	              })
+	            ),
+	            _react2.default.createElement(
+	              'p',
+	              null,
+	              'BOARD'
+	            ),
+	            _react2.default.createElement(
+	              'select',
+	              { defaultValue: this.state.activeBoard.id, ref: 'boardsSelect' },
+	              _react2.default.createElement(
 	                'option',
-	                { key: i, value: board.id },
-	                board.title
-	              );
-	            })
-	          )
-	        ) : _react2.default.createElement(
-	          'div',
-	          { className: 'selectors-titles' },
-	          this.state.activeBoard.id == 'new_board' ? [_react2.default.createElement(
-	            'p',
-	            { key: '1' },
-	            'Wiil creating new board'
-	          ), _react2.default.createElement(
-	            'p',
-	            { key: '2' },
-	            'in folder: "',
-	            this.state.activeFolder.title,
-	            '"'
-	          )] : [_react2.default.createElement(
-	            'p',
-	            { key: '1' },
-	            'Upload images to existing "',
-	            this.state.activeBoard.title,
-	            '" board'
-	          ), _react2.default.createElement(
-	            'p',
-	            { key: '2' },
-	            'in "',
-	            this.state.activeFolder.title,
-	            '" folder.'
-	          )]
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'upload-actions' },
-	          _react2.default.createElement(
-	            'a',
-	            { onClick: this.toogleSelectors.bind(this) },
-	            this.state.edit ? 'Save' : 'Edit'
-	          ),
-	          this.state.edit && _react2.default.createElement(
-	            'a',
-	            { onClick: function onClick() {
-	                return _this2.setState({ edit: false });
-	              } },
-	            'Cancel'
+	                { key: 'new board', className: 'new_board_option', value: 'new_board' },
+	                '                Create new board'
+	              ),
+	              this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function (board, i) {
+	                return _react2.default.createElement(
+	                  'option',
+	                  { key: i, value: board.id },
+	                  board.title
+	                );
+	              })
+	            )
+	          ) : _react2.default.createElement(
+	            'div',
+	            { className: 'selectors-titles' },
+	            this.state.activeBoard.id == 'new_board' ? [_react2.default.createElement(
+	              'p',
+	              { key: '1' },
+	              'Wiil creating new board'
+	            ), _react2.default.createElement(
+	              'p',
+	              { key: '2' },
+	              'in folder: "',
+	              this.state.activeFolder.title,
+	              '"'
+	            )] : [_react2.default.createElement(
+	              'p',
+	              { key: '1' },
+	              'Upload images to existing "',
+	              this.state.activeBoard.title,
+	              '" board'
+	            ), _react2.default.createElement(
+	              'p',
+	              { key: '2' },
+	              'in "',
+	              this.state.activeFolder.title,
+	              '" folder.'
+	            )]
 	          ),
 	          _react2.default.createElement(
-	            'a',
-	            { onClick: function onClick() {
-	                return _this2.props.backToActions();
-	              } },
-	            '+ Make one more snap'
+	            'div',
+	            { className: 'upload-actions' },
+	            _react2.default.createElement(
+	              'a',
+	              { onClick: this.toogleSelectors.bind(this) },
+	              this.state.edit ? 'Save' : 'Edit'
+	            ),
+	            this.state.edit && _react2.default.createElement(
+	              'a',
+	              { onClick: function onClick() {
+	                  return _this2.setState({ edit: false });
+	                } },
+	              'Cancel'
+	            ),
+	            _react2.default.createElement(
+	              'a',
+	              { onClick: function onClick() {
+	                  return _this2.props.backToActions();
+	                } },
+	              '+ Make one more snap'
+	            )
 	          )
 	        )
 	      );

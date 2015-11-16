@@ -46,6 +46,29 @@ html {
     overflow: auto;
 }
 
+.screenshot .image {
+    margin: auto;
+    display: block;
+    width: 200px;
+    border: 1px solid whitesmoke;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+img {
+    width:100%;
+}
+
+.removeIcon {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-image: url(./../remove-icon.svg);
+}
+
+
 .uploadWidget {
     background-color: #222;
     padding: 20px;
@@ -319,13 +342,6 @@ form {
     margin-bottom: 3px;
     margin-top: 3px;
     outline: none;
-}
-img {
-    margin: auto;
-    display: block;
-    width: 200px;
-    border: 1px solid whitesmoke;
-    margin-bottom: 15px;
 }
 
 .images {
