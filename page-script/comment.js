@@ -54,7 +54,8 @@ class Comment extends React.Component {
       screenPos: {
         y: window.parent.document.body.scrollTop + window.innerHeight,
         x: window.parent.document.body.scrollLeft + window.innerWidth
-      }
+      },
+      me: window.codesign.me
     }
   }
 
@@ -86,24 +87,25 @@ class Comment extends React.Component {
   }
 
   newPin(e) {
-    if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay') {
+    if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay-inner') {
       this.state.pins.forEach(function(pin){
         if(!pin.text){
           this.state.pins.splice(this.state.pins.indexOf(pin));
         }
       }.bind(this));
 
-      this.state.pins.push({
+      var pin  = {
         x: e.pageX,
         y: e.pageY,
-      });
-      this.setState({});
+      };
+      this.state.pins.push(pin);
+      this.setState({resentPin: pin});
     }
   }
 
   addPin(pin){
     pin.added = true;
-    this.setState({});
+    this.setState({resentPin: null});
     var data = {
       msg: 'addPin',
       pins: this.state.pins,
@@ -123,6 +125,25 @@ class Comment extends React.Component {
     this.setState({})
   }
 
+  hidePin(){
+    var me = this;
+    if (this.timeout){
+      return
+    } else {
+      this.timeout = setTimeout(function () {
+        this.timeout = null;
+        me.setState({activePin: null});
+      }, 300)
+    }
+  }
+
+  showPin(pin,e){
+    e.stopPropagation();
+    clearTimeout(this.timeout);
+    this.timeout = null;
+    this.setState({activePin: pin});
+  }
+
   render() {
     var styles = {
       width: '100%',
@@ -131,26 +152,37 @@ class Comment extends React.Component {
       position: 'absolute',
       left: 0,
       top: 0,
+      cursor: 'crosshair'
     };
 
-    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={assign(styles, {cursor: 'crosshair'}) }
+    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
+      <div id="snap-overlay-inner" style={styles} onMouseMove={this.hidePin.bind(this)}>
       {this.state.pins.map(function(pin, i){
         return (
-          <div key={i} className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}}>
+          <div key={i} className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}} onMouseMove={this.showPin.bind(this, pin)}>
             <span className="title unselectable">{i+1}</span>
-            <div>
+            <div style={{display: this.state.activePin === pin || this.state.resentPin === pin ? 'block' : 'none'}}>
               <div className="Task">
                 <div className="task-box">
                   <div>
                   <div className="CommentBox">
                       <div className="top-wrapper">
+                        <div className="profile">
+                          <div className="ProfileBar">
+                            <img className="avatar" src={this.state.me.user.profile.avatar_url}
+                                 style={{width:'27px', height:'27px'}}/>
+                            <div className="user-name">
+                              <div>{this.state.me.user.first_name}</div>
+                            </div>
+                          </div>
+                        </div>
                         <div className="comment">
                           {pin.added ? <div>{pin.text}</div> : <textarea className="input" value={pin.text} onChange={this.textChange.bind(this, pin)} />}
                         </div>
                       </div>
                     {!pin.added && <div className="create-buttons">
-                      <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin)}>Add</button>
+                      <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin)} disabled={!pin.text}>Add</button>
                       <button className="bottom-btn cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
                     </div>}
                     </div>
@@ -161,6 +193,7 @@ class Comment extends React.Component {
           </div>
         )
       }.bind(this))}
+      </div>
     </div>
       </Frame>
 

@@ -14,10 +14,13 @@ chrome.contextMenus.create({
 
  function clickHandler(e) {
    chrome.tabs.getSelected(null, function (tab) {
-         chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
-           chrome.tabs.sendRequest(tab.id, {msg: 'contextMenu'}, function () {
-           });
+     chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'}'}, function () {
+       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+         chrome.tabs.sendRequest(tab.id, {msg: 'contextMenu'}, function () {
          });
+       });
+     });
+
    });
  }
 

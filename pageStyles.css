@@ -11754,3 +11754,8 @@ footer .nav a:hover {
     text-overflow: ellipsis;
     white-space: nowrap
 }
+
+
+.Pin.movable .title {
+    cursor: default;
+}

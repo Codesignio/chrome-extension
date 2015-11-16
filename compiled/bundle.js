@@ -109,7 +109,14 @@
 	  _createClass(App, [{
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
+	      chrome.browserAction.setBadgeText({ text: '' });
 	      var me = this;
+	      var token = localStorage.token;
+	      (0, _utils.request)('http://api.codesign.io/users/me/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
+	        me.setState({ me: data });
+	        localStorage.me = JSON.stringify(data);
+	      });
+	
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { code: "{}" }, function () {
 	          me.setState({ unsupported: chrome.runtime.lastError !== undefined });
@@ -172,8 +179,10 @@
 	    key: 'addComment',
 	    value: function addComment() {
 	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
-	          window.close();
+	        chrome.tabs.executeScript(tab.id, { code: 'window.codesign = {me: ' + localStorage.me + '}' }, function () {
+	          chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
+	            window.close();
+	          });
 	        });
 	      });
 	    }
