@@ -99,6 +99,7 @@
 	      images: JSON.parse(localStorage.images || '[]'),
 	      token: localStorage.token,
 	      capturedImages: capturedImages,
+	      checkedImages: [],
 	      unsupported: false,
 	      currentAction: localStorage.currentAction
 	    };
@@ -207,9 +208,19 @@
 	      this.setState({});
 	    }
 	  }, {
-	    key: 'uploadImage',
-	    value: function uploadImage(img) {
-	      this.state.capturedImages.push(img);
+	    key: 'checkUploadImage',
+	    value: function checkUploadImage(img) {
+	      if (this.state.checkedImages.indexOf(img) > -1) {
+	        this.state.checkedImages.splice(this.state.checkedImages.indexOf(img), 1);
+	      } else {
+	        this.state.checkedImages.push(img);
+	      }
+	      this.setState({});
+	    }
+	  }, {
+	    key: 'uploadChecked',
+	    value: function uploadChecked() {
+	      this.state.capturedImages = this.state.checkedImages;
 	      localStorage.capturedImages = JSON.stringify(this.state.capturedImages);
 	      this.setState({ status: 'captured' });
 	    }
@@ -309,7 +320,7 @@
 	                { className: 'imagesList', onClick: function onClick() {
 	                    return _this2.setState({ status: 'list' });
 	                  } },
-	                'List Images'
+	                'History'
 	              ),
 	              _react2.default.createElement(
 	                'a',
@@ -325,29 +336,30 @@
 	          { id: 'images-list' },
 	          _react2.default.createElement(
 	            'div',
-	            { className: 'images' },
+	            { className: 'imagesList' },
 	            this.state.images && this.state.images.concat([]).reverse().map((function (img, i) {
 	              return _react2.default.createElement(
 	                'div',
-	                { key: i, className: 'image' },
-	                _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link) }),
+	                { className: 'images-wrapper', key: i },
 	                _react2.default.createElement(
 	                  'div',
-	                  { className: 'image-actions' },
-	                  _react2.default.createElement(
-	                    'div',
-	                    { onClick: this.removeImage.bind(this, img) },
-	                    'Remove'
-	                  ),
-	                  _react2.default.createElement(
-	                    'div',
-	                    { onClick: this.uploadImage.bind(this, img) },
-	                    'Upload'
-	                  )
+	                  { className: 'checkbox' },
+	                  _react2.default.createElement('input', { type: 'checkbox', checked: this.state.checkedImages.indexOf(img) > -1, onChange: this.checkUploadImage.bind(this, img) })
+	                ),
+	                _react2.default.createElement(
+	                  'div',
+	                  { className: 'image' },
+	                  _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link) }),
+	                  _react2.default.createElement('div', { className: 'removeIcon', onClick: this.removeImage.bind(this, img) })
 	                )
 	              );
 	            }).bind(this))
 	          ),
+	          this.state.checkedImages.length ? _react2.default.createElement(
+	            'div',
+	            { onClick: this.uploadChecked.bind(this), className: 'upload-to-actions' },
+	            'Upload'
+	          ) : null,
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'back-to-actions', onClick: function onClick() {

@@ -80,6 +80,10 @@
 	    sendedrequest = request;
 	    localStorage.currentAction = 'comment';
 	    chrome.browserAction.setBadgeText({ text: request.pins.length.toString() });
+	  } else if (request.msg == 'cancelCrop') {
+	    cropData = null;
+	    localStorage.currentAction = '';
+	    chrome.browserAction.setBadgeText({ text: '' });
 	  }
 	});
 	

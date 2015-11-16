@@ -98,10 +98,12 @@
 	      var me = this;
 	      chrome.extension.onRequest.addListener(function (request, sender, callback) {
 	        if (request.msg == 'removeOverlay') {
-	          me.setState({ cancel: true });
 	          var elem = document.getElementById('snap-overlay');
-	          elem.parentNode.removeChild(el);
-	          callback();
+	          if (elem) {
+	            elem.parentNode.removeChild(elem);
+	            setTimeout(callback, 50);
+	            me.setState({ cancel: true });
+	          }
 	        }
 	      });
 	    }
@@ -119,9 +121,12 @@
 	    key: 'onKeyDown',
 	    value: function onKeyDown(e) {
 	      if (e.keyCode == 27) {
-	        this.setState({ cancel: true });
 	        var elem = document.getElementById('snap-overlay');
-	        elem.parentNode.removeChild(el);
+	        if (elem) {
+	          elem.parentNode.removeChild(elem);
+	          chrome.extension.sendRequest({ msg: 'cancelCrop' });
+	          this.setState({ cancel: true });
+	        }
 	      }
 	    }
 	  }, {

@@ -161,9 +161,9 @@
 	        if (request.msg === 'contextMenu') {
 	          me.newPin((0, _objectAssign2.default)(codeSignMousePos, { fromContextMenu: true }));
 	        } else if (request.msg == 'removeOverlay') {
-	          me.setState({ cancel: true });
 	          var elem = document.getElementById('snap-overlay');
-	          elem.parentNode.removeChild(el);
+	          elem.parentNode.removeChild(elem);
+	          me.setState({ cancel: true });
 	          callback();
 	        }
 	      });

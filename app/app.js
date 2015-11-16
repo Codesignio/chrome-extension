@@ -16,6 +16,7 @@ class App extends React.Component {
       images: JSON.parse(localStorage.images || '[]'),
       token: localStorage.token,
       capturedImages: capturedImages,
+      checkedImages: [],
       unsupported: false,
       currentAction: localStorage.currentAction
     }
@@ -118,10 +119,19 @@ class App extends React.Component {
     this.setState({});
   }
 
-  uploadImage(img){
-    this.state.capturedImages.push(img);
+  checkUploadImage(img){
+    if(this.state.checkedImages.indexOf(img) > -1){
+      this.state.checkedImages.splice(this.state.checkedImages.indexOf(img), 1)
+    } else {
+      this.state.checkedImages.push(img);
+    }
+    this.setState({})
+  }
+
+  uploadChecked(){
+    this.state.capturedImages = this.state.checkedImages;
     localStorage.capturedImages = JSON.stringify(this.state.capturedImages);
-    this.setState({status: 'captured'});
+    this.setState({status: 'captured'})
   }
 
   renderPopup(){
@@ -155,7 +165,7 @@ class App extends React.Component {
             <p>Simplest feedback tool</p>
             <div className="links">
               <a href="http://www.codesign.io/dashboard/" target="_blank">Dashboard</a>
-              <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>List Images</a>
+              <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>History</a>
               <a className="logOut" onClick={this.logOut.bind(this)}>Log out</a>
             </div>
           </div> : null}
@@ -164,19 +174,22 @@ class App extends React.Component {
     } else if (this.state.status == 'list'){
       return (
         <div id="images-list">
-          <div className="images">
+          <div className="imagesList">
             {this.state.images && this.state.images.concat([]).reverse().map(function (img, i) {
               return (
-                <div key={i} className="image">
+                <div className="images-wrapper" key={i}>
+                  <div className="checkbox">
+                  <input type="checkbox" checked={this.state.checkedImages.indexOf(img) > -1} onChange={this.checkUploadImage.bind(this, img)}/>
+                    </div>
+                  <div className="image">
                   <img src={img.link} onClick={this.imgClick.bind(this, img.link)}/>
-                  <div className="image-actions">
-                    <div onClick={this.removeImage.bind(this, img)}>Remove</div>
-                    <div onClick={this.uploadImage.bind(this, img)}>Upload</div>
+                  <div className="removeIcon" onClick={this.removeImage.bind(this, img)}></div>
                   </div>
                 </div>
               )
             }.bind(this))}
           </div>
+          {this.state.checkedImages.length ? <div onClick={this.uploadChecked.bind(this)} className="upload-to-actions">Upload</div> : null}
           <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>Back</div>
         </div>
       )

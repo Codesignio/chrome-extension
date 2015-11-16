@@ -64,9 +64,9 @@ class Comment extends React.Component {
       if (request.msg === 'contextMenu') {
         me.newPin(assign(codeSignMousePos, {fromContextMenu: true}))
       } else if(request.msg == 'removeOverlay'){
-        me.setState({cancel: true});
         var elem = document.getElementById('snap-overlay');
-        elem.parentNode.removeChild(el);
+        elem.parentNode.removeChild(elem);
+        me.setState({cancel: true});
         callback();
       }
     });
