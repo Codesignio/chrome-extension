@@ -34,10 +34,10 @@ export default class LoginForm extends React.Component {
         <button className="facebook-login">Log In with Facebook</button>
         <p>or <a className="google-login">Google</a>, <a className="github-login">Github</a></p>
         <p className="email-login">or Log in with Email</p>
-        <form onSubmit={this.handleSubmit.bind(this)}>
+        <form>
           <input type="email" ref="email" placeholder="Email"/>
           <input type="password" ref="password" placeholder="Password"/>
-          <input type="submit" value="Log in"/>
+          <input type="submit" onClick={this.handleSubmit.bind(this)} value="Log in"/>
         </form>
         <p className="signup-title">Please <a className="sign-up">Sign Up</a> if you don't have an account</p>
       </div>

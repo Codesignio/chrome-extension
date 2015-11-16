@@ -167,7 +167,8 @@ class Snap extends React.Component {
       height: this.state.height,
       left: this.state.select ? (this.state.inverseX ? this.state.mouseX : this.state.startX) : this.state.left,
       top: this.state.select ? (this.state.inverseY ? this.state.mouseY : this.state.startY) : this.state.top,
-      boxShadow: '0px 0px 30px 0px rgba(0,0,0,1)'
+      boxShadow: '0px 0px 30px 0px rgba(0,0,0,1)',
+      backgroundColor: 'rgba(34, 188, 133, 0.2)'
 
     };
 

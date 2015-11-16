@@ -216,7 +216,6 @@ function uploadImages(req, sender, sendResponse){
       title: "New Board"
     }, function (data) {
       activeBoard = data;
-      localStorage.activeBoard = JSON.stringify(data);
       uploadImageProcess(activeBoard,posts, logCallBack);
     });
 
@@ -302,7 +301,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                               capImgCount++;
 
                               if(capImgCount == capturedImages.length){
-                                window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+                                window.open("http://www.codesign.io/board/" + activeBoard.client_code);
                                 chrome.browserAction.setBadgeText({text: ''});
                                 localStorage.capturedImages = '[]';
                               }
@@ -318,7 +317,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                         capImgCount++;
 
                         if(capImgCount == capturedImages.length){
-                          window.open("http://www.codesign.io/board/" + JSON.parse(localStorage.activeBoard).client_code);
+                          window.open("http://www.codesign.io/board/" + activeBoard.client_code);
                           chrome.browserAction.setBadgeText({text: ''});
                           localStorage.capturedImages = '[]';
                         }
