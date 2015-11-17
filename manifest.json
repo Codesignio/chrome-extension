@@ -23,7 +23,8 @@
   "content_scripts":[
     {
       "matches":["*://*/*","file:///*"],
-      "js":["trackMousePos.js"]
+      "js":["trackMousePos.js"],
+      "run_at": "document_start"
     }
   ],
   "manifest_version": 2

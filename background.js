@@ -1,6 +1,7 @@
 var screenshot = {};
 var sendedrequest = {};
 var cropData = null;
+var startOauth;
 
 import {request} from './app/utils';
 import {s3Upload} from './app/utils';
@@ -26,6 +27,12 @@ chrome.contextMenus.create({
 
 
 
+chrome.runtime.onInstalled.addListener(function(){
+  chrome.tabs.create({'url': chrome.extension.getURL('login.html')}, function (tab) {
+  });
+});
+
+
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
   if (request.msg === 'capturePage') {
     capturePage(request, sender, callback);
@@ -41,6 +48,20 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
     cropData = null;
     localStorage.currentAction = '';
     chrome.browserAction.setBadgeText({text: ''});
+  }  else if (request.msg == 'checkStartOauth'){
+    callback(startOauth);
+  } else if (request.msg == 'stopOauth'){
+    if (request.token){
+      localStorage.token = request.token;
+      chrome.tabs.getSelected(null, function (tab) {
+        chrome.tabs.remove(tab.id);
+      })
+    } else {
+      chrome.tabs.getSelected(null, function (tab) {
+        chrome.tabs.update(tab.id, {url: chrome.extension.getURL('login.html')})
+      })
+    }
+    startOauth = null;
   }
 });
 
@@ -52,6 +73,8 @@ chrome.runtime.onMessage.addListener(
       takeVisibleScreenshot();
     } else if (request.msg == 'uploadImages'){
       uploadImages(request, sender, sendResponse)
+    } else if (request.msg == 'startOauth'){
+      startOauth = true;
     }
   });
 

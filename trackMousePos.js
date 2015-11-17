@@ -26,3 +26,61 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
     callback();
   }
 });
+
+function getParameterByName(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+  return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var matchUrl = window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/);
+
+if (matchUrl){
+  chrome.extension.sendRequest({msg: 'checkStartOauth'}, function(startOauth){
+    if (startOauth) {
+      var urlProvider = getParameterByName('oauthProvider');
+      if(urlProvider){
+        setInterval(function(){
+          window.document.head.innerHTML = '';
+          window.document.body.innerHTML = 'Log in successfully. Redirecting..';
+        }, 50);
+
+        var code = getParameterByName('code');
+        console.log(urlProvider, code);
+        var myxhr = new XMLHttpRequest();
+        myxhr.open("GET", 'http://www.codesign.io/oauth/'+ urlProvider+'?code='+ code+'&redirectUri=http:%2F%2Fwww.codesign.io%2F%3FoauthProvider%3D'+urlProvider, true);
+        myxhr.setRequestHeader('Accept', 'application/json');
+        myxhr.onreadystatechange = function() {
+          if (myxhr.readyState != 4) return;
+          if (myxhr.status != 200) {
+            console.log({status: myxhr.status + ': ' + myxhr.statusText});
+            chrome.extension.sendRequest({msg: 'stopOauth'});
+          } else {
+            console.log(myxhr.responseText);
+            var access_token = JSON.parse(myxhr.responseText).access_token;
+
+            var xhr = new XMLHttpRequest();
+            var json = JSON.stringify({access_token:access_token});
+            xhr.open("POST", 'http://api.codesign.io/users/token/'+ urlProvider + '/', true);
+            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+            xhr.onreadystatechange = function() {
+              if (xhr.readyState != 4) return;
+              if (xhr.status != 200) {
+                console.log({status: xhr.status + ': ' + xhr.statusText});
+                chrome.extension.sendRequest({msg: 'stopOauth'});
+              } else {
+                console.log(xhr.responseText);
+                var token = JSON.parse(xhr.responseText).token;
+                chrome.extension.sendRequest({msg: 'stopOauth', token: token});
+              }
+            };
+            xhr.send(json);
+
+          }
+        };
+        myxhr.send();
+      }
+    }
+  });
+}

@@ -4,7 +4,6 @@ import cx from 'classnames';
 import assign from 'object-assign';
 import {request} from './utils';
 
-import LoginForm from './components/login-form';
 import SelectAndUpload from './components/select-and-upload';
 
 class App extends React.Component {
@@ -23,6 +22,11 @@ class App extends React.Component {
   }
 
   componentWillMount() {
+    if (!localStorage.token){
+      chrome.tabs.create({'url': chrome.extension.getURL('login.html')}, function (tab) {
+      });
+    }
+
     chrome.browserAction.setBadgeText({text: ''});
     var me = this;
     var token = localStorage.token;
@@ -106,12 +110,6 @@ class App extends React.Component {
     chrome.tabs.create({url: url});
   }
 
-
-  handleLogin(token){
-    this.setState({token: token})
-    localStorage.token = token;
-  }
-
   backToActions(){
     this.state.capturedImages = JSON.parse(localStorage.capturedImages || '[]');
     this.setState({status: 'actions'});
@@ -120,6 +118,8 @@ class App extends React.Component {
   logOut(){
     this.setState({token: null});
     localStorage.token = '';
+    chrome.tabs.create({'url': chrome.extension.getURL('login.html')}, function (tab) {
+    });
   }
 
   removeImage(img){
@@ -145,9 +145,7 @@ class App extends React.Component {
 
   renderPopup(){
 
-    if (!this.state.token){
-      return <LoginForm handleLogin={this.handleLogin.bind(this)}></LoginForm>
-    } else if (this.state.status == 'progress'){
+    if (this.state.status == 'progress'){
       return <div className="progress_bar" style={{width: this.state.progress}}></div>
     } else if (this.state.status == 'captured'){
       return (

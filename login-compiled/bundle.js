@@ -42,14 +42,18 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/*!********************!*\
-  !*** ./app/app.js ***!
-  \********************/
+/*!**********************!*\
+  !*** ./app/login.js ***!
+  \**********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
@@ -69,10 +73,6 @@
 	
 	var _utils = __webpack_require__(/*! ./utils */ 162);
 	
-	var _selectAndUpload = __webpack_require__(/*! ./components/select-and-upload */ 164);
-	
-	var _selectAndUpload2 = _interopRequireDefault(_selectAndUpload);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -81,312 +81,174 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var App = (function (_React$Component) {
-	  _inherits(App, _React$Component);
+	var LoginForm = (function (_React$Component) {
+	  _inherits(LoginForm, _React$Component);
 	
-	  function App(props) {
-	    _classCallCheck(this, App);
+	  function LoginForm(props) {
+	    _classCallCheck(this, LoginForm);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LoginForm).call(this, props));
 	
-	    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
 	    _this.state = {
-	      status: capturedImages.length ? 'captured' : 'actions',
-	      images: JSON.parse(localStorage.images || '[]'),
-	      token: localStorage.token,
-	      capturedImages: capturedImages,
-	      checkedImages: [],
-	      unsupported: false,
-	      currentAction: localStorage.currentAction
+	      status: null,
+	      signUpOrLogIn: false
 	    };
 	    return _this;
 	  }
 	
-	  _createClass(App, [{
-	    key: 'componentWillMount',
-	    value: function componentWillMount() {
-	      if (!localStorage.token) {
-	        chrome.tabs.create({ 'url': chrome.extension.getURL('login.html') }, function (tab) {});
-	      }
-	
-	      chrome.browserAction.setBadgeText({ text: '' });
+	  _createClass(LoginForm, [{
+	    key: 'handleSubmit',
+	    value: function handleSubmit(e) {
 	      var me = this;
-	      var token = localStorage.token;
-	      (0, _utils.request)('http://api.codesign.io/users/me/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
-	        me.setState({ me: data });
-	        localStorage.me = JSON.stringify(data);
-	      });
+	      e.preventDefault();
 	
-	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { code: "{}" }, function () {
-	          me.setState({ unsupported: chrome.runtime.lastError !== undefined });
-	        });
-	      });
-	
-	      chrome.runtime.onMessage.addListener((function (request, sender, sendResponse) {
-	        if (request.msg == 'captured') {
-	          chrome.browserAction.setBadgeText({ text: '' });
-	          me.state.images.push(request.capturedImage);
-	          me.state.capturedImages.push(request.capturedImage);
-	          me.setState({ status: 'captured' });
-	        } else if (request.msg == 'progress') {
-	          me.setState({ status: 'progress', progress: request.progress });
-	        }
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'componentDidMount',
-	    value: function componentDidMount() {
-	      var me = this;
-	      if (this.state.currentAction == 'comment') {
-	        chrome.tabs.getSelected(null, function (tab) {
-	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
-	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
-	            me.setState({ status: 'progress' });
-	            localStorage.currentAction = "";
-	          });
-	        });
-	      } else if (this.state.currentAction == 'crop') {
-	        chrome.tabs.getSelected(null, function (tab) {
-	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
-	            chrome.runtime.sendMessage({ msg: 'takeVisiblePageScreenshot' });
-	            me.setState({ status: 'progress' });
-	            localStorage.currentAction = "";
-	          });
-	        });
-	      }
-	    }
-	  }, {
-	    key: 'takeScreenshoot',
-	    value: function takeScreenshoot(e) {
-	      chrome.runtime.sendMessage({ msg: 'takeVisiblePageScreenshot' });
-	    }
-	  }, {
-	    key: 'takeFullPageScreenshoot',
-	    value: function takeFullPageScreenshoot() {
-	      chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
-	    }
-	  }, {
-	    key: 'snapScreen',
-	    value: function snapScreen() {
-	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {
+	      var xhr = new XMLHttpRequest();
+	      var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
+	      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
+	      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	      xhr.onreadystatechange = function () {
+	        if (xhr.readyState != 4) return;
+	        if (xhr.status != 200) {
+	          me.setState({ status: xhr.status + ': ' + xhr.statusText });
+	        } else {
+	          console.log(xhr.responseText);
+	          localStorage.token = JSON.stringify(JSON.parse(xhr.responseText).token);
 	          window.close();
-	        });
-	      });
+	        }
+	      };
+	      xhr.send(json);
 	    }
 	  }, {
-	    key: 'addComment',
-	    value: function addComment() {
-	      chrome.tabs.getSelected(null, function (tab) {
-	        chrome.tabs.executeScript(tab.id, { code: 'window.codesign = {me: ' + localStorage.me + '}' }, function () {
-	          chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
-	            window.close();
-	          });
-	        });
-	      });
+	    key: 'changeMode',
+	    value: function changeMode() {
+	      /*    this.state.signUpOrLogIn = !this.state.signUpOrLogIn;
+	          this.setState({})*/
 	    }
 	  }, {
-	    key: 'imgClick',
-	    value: function imgClick(url, e) {
-	      chrome.tabs.create({ url: url });
-	    }
-	  }, {
-	    key: 'backToActions',
-	    value: function backToActions() {
-	      this.state.capturedImages = JSON.parse(localStorage.capturedImages || '[]');
-	      this.setState({ status: 'actions' });
-	    }
-	  }, {
-	    key: 'logOut',
-	    value: function logOut() {
-	      this.setState({ token: null });
-	      localStorage.token = '';
-	      chrome.tabs.create({ 'url': chrome.extension.getURL('login.html') }, function (tab) {});
-	    }
-	  }, {
-	    key: 'removeImage',
-	    value: function removeImage(img) {
-	      this.state.images.splice(this.state.images.indexOf(img), 1);
-	      localStorage.images = JSON.stringify(this.state.images);
-	      this.setState({});
-	    }
-	  }, {
-	    key: 'checkUploadImage',
-	    value: function checkUploadImage(img) {
-	      if (this.state.checkedImages.indexOf(img) > -1) {
-	        this.state.checkedImages.splice(this.state.checkedImages.indexOf(img), 1);
-	      } else {
-	        this.state.checkedImages.push(img);
-	      }
-	      this.setState({});
-	    }
-	  }, {
-	    key: 'uploadChecked',
-	    value: function uploadChecked() {
-	      this.state.capturedImages = this.state.checkedImages;
-	      localStorage.capturedImages = JSON.stringify(this.state.capturedImages);
-	      this.setState({ status: 'captured' });
-	    }
-	  }, {
-	    key: 'renderPopup',
-	    value: function renderPopup() {
-	      var _this2 = this;
-	
-	      if (this.state.status == 'progress') {
-	        return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } });
-	      } else if (this.state.status == 'captured') {
-	        return _react2.default.createElement(_selectAndUpload2.default, {
-	          key: 'upload',
-	          backToActions: this.backToActions.bind(this),
-	          handleUpload: this.backToActions.bind(this),
-	          images: this.state.capturedImages });
-	      } else if (this.state.status == 'actions') {
-	        return _react2.default.createElement(
-	          'div',
-	          { id: 'screenshot-app' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'actions' },
-	            this.state.unsupported ? _react2.default.createElement(
-	              'p',
-	              { className: 'unsupported' },
-	              'This page don\'t supported capture screenshot'
-	            ) : [_react2.default.createElement(
-	              'div',
-	              { key: '1', onClick: this.takeFullPageScreenshoot.bind(this) },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                'Snap a full page'
-	              )
-	            ), _react2.default.createElement(
-	              'div',
-	              { key: '2', onClick: this.takeScreenshoot.bind(this) },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                'Snap visible part'
-	              )
-	            ), _react2.default.createElement(
-	              'div',
-	              { key: '3', onClick: this.snapScreen.bind(this) },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                'Snap screen area'
-	              )
-	            ), _react2.default.createElement(
-	              'div',
-	              { key: '4', onClick: this.addComment.bind(this) },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                'Add comment'
-	              )
-	            ), this.state.capturedImages.length ? _react2.default.createElement(
-	              'div',
-	              { className: 'back-to-upload', key: '5', onClick: function onClick() {
-	                  return _this2.setState({ status: 'captured' });
-	                } },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                'Back to uploads'
-	              )
-	            ) : null]
-	          ),
-	          !this.state.capturedImages.length ? _react2.default.createElement(
-	            'div',
-	            { className: 'title-and-links' },
-	            _react2.default.createElement(
-	              'p',
-	              null,
-	              'codesign.io'
-	            ),
-	            _react2.default.createElement(
-	              'p',
-	              null,
-	              'Simplest feedback tool'
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'links' },
-	              _react2.default.createElement(
-	                'a',
-	                { href: 'http://www.codesign.io/dashboard/', target: '_blank' },
-	                'Dashboard'
-	              ),
-	              _react2.default.createElement(
-	                'a',
-	                { className: 'imagesList', onClick: function onClick() {
-	                    return _this2.setState({ status: 'list' });
-	                  } },
-	                'History'
-	              ),
-	              _react2.default.createElement(
-	                'a',
-	                { className: 'logOut', onClick: this.logOut.bind(this) },
-	                'Log out'
-	              )
-	            )
-	          ) : null
-	        );
-	      } else if (this.state.status == 'list') {
-	        return _react2.default.createElement(
-	          'div',
-	          { id: 'images-list' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'imagesList' },
-	            this.state.images && this.state.images.concat([]).reverse().map((function (img, i) {
-	              return _react2.default.createElement(
-	                'div',
-	                { className: 'images-wrapper', key: i },
-	                _react2.default.createElement(
-	                  'div',
-	                  { className: 'checkbox' },
-	                  _react2.default.createElement('input', { type: 'checkbox', checked: this.state.checkedImages.indexOf(img) > -1, onChange: this.checkUploadImage.bind(this, img) })
-	                ),
-	                _react2.default.createElement(
-	                  'div',
-	                  { className: 'image' },
-	                  _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link) }),
-	                  _react2.default.createElement('div', { className: 'removeIcon', onClick: this.removeImage.bind(this, img) })
-	                )
-	              );
-	            }).bind(this))
-	          ),
-	          this.state.checkedImages.length ? _react2.default.createElement(
-	            'div',
-	            { onClick: this.uploadChecked.bind(this), className: 'upload-to-actions' },
-	            'Upload'
-	          ) : null,
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'back-to-actions', onClick: function onClick() {
-	                return _this2.setState({ status: 'actions' });
-	              } },
-	            'Back'
-	          )
-	        );
-	      }
+	    key: 'handleOauth',
+	    value: function handleOauth() {
+	      chrome.runtime.sendMessage({ msg: 'startOauth' });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      var signUpOrLogIn = this.state.signUpOrLogIn;
 	      return _react2.default.createElement(
 	        'div',
-	        { id: 'popup' },
-	        this.renderPopup()
+	        { className: 'modal-root modal-backdrop' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'modal-body AuthModal' },
+	          _react2.default.createElement(
+	            'div',
+	            null,
+	            this.state.status && _react2.default.createElement(
+	              'p',
+	              null,
+	              'Wrong email or password'
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'title' },
+	              signUpOrLogIn ? 'Sign Up' : 'Log In'
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              _react2.default.createElement(
+	                'a',
+	                { onClick: this.handleOauth.bind(this), href: 'https://www.facebook.com/dialog/oauth?scope=email&client_id=528390150556681&redirect_uri=http://www.codesign.io/?oauthProvider=facebook&state=/', className: 'facebook-login-btn' },
+	                _react2.default.createElement(
+	                  'span',
+	                  null,
+	                  signUpOrLogIn ? 'Sign Up' : 'Log In'
+	                ),
+	                _react2.default.createElement(
+	                  'span',
+	                  null,
+	                  ' with Facebook'
+	                )
+	              ),
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'other-social-logins' },
+	                _react2.default.createElement(
+	                  'span',
+	                  null,
+	                  'or '
+	                ),
+	                _react2.default.createElement(
+	                  'a',
+	                  { onClick: this.handleOauth.bind(this), href: 'https://accounts.google.com/o/oauth2/auth?response_type=code&scope=openid%20email&client_id=577728361914-n4k1d2unaaqpje4r5pfivs7p3n095at8.apps.googleusercontent.com&redirect_uri=http://www.codesign.io/?oauthProvider=google&state=/', className: 'google' },
+	                  'Google'
+	                ),
+	                _react2.default.createElement(
+	                  'span',
+	                  null,
+	                  ', '
+	                ),
+	                _react2.default.createElement(
+	                  'a',
+	                  { onClick: this.handleOauth.bind(this), href: 'https://github.com/login/oauth/authorize?scope=user:email&client_id=a1a0e732bd0f2d6696ca&redirect_uri=http://www.codesign.io/?oauthProvider=github&state=/', className: 'github' },
+	                  'Github'
+	                )
+	              )
+	            ),
+	            _react2.default.createElement(
+	              'form',
+	              { className: 'auth-form' },
+	              _react2.default.createElement(
+	                'span',
+	                { className: 'auth-form-title' },
+	                'or ',
+	                signUpOrLogIn ? 'Sign Up' : 'Log In',
+	                ' with Email'
+	              ),
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'inputs' },
+	                signUpOrLogIn && _react2.default.createElement('input', { name: 'name', type: 'text', ref: 'name', placeholder: 'Name' }),
+	                _react2.default.createElement('input', { name: 'email', type: 'text', ref: 'email', placeholder: 'Email' }),
+	                _react2.default.createElement('input', { name: 'password', type: 'password', ref: 'password', placeholder: 'Password' }),
+	                _react2.default.createElement('input', { type: 'submit', className: 'form-submit-btn', onClick: this.handleSubmit.bind(this),
+	                  value: signUpOrLogIn ? 'Sign Up' : 'Log In' })
+	              )
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'auth-info' },
+	              _react2.default.createElement(
+	                'span',
+	                null,
+	                _react2.default.createElement(
+	                  'span',
+	                  null,
+	                  'Please '
+	                ),
+	                _react2.default.createElement(
+	                  'span',
+	                  { className: 'auth-link', onClick: this.changeMode.bind(this) },
+	                  signUpOrLogIn ? 'Log In' : 'Sign Up'
+	                ),
+	                _react2.default.createElement(
+	                  'span',
+	                  null,
+	                  ' if you already have an account'
+	                )
+	              )
+	            )
+	          )
+	        )
 	      );
 	    }
 	  }]);
 	
-	  return App;
+	  return LoginForm;
 	})(_react2.default.Component);
 	
-	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));
+	exports.default = LoginForm;
+	
+	_reactDom2.default.render(_react2.default.createElement(LoginForm, null), document.getElementById('app'));
 
 /***/ },
 /* 1 */
@@ -20701,281 +20563,6 @@
 	
 	  return new Blob([uInt8Array], { type: contentType });
 	}
-
-/***/ },
-/* 163 */,
-/* 164 */
-/*!*********************************************!*\
-  !*** ./app/components/select-and-upload.js ***!
-  \*********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _utils = __webpack_require__(/*! ./../utils */ 162);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var SelectAndUpload = (function (_React$Component) {
-	  _inherits(SelectAndUpload, _React$Component);
-	
-	  function SelectAndUpload(props) {
-	    _classCallCheck(this, SelectAndUpload);
-	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SelectAndUpload).call(this, props));
-	
-	    _this3.state = {
-	      folders: JSON.parse(localStorage.folders || '[]'),
-	      boards: JSON.parse(localStorage.boards || '{}'),
-	      activeBoard: JSON.parse(localStorage.activeBoard || '{"id": "new_board"}'),
-	      activeFolder: JSON.parse(localStorage.activeFolder || '{"id": -1, "title": "My boards"}'),
-	      selectActiveFolder: { id: 1, title: "My boards" },
-	      images: props.images
-	    };
-	    return _this3;
-	  }
-	
-	  _createClass(SelectAndUpload, [{
-	    key: 'componentWillMount',
-	    value: function componentWillMount() {
-	      var token = localStorage.token;
-	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data1) {
-	        var activeFolder = data1.results.map(function (f) {
-	          return f.id;
-	        }).indexOf(this.state.activeFolder.id) == -1 ? data1.results.filter(function (fol) {
-	          return fol.title == "My boards";
-	        })[0] : this.state.activeFolder;
-	
-	        this.setState({
-	          folders: data1.results,
-	          activeFolder: activeFolder
-	        });
-	        localStorage.folders = JSON.stringify(data1.results);
-	
-	        (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
-	          var activeBoard = data2.results.map(function (b) {
-	            return b.id;
-	          }).indexOf(this.state.activeBoard.id) == -1 ? { id: 'new_board' } : this.state.activeBoard;
-	
-	          this.state.boards[activeFolder.id] = data2.results;
-	          this.setState({
-	            activeBoard: activeBoard
-	          });
-	          localStorage.boards = JSON.stringify(this.state.boards);
-	        }).bind(this));
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'setFolder',
-	    value: function setFolder(e) {
-	      var token = localStorage.token;
-	      var activeFolder = this.state.folders.filter(function (f) {
-	        return f.id == parseInt(e.target.value);
-	      })[0];
-	      this.setState({ selectActiveFolder: activeFolder });
-	      (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data) {
-	        this.state.boards[activeFolder.id] = data.results;
-	        localStorage.boards = JSON.stringify(this.state.boards);
-	        this.setState({ activeBoard: { id: 'new_board' } });
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'uploadImage',
-	    value: function uploadImage() {
-	
-	      chrome.runtime.sendMessage({
-	        msg: 'uploadImages',
-	        folders: this.state.folders,
-	        activeBoard: this.state.activeBoard,
-	        activeFolder: this.state.activeFolder
-	
-	      });
-	    }
-	  }, {
-	    key: 'handleRemove',
-	    value: function handleRemove() {
-	      this.state.images.pop();
-	      localStorage.capturedImages = JSON.stringify(this.state.images);
-	      if (!this.state.images.length) {
-	        this.props.backToActions();
-	      } else {
-	        this.setState({});
-	      }
-	    }
-	  }, {
-	    key: 'toogleSelectors',
-	    value: function toogleSelectors(e) {
-	      var _this = this;
-	
-	      if (e.target.innerHTML == 'Save') {
-	        var activeFolder = this.state.selectActiveFolder;
-	
-	        var activeBoard;
-	        if (this.refs.boardsSelect.value !== "new_board") {
-	          activeBoard = this.state.boards[activeFolder.id].filter(function (b) {
-	            return b.id == parseInt(_this.refs.boardsSelect.value);
-	          })[0];
-	        } else {
-	          activeBoard = { id: "new_board" };
-	        }
-	
-	        this.setState({ activeFolder: activeFolder, activeBoard: activeBoard });
-	        localStorage.activeFolder = JSON.stringify(activeFolder);
-	        localStorage.activeBoard = JSON.stringify(activeBoard);
-	      } else {
-	        this.setState({
-	          selectActiveFolder: this.state.activeFolder
-	        });
-	      }
-	
-	      this.setState({
-	        edit: !this.state.edit
-	      });
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var _this2 = this;
-	
-	      return _react2.default.createElement(
-	        'div',
-	        null,
-	        _react2.default.createElement(
-	          'div',
-	          { key: 'screenshot', className: 'screenshot' },
-	          this.state.images.concat([]).reverse().map(function (img, i) {
-	            return _react2.default.createElement(
-	              'div',
-	              { className: 'image' },
-	              _react2.default.createElement('img', { key: i, src: img.link }),
-	              _react2.default.createElement('div', { onClick: _this2.handleRemove.bind(_this2), className: 'removeIcon' })
-	            );
-	          })
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'uploadWidget' },
-	          _react2.default.createElement(
-	            'button',
-	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	            'UPLOAD ',
-	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : null
-	          ),
-	          this.state.edit ? _react2.default.createElement(
-	            'div',
-	            { className: 'selectors' },
-	            _react2.default.createElement(
-	              'p',
-	              null,
-	              'FOLDER'
-	            ),
-	            _react2.default.createElement(
-	              'select',
-	              { defaultValue: this.state.activeFolder.id, ref: 'foldersSelect', onChange: this.setFolder.bind(this) },
-	              this.state.folders && this.state.folders.map(function (folder, i) {
-	                return _react2.default.createElement(
-	                  'option',
-	                  { key: i, value: folder.id },
-	                  folder.title
-	                );
-	              })
-	            ),
-	            _react2.default.createElement(
-	              'p',
-	              null,
-	              'BOARD'
-	            ),
-	            _react2.default.createElement(
-	              'select',
-	              { defaultValue: this.state.activeBoard.id, ref: 'boardsSelect' },
-	              _react2.default.createElement(
-	                'option',
-	                { key: 'new board', className: 'new_board_option', value: 'new_board' },
-	                '                Create new board'
-	              ),
-	              this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function (board, i) {
-	                return _react2.default.createElement(
-	                  'option',
-	                  { key: i, value: board.id },
-	                  board.title
-	                );
-	              })
-	            )
-	          ) : _react2.default.createElement(
-	            'div',
-	            { className: 'selectors-titles' },
-	            this.state.activeBoard.id == 'new_board' ? [_react2.default.createElement(
-	              'p',
-	              { key: '1' },
-	              'Wiil creating new board'
-	            ), _react2.default.createElement(
-	              'p',
-	              { key: '2' },
-	              'in folder: "',
-	              this.state.activeFolder.title,
-	              '"'
-	            )] : [_react2.default.createElement(
-	              'p',
-	              { key: '1' },
-	              'Upload images to existing "',
-	              this.state.activeBoard.title,
-	              '" board'
-	            ), _react2.default.createElement(
-	              'p',
-	              { key: '2' },
-	              'in "',
-	              this.state.activeFolder.title,
-	              '" folder.'
-	            )]
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'upload-actions' },
-	            _react2.default.createElement(
-	              'a',
-	              { onClick: this.toogleSelectors.bind(this) },
-	              this.state.edit ? 'Save' : 'Edit'
-	            ),
-	            this.state.edit && _react2.default.createElement(
-	              'a',
-	              { onClick: function onClick() {
-	                  return _this2.setState({ edit: false });
-	                } },
-	              'Cancel'
-	            ),
-	            _react2.default.createElement(
-	              'a',
-	              { onClick: function onClick() {
-	                  return _this2.props.backToActions();
-	                } },
-	              '+ Make one more snap'
-	            )
-	          )
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return SelectAndUpload;
-	})(_react2.default.Component);
-	
-	exports.default = SelectAndUpload;
 
 /***/ }
 /******/ ]);
