@@ -34,9 +34,8 @@ function getParameterByName(name) {
   return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-var matchUrl = window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/);
 
-if (matchUrl){
+if (window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/)){
   chrome.extension.sendRequest({msg: 'checkStartOauth'}, function(startOauth){
     if (startOauth) {
       var urlProvider = getParameterByName('oauthProvider');
@@ -83,4 +82,7 @@ if (matchUrl){
       }
     }
   });
+} else if (window.location.toString().match(/http:\/\/www.codesign.io\/checkauthorization/)) {
+  chrome.extension.sendRequest({msg: 'stopOauth', token: JSON.parse(localStorage["user.token"] || 'null')});
 }
+

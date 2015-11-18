@@ -69,7 +69,7 @@
 	
 	var _utils = __webpack_require__(/*! ./utils */ 162);
 	
-	var _selectAndUpload = __webpack_require__(/*! ./components/select-and-upload */ 164);
+	var _selectAndUpload = __webpack_require__(/*! ./components/select-and-upload */ 163);
 	
 	var _selectAndUpload2 = _interopRequireDefault(_selectAndUpload);
 	
@@ -20703,8 +20703,7 @@
 	}
 
 /***/ },
-/* 163 */,
-/* 164 */
+/* 163 */
 /*!*********************************************!*\
   !*** ./app/components/select-and-upload.js ***!
   \*********************************************/

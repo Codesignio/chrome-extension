@@ -73,7 +73,7 @@
 	}
 	
 	chrome.runtime.onInstalled.addListener(function () {
-	  chrome.tabs.create({ 'url': chrome.extension.getURL('login.html') }, function (tab) {});
+	  chrome.tabs.create({ 'url': 'http://www.codesign.io/checkauthorization' }, function (tab) {});
 	});
 	
 	chrome.extension.onRequest.addListener(function (request, sender, callback) {
@@ -98,6 +98,7 @@
 	      localStorage.token = request.token;
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.remove(tab.id);
+	        chrome.tabs.create({ 'url': chrome.extension.getURL('login-sucessfully.html') }, function (tab) {});
 	      });
 	    } else {
 	      chrome.tabs.getSelected(null, function (tab) {

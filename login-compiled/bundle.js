@@ -102,27 +102,75 @@
 	      var me = this;
 	      e.preventDefault();
 	
-	      var xhr = new XMLHttpRequest();
-	      var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
-	      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
-	      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-	      xhr.onreadystatechange = function () {
-	        if (xhr.readyState != 4) return;
-	        if (xhr.status != 200) {
-	          me.setState({ status: xhr.status + ': ' + xhr.statusText });
-	        } else {
-	          console.log(xhr.responseText);
-	          localStorage.token = JSON.stringify(JSON.parse(xhr.responseText).token);
-	          window.close();
-	        }
-	      };
-	      xhr.send(json);
+	      if (this.state.signUpOrLogIn) {
+	        var xhr = new XMLHttpRequest();
+	        var json = JSON.stringify({ "username": me.refs.email.value, "password1": me.refs.password.value, "password2": me.refs.password.value });
+	        xhr.open("POST", 'http://api.codesign.io/users/registration/', true);
+	        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	        xhr.onreadystatechange = function () {
+	          if (xhr.readyState != 4) return;
+	          if (xhr.status != 201) {
+	            me.setState({ status: xhr.status + ': ' + xhr.responseText });
+	          } else {
+	            console.log(xhr.responseText);
+	
+	            var xhr2 = new XMLHttpRequest();
+	            var json = JSON.stringify({ "username": me.refs.email.value, "password": me.refs.password.value });
+	            xhr2.open("POST", 'http://api.codesign.io/users/token/username/', true);
+	            xhr2.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	            xhr2.onreadystatechange = function () {
+	              if (xhr2.readyState != 4) return;
+	              if (xhr2.status != 200) {
+	                me.setState({ status: xhr2.status + ': ' + xhr2.responseText });
+	              } else {
+	                console.log(xhr2.responseText);
+	                var token = JSON.parse(xhr2.responseText).token;
+	                localStorage.token = JSON.stringify(token);
+	
+	                var xhr3 = new XMLHttpRequest();
+	                var json = JSON.stringify({ "first_name": me.refs.name.value });
+	                xhr3.open("PUT", 'http://api.codesign.io/users/me/', true);
+	                xhr3.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	                xhr3.setRequestHeader('Authorization', 'Token ' + token);
+	                xhr3.onreadystatechange = function () {
+	                  if (xhr3.readyState != 4) return;
+	                  if (xhr3.status != 200) {
+	                    me.setState({ status: xhr3.status + ': ' + xhr3.responseText });
+	                  } else {
+	                    console.log(xhr3.responseText);
+	                    window.close();
+	                  }
+	                };
+	                xhr3.send(json);
+	              }
+	            };
+	            xhr2.send(json);
+	          }
+	        };
+	        xhr.send(json);
+	      } else {
+	        var xhr = new XMLHttpRequest();
+	        var json = JSON.stringify({ username: this.refs.email.value, password: this.refs.password.value });
+	        xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
+	        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	        xhr.onreadystatechange = function () {
+	          if (xhr.readyState != 4) return;
+	          if (xhr.status != 200) {
+	            me.setState({ status: xhr.status + ': ' + xhr.statusText });
+	          } else {
+	            console.log(xhr.responseText);
+	            localStorage.token = JSON.stringify(JSON.parse(xhr.responseText).token);
+	            window.close();
+	          }
+	        };
+	        xhr.send(json);
+	      }
 	    }
 	  }, {
 	    key: 'changeMode',
 	    value: function changeMode() {
-	      /*    this.state.signUpOrLogIn = !this.state.signUpOrLogIn;
-	          this.setState({})*/
+	      this.state.signUpOrLogIn = !this.state.signUpOrLogIn;
+	      this.setState({});
 	    }
 	  }, {
 	    key: 'handleOauth',
@@ -145,7 +193,7 @@
 	            this.state.status && _react2.default.createElement(
 	              'p',
 	              null,
-	              'Wrong email or password'
+	              this.state.status
 	            ),
 	            _react2.default.createElement(
 	              'div',
@@ -181,16 +229,6 @@
 	                  'a',
 	                  { onClick: this.handleOauth.bind(this), href: 'https://accounts.google.com/o/oauth2/auth?response_type=code&scope=openid%20email&client_id=577728361914-n4k1d2unaaqpje4r5pfivs7p3n095at8.apps.googleusercontent.com&redirect_uri=http://www.codesign.io/?oauthProvider=google&state=/', className: 'google' },
 	                  'Google'
-	                ),
-	                _react2.default.createElement(
-	                  'span',
-	                  null,
-	                  ', '
-	                ),
-	                _react2.default.createElement(
-	                  'a',
-	                  { onClick: this.handleOauth.bind(this), href: 'https://github.com/login/oauth/authorize?scope=user:email&client_id=a1a0e732bd0f2d6696ca&redirect_uri=http://www.codesign.io/?oauthProvider=github&state=/', className: 'github' },
-	                  'Github'
 	                )
 	              )
 	            ),
