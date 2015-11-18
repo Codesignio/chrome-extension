@@ -138,7 +138,8 @@
 	                    me.setState({ status: xhr3.status + ': ' + xhr3.responseText });
 	                  } else {
 	                    console.log(xhr3.responseText);
-	                    window.close();
+	                    //window.close();
+	                    chrome.extension.sendRequest({ msg: 'stopOauth', token: token });
 	                  }
 	                };
 	                xhr3.send(json);
@@ -159,8 +160,10 @@
 	            me.setState({ status: xhr.status + ': ' + xhr.statusText });
 	          } else {
 	            console.log(xhr.responseText);
-	            localStorage.token = JSON.stringify(JSON.parse(xhr.responseText).token);
-	            window.close();
+	            var token = JSON.parse(xhr.responseText).token;
+	            localStorage.token = JSON.stringify(token);
+	            //window.close();
+	            chrome.extension.sendRequest({ msg: 'stopOauth', token: token });
 	          }
 	        };
 	        xhr.send(json);

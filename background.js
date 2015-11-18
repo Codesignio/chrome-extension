@@ -50,11 +50,13 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
   }  else if (request.msg == 'checkStartOauth'){
     callback(startOauth);
   } else if (request.msg == 'stopOauth'){
+    console.log('stopOauth');
     if (request.token){
       localStorage.token = request.token;
       chrome.tabs.getSelected(null, function (tab) {
         chrome.tabs.remove(tab.id);
         chrome.tabs.create({'url': chrome.extension.getURL('login-sucessfully.html')}, function (tab) {});
+        if (!request.fromSite) chrome.tabs.create({'url': 'http://www.codesign.io/syncauthorization', selected: false}, function (tab) {});
       })
     } else {
       chrome.tabs.getSelected(null, function (tab) {
@@ -62,6 +64,15 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
       })
     }
     startOauth = null;
+  } else if (request.msg == 'syncAuthorization'){
+    if (!request.token){
+      callback(localStorage.token)
+    } else {
+      chrome.tabs.remove(sender.tab.id);
+    }
+  } else if (request.msg == 'closeWindow'){
+    console.log('closeWindow');
+    chrome.tabs.remove(sender.tab.id);
   }
 });
 

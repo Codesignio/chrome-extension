@@ -83,6 +83,11 @@ if (window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/
     }
   });
 } else if (window.location.toString().match(/http:\/\/www.codesign.io\/checkauthorization/)) {
-  chrome.extension.sendRequest({msg: 'stopOauth', token: JSON.parse(localStorage["user.token"] || 'null')});
+  chrome.extension.sendRequest({msg: 'stopOauth', token: JSON.parse(localStorage["user.token"] || 'null'), fromSite: true});
+} else if (window.location.toString().match(/http:\/\/www.codesign.io\/syncauthorization/)){
+  chrome.extension.sendRequest({msg: 'syncAuthorization', token: JSON.parse(localStorage["user.token"] || 'null')}, function(token){
+    localStorage["user.token"] = JSON.stringify(token);
+    chrome.extension.sendRequest({msg: 'closeWindow'})
+  })
 }
 
