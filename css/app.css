@@ -41,18 +41,17 @@ html {
 
 .screenshot {
     background-color: white;
-    padding: 10px;
+    padding: 15px;
     max-height: 300px;
     overflow: auto;
 }
 
 .screenshot .image {
-    margin: auto;
     display: block;
-    width: 200px;
+    width: 270px;
     border: 1px solid whitesmoke;
-    margin-bottom: 15px;
     position: relative;
+    margin-bottom: 15px;
 }
 
 img {
@@ -66,8 +65,6 @@ img {
     right: 0;
     top: 0;
     background-image: url(./../remove-icon.svg);
-    background-color: rgba(255, 255, 255, 0.65);
-    border: 1px solid whitesmoke;
     background-size: contain;
 }
 
@@ -78,7 +75,8 @@ img {
 }
 
 .back-to-upload {
-    background-color: #222;
+    background-color: white;
+    color: #222;
 }
 
 #uploadButton{
@@ -90,6 +88,7 @@ img {
     color: white;
     font-size: 14px;
     font-weight: 500;
+    cursor: pointer;
 }
 
 .uploadWidget > p:first-of-type {
@@ -120,6 +119,10 @@ img {
     font-weight: 300;
 }
 
+.upload-actions a:last-child {
+    text-align: end;
+}
+
 
 .selectors {
     margin-top: 20px;
@@ -132,6 +135,7 @@ img {
     font-weight: 300;
     text-align: left;
     color: #9e9e9e;
+    letter-spacing: 1px;
 }
 
 .selectors select {
@@ -146,6 +150,7 @@ img {
     width: 100%;
     color: #9e9e9e;
     padding-left: 20px;
+    line-height: 45px;
 }
 
 
@@ -176,6 +181,8 @@ img {
     flex: auto ;
     display: flex;
     align-items: center;
+    height: 75px;
+    flex-shrink: 0;
 }
 
 .actions > div > span {
@@ -235,7 +242,7 @@ img {
     cursor: pointer;
 }
 
-.title-and-links .links a:first-child {
+.title-and-links .links a:hover {
     color: #58b684;
 }
 
@@ -415,4 +422,12 @@ form {
 }
 .image-actions > div:nth-child(2) {
     background-color: #5fb583;
+}
+
+.title-and-links {
+    padding-left: 14px;
+}
+
+.title-and-links p {
+    margin-left: 20px;
 }

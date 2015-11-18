@@ -17,7 +17,8 @@ class App extends React.Component {
       capturedImages: capturedImages,
       checkedImages: [],
       unsupported: false,
-      currentAction: localStorage.currentAction
+      currentAction: localStorage.currentAction,
+      showHideIcon: []
     }
   }
 
@@ -143,6 +144,17 @@ class App extends React.Component {
     this.setState({status: 'captured'})
   }
 
+  showIcon(img, e){
+    e.stopPropagation();
+    this.state.showHideIcon[img] = true;
+    this.setState({})
+  }
+  hideIcon(img, e){
+    e.stopPropagation();
+    this.state.showHideIcon[img] = false;
+    this.setState({})
+  }
+
   renderPopup(){
 
     if (this.state.status == 'progress'){
@@ -164,7 +176,7 @@ class App extends React.Component {
                 <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
                 <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,
                 <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div>,
-                  this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span>Back to uploads</span></div> : null
+                  this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span>Back to upload dialog</span></div> : null
               ]}
           </div>
           {!this.state.capturedImages.length ? <div className="title-and-links">
@@ -189,8 +201,12 @@ class App extends React.Component {
                   <input type="checkbox" checked={this.state.checkedImages.indexOf(img) > -1} onChange={this.checkUploadImage.bind(this, img)}/>
                     </div>
                   <div className="image">
-                  <img src={img.link} onClick={this.imgClick.bind(this, img.link)}/>
-                  <div className="removeIcon" onClick={this.removeImage.bind(this, img)}></div>
+                  <img src={img.link}
+                       onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)}
+                       onClick={this.imgClick.bind(this, img.link)}/>
+                  <div className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}
+                       onMouseMove={this.showIcon.bind(this, i)}
+                       onClick={this.removeImage.bind(this, img)}></div>
                   </div>
                 </div>
               )

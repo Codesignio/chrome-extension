@@ -13,6 +13,7 @@ export default class SelectAndUpload extends React.Component {
       activeFolder: JSON.parse(localStorage.activeFolder || '{"id": -1, "title": "My boards"}'),
       selectActiveFolder: {id: 1, title: "My boards"},
       images: props.images,
+      showHideIcon: []
     }
   }
 
@@ -101,11 +102,22 @@ export default class SelectAndUpload extends React.Component {
     })
   }
 
+  showIcon(img, e){
+    e.stopPropagation();
+    this.state.showHideIcon[img] = true;
+    this.setState({})
+  }
+  hideIcon(img, e){
+    e.stopPropagation();
+    this.state.showHideIcon[img] = false;
+    this.setState({})
+  }
+
   render(){
     return (
       <div>
-        <div key="screenshot" className="screenshot">
-          {this.state.images.concat([]).reverse().map((img, i) => <div className="image"><img key={i} src={img.link}/><div onClick={this.handleRemove.bind(this)} className="removeIcon"></div></div>)}
+        <div key="screenshot"  className="screenshot">
+          {this.state.images.concat([]).reverse().map((img, i) => <div className="image"><img onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.link}/><div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}></div></div>)}
         </div>
         <div className="uploadWidget">
           <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : null}</button>
@@ -124,13 +136,12 @@ export default class SelectAndUpload extends React.Component {
               })}
             </select>
           </div> : <div className="selectors-titles">
-            {this.state.activeBoard.id == 'new_board' ? [<p key="1">Wiil creating new board</p>,<p key="2">in folder: "{this.state.activeFolder.title}"</p>] :
-              [<p key="1">Upload images to existing "{this.state.activeBoard.title}" board</p>, <p key="2">in "{this.state.activeFolder.title}" folder.</p>]}
+            {this.state.activeBoard.id == 'new_board' ? <p key="1">Wiil creating new board in folder: "{this.state.activeFolder.title}"</p> : <p key="1">Upload to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
           </div>}
           <div className="upload-actions">
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
-            <a onClick={()=> this.props.backToActions()}>+ Make one more snap</a>
+            <a onClick={()=> this.props.backToActions()}>+ Snap more</a>
           </div>
         </div>
       </div>

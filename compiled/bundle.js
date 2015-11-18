@@ -97,7 +97,8 @@
 	      capturedImages: capturedImages,
 	      checkedImages: [],
 	      unsupported: false,
-	      currentAction: localStorage.currentAction
+	      currentAction: localStorage.currentAction,
+	      showHideIcon: []
 	    };
 	    return _this;
 	  }
@@ -229,6 +230,20 @@
 	      this.setState({ status: 'captured' });
 	    }
 	  }, {
+	    key: 'showIcon',
+	    value: function showIcon(img, e) {
+	      e.stopPropagation();
+	      this.state.showHideIcon[img] = true;
+	      this.setState({});
+	    }
+	  }, {
+	    key: 'hideIcon',
+	    value: function hideIcon(img, e) {
+	      e.stopPropagation();
+	      this.state.showHideIcon[img] = false;
+	      this.setState({});
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -292,7 +307,7 @@
 	              _react2.default.createElement(
 	                'span',
 	                null,
-	                'Back to uploads'
+	                'Back to upload dialog'
 	              )
 	            ) : null]
 	          ),
@@ -351,8 +366,12 @@
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'image' },
-	                  _react2.default.createElement('img', { src: img.link, onClick: this.imgClick.bind(this, img.link) }),
-	                  _react2.default.createElement('div', { className: 'removeIcon', onClick: this.removeImage.bind(this, img) })
+	                  _react2.default.createElement('img', { src: img.link,
+	                    onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i),
+	                    onClick: this.imgClick.bind(this, img.link) }),
+	                  _react2.default.createElement('div', { className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' },
+	                    onMouseMove: this.showIcon.bind(this, i),
+	                    onClick: this.removeImage.bind(this, img) })
 	                )
 	              );
 	            }).bind(this))
@@ -20745,7 +20764,8 @@
 	      activeBoard: JSON.parse(localStorage.activeBoard || '{"id": "new_board"}'),
 	      activeFolder: JSON.parse(localStorage.activeFolder || '{"id": -1, "title": "My boards"}'),
 	      selectActiveFolder: { id: 1, title: "My boards" },
-	      images: props.images
+	      images: props.images,
+	      showHideIcon: []
 	    };
 	    return _this3;
 	  }
@@ -20848,6 +20868,20 @@
 	      });
 	    }
 	  }, {
+	    key: 'showIcon',
+	    value: function showIcon(img, e) {
+	      e.stopPropagation();
+	      this.state.showHideIcon[img] = true;
+	      this.setState({});
+	    }
+	  }, {
+	    key: 'hideIcon',
+	    value: function hideIcon(img, e) {
+	      e.stopPropagation();
+	      this.state.showHideIcon[img] = false;
+	      this.setState({});
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _this2 = this;
@@ -20862,8 +20896,8 @@
 	            return _react2.default.createElement(
 	              'div',
 	              { className: 'image' },
-	              _react2.default.createElement('img', { key: i, src: img.link }),
-	              _react2.default.createElement('div', { onClick: _this2.handleRemove.bind(_this2), className: 'removeIcon' })
+	              _react2.default.createElement('img', { onMouseOut: _this2.hideIcon.bind(_this2, i), onMouseMove: _this2.showIcon.bind(_this2, i), key: i, src: img.link }),
+	              _react2.default.createElement('div', { onClick: _this2.handleRemove.bind(_this2), onMouseMove: _this2.showIcon.bind(_this2, i), className: 'removeIcon', style: { display: _this2.state.showHideIcon[i] ? 'block' : 'none' } })
 	            );
 	          })
 	        ),
@@ -20919,29 +20953,21 @@
 	          ) : _react2.default.createElement(
 	            'div',
 	            { className: 'selectors-titles' },
-	            this.state.activeBoard.id == 'new_board' ? [_react2.default.createElement(
+	            this.state.activeBoard.id == 'new_board' ? _react2.default.createElement(
 	              'p',
 	              { key: '1' },
-	              'Wiil creating new board'
-	            ), _react2.default.createElement(
-	              'p',
-	              { key: '2' },
-	              'in folder: "',
+	              'Wiil creating new board in folder: "',
 	              this.state.activeFolder.title,
 	              '"'
-	            )] : [_react2.default.createElement(
+	            ) : _react2.default.createElement(
 	              'p',
 	              { key: '1' },
-	              'Upload images to existing "',
+	              'Upload to "',
 	              this.state.activeBoard.title,
-	              '" board'
-	            ), _react2.default.createElement(
-	              'p',
-	              { key: '2' },
-	              'in "',
+	              '" board in "',
 	              this.state.activeFolder.title,
 	              '" folder.'
-	            )]
+	            )
 	          ),
 	          _react2.default.createElement(
 	            'div',
@@ -20963,7 +20989,7 @@
 	              { onClick: function onClick() {
 	                  return _this2.props.backToActions();
 	                } },
-	              '+ Make one more snap'
+	              '+ Snap more'
 	            )
 	          )
 	        )
