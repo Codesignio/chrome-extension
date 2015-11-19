@@ -7,13 +7,30 @@ import cssString from "raw!./../pageStyles.css";
 
 
 class Frame extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {}
+  }
 
   render() {
-    return React.createElement('iframe', assign({}, this.props, {children: undefined}));
+    return !this.state.cancel && React.createElement('iframe', assign({}, this.props, {children: undefined}));
   }
   componentDidMount() {
     this.renderFrameContents();
   }
+
+  onKeyDown(e){
+    if (e.keyCode == 27){
+      var elem = document.getElementById('snap-overlay');
+      if (elem){
+        elem.parentNode.removeChild(elem);
+        this.setState({cancel: true})
+      }
+    }
+  }
+
+
+
   renderFrameContents() {
     var doc = ReactDOM.findDOMNode(this).contentDocument;
     if(doc && doc.readyState === 'complete') {
@@ -29,6 +46,7 @@ class Frame extends React.Component{
         contentTag.setAttribute('style', 'width: 100%; height: 100%;');
         contentTag.setAttribute('id', 'contentTag');
         doc.body.appendChild(contentTag);
+        doc.addEventListener('keydown', this.onKeyDown.bind(this), true)
       }
       var contents = React.createElement('div',
         undefined,
@@ -66,15 +84,21 @@ class Comment extends React.Component {
         me.newPin(assign(codeSignMousePos, {fromContextMenu: true}))
       } else if(request.msg == 'removeOverlay'){
         var elem = document.getElementById('snap-overlay');
-        elem.parentNode.removeChild(elem);
-        me.setState({cancel: true});
+        if (elem){
+          elem.parentNode.removeChild(elem);
+          me.setState({cancel: true});
+        }
         callback();
       }
     });
   }
 
   componentDidMount(){
-    window.addEventListener('scroll', this.onScrollHandler.bind(this))
+    window.addEventListener('scroll', this.onScrollHandler.bind(this));
+  }
+
+  componentWillUnmount(){
+    window.removeEventListener('scroll', this.onScrollHandler.bind(this));
   }
 
   onScrollHandler(){
@@ -85,6 +109,36 @@ class Comment extends React.Component {
       }
     });
   }
+
+  onMouseMoveHandler(e){
+    if(this.state.drag){
+      e.preventDefault();
+      e.stopPropagation();
+      var pin = this.state.dragPin;
+      pin.x = e.pageX;
+      pin.y = e.pageY;
+      this.setState({});
+    } else {
+      this.hidePin()
+    }
+  }
+
+  startDrag(pin, e){
+    if (e.target.getAttribute('class') !== "title unselectable") return;
+    e.preventDefault();
+    e.stopPropagation();
+    this.state.drag = true;
+    this.state.dragPin = pin;
+    this.setState({})
+  }
+
+  endDrag(){
+    this.setState({
+      drag: false,
+      dragPin: null
+    })
+  }
+
 
   newPin(e) {
     if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay-inner') {
@@ -106,7 +160,8 @@ class Comment extends React.Component {
   addPin(pin){
     pin.added = true;
     var timeSeg = (new Date()).toString().split(' ');
-    pin.time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
+    var time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
+    pin.time = time;
     this.setState({resentPin: null});
     var data = {
       msg: 'addPin',
@@ -116,6 +171,12 @@ class Comment extends React.Component {
       time: time
     };
     chrome.extension.sendRequest(data);
+  }
+
+  keyDownHandler(pin, e){
+    if(e.keyCode == 13 && !e.shiftKey){
+      this.addPin(pin)
+    }
   }
 
   cancelPin(pin){
@@ -160,10 +221,10 @@ class Comment extends React.Component {
 
     return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
-      <div id="snap-overlay-inner" style={styles} onMouseMove={this.hidePin.bind(this)}>
+      <div id="snap-overlay-inner" style={styles} onMouseMove={this.onMouseMoveHandler.bind(this)}>
       {this.state.pins.map(function(pin, i){
         return (
-          <div key={i} className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}} onMouseMove={this.showPin.bind(this, pin)}>
+          <div ref={pin} key={i} onMouseDown={this.startDrag.bind(this, pin)} onMouseUp={this.endDrag.bind(this)} className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}} onMouseMove={!this.state.drag && this.showPin.bind(this, pin)}>
             <span className="title unselectable">{i+1}</span>
             <div style={{display: this.state.activePin === pin || this.state.resentPin === pin ? 'block' : 'none'}}>
               <div className="Task">
@@ -182,7 +243,7 @@ class Comment extends React.Component {
                           </div>
                         </div>
                         <div className="comment">
-                          {pin.added ? <div>{pin.text}</div> : <textarea className="input" value={pin.text} onChange={this.textChange.bind(this, pin)} />}
+                          {pin.added ? <span className="Linkify"><div className="readonly-text">{pin.text}</div></span> : <textarea onKeyDown={this.keyDownHandler.bind(this, pin)} className="input" value={pin.text} onChange={this.textChange.bind(this, pin)} />}
                         </div>
                       </div>
                     {!pin.added && <div className="create-buttons">

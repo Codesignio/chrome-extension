@@ -9,7 +9,7 @@ import {dataURItoBlob} from './app/utils';
 
 chrome.contextMenus.create({
   "title": "Add Comment",
-  "contexts": ["page"],
+  "contexts": ["all"],
   "onclick" : clickHandler
 });
 

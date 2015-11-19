@@ -58,7 +58,7 @@
 	
 	chrome.contextMenus.create({
 	  "title": "Add Comment",
-	  "contexts": ["page"],
+	  "contexts": ["all"],
 	  "onclick": clickHandler
 	});
 	
