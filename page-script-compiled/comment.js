@@ -206,12 +206,15 @@
 	    key: 'addPin',
 	    value: function addPin(pin) {
 	      pin.added = true;
+	      var timeSeg = new Date().toString().split(' ');
+	      pin.time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
 	      this.setState({ resentPin: null });
 	      var data = {
 	        msg: 'addPin',
 	        pins: this.state.pins,
 	        url: document.location.toString(),
-	        pageTitle: document.title
+	        pageTitle: document.title,
+	        time: time
 	      };
 	      chrome.extension.sendRequest(data);
 	    }
@@ -312,7 +315,12 @@
 	                                  _react2.default.createElement(
 	                                    'div',
 	                                    null,
-	                                    this.state.me.user.first_name
+	                                    this.state.me.user.first_name + ' ' + this.state.me.user.last_name
+	                                  ),
+	                                  pin.added && _react2.default.createElement(
+	                                    'div',
+	                                    { className: 'date' },
+	                                    pin.time
 	                                  )
 	                                )
 	                              )

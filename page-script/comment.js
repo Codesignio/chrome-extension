@@ -105,12 +105,15 @@ class Comment extends React.Component {
 
   addPin(pin){
     pin.added = true;
+    var timeSeg = (new Date()).toString().split(' ');
+    pin.time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
     this.setState({resentPin: null});
     var data = {
       msg: 'addPin',
       pins: this.state.pins,
       url: document.location.toString(),
-      pageTitle: document.title
+      pageTitle: document.title,
+      time: time
     };
     chrome.extension.sendRequest(data);
   }
@@ -173,7 +176,8 @@ class Comment extends React.Component {
                             <img className="avatar" src={this.state.me.user.profile.avatar_url}
                                  style={{width:'27px', height:'27px'}}/>
                             <div className="user-name">
-                              <div>{this.state.me.user.first_name}</div>
+                              <div>{this.state.me.user.first_name + ' ' + this.state.me.user.last_name}</div>
+                              {pin.added && <div className="date">{pin.time}</div>}
                             </div>
                           </div>
                         </div>
