@@ -355,16 +355,56 @@
 	                            },
 	                            title: pin.text
 	                          }, function (data3) {
-	                            reqCount++;
-	                            if (reqCount == capturedImage.pins.length) {
 	
-	                              capImgCount++;
+	                            function CompleteRequest() {
+	                              reqCount++;
+	                              if (reqCount == capturedImage.pins.length) {
 	
-	                              if (capImgCount == capturedImages.length) {
-	                                window.open("http://www.codesign.io/board/" + activeBoard.client_code);
-	                                chrome.browserAction.setBadgeText({ text: '' });
-	                                localStorage.capturedImages = '[]';
+	                                capImgCount++;
+	
+	                                if (capImgCount == capturedImages.length) {
+	                                  window.open("http://www.codesign.io/board/" + activeBoard.client_code);
+	                                  chrome.browserAction.setBadgeText({ text: '' });
+	                                  localStorage.capturedImages = '[]';
+	                                }
 	                              }
+	                            }
+	
+	                            function CheckComments() {
+	                              if (!pin.children.length) {
+	                                CompleteRequest();
+	                              } else {
+	                                var commentsCount = 0;
+	                                for (var i = 0; i < pin.children.length; i++) {
+	                                  var comment = capturedImage.pins[i];
+	
+	                                  (0, _utils.request)('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
+	                                    "Authorization": 'Token ' + token,
+	                                    "Content-Type": "application/json;charset=UTF-8"
+	                                  }, {
+	                                    title: comment.text
+	                                  }, function () {
+	                                    commentsCount++;
+	                                    if (commentsCount == pin.children.length) {
+	                                      CompleteRequest();
+	                                    }
+	                                  });
+	                                }
+	                              }
+	                            }
+	
+	                            if (pin.completed) {
+	                              (0, _utils.request)('http://api.codesign.io/tasks/' + data3.id, 'PUT', {
+	                                "Authorization": 'Token ' + token,
+	                                "Content-Type": "application/json;charset=UTF-8"
+	                              }, {
+	                                status: "CP"
+	                              }, function () {
+	
+	                                CheckComments();
+	                              });
+	                            } else {
+	                              CheckComments();
 	                            }
 	                          });
 	                        }

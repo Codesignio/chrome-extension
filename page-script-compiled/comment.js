@@ -296,6 +296,18 @@
 	    value: function completePin(pin) {
 	      pin.completed = !pin.completed;
 	      this.setState({});
+	      this.sendData();
+	    }
+	  }, {
+	    key: 'sendData',
+	    value: function sendData() {
+	      var data = {
+	        msg: 'addPin',
+	        pins: this.state.pins,
+	        url: document.location.toString(),
+	        pageTitle: document.title
+	      };
+	      chrome.extension.sendRequest(data);
 	    }
 	  }, {
 	    key: 'render',
@@ -344,8 +356,8 @@
 	                        user: pin.user,
 	                        pins: this.state.pins,
 	                        meUser: this.state.me.user,
-	                        allPins: this.state.pins,
-	                        parent: this
+	                        parent: this,
+	                        sendData: this.sendData.bind(this)
 	                      }),
 	                      pin.added ? [_react2.default.createElement(
 	                        'div',
@@ -371,8 +383,8 @@
 	                              user: comment.user,
 	                              pins: pin.children,
 	                              meUser: this.state.me.user,
-	                              allPins: this.state.pins,
-	                              parent: this
+	                              parent: this,
+	                              sendData: this.sendData.bind(this)
 	
 	                            })
 	                          );
@@ -432,6 +444,7 @@
 	    value: function deletePin(pin) {
 	      this.props.pins.splice(this.props.pins.indexOf(pin), 1);
 	      this.props.parent.setState({});
+	      this.props.sendData();
 	    }
 	  }, {
 	    key: 'addPin',
@@ -443,14 +456,8 @@
 	      var timeSeg = new Date().toString().split(' ');
 	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
 	      pin.time = time;
-	      var data = {
-	        msg: 'addPin',
-	        pins: this.props.allPins,
-	        url: document.location.toString(),
-	        pageTitle: document.title
-	      };
-	      chrome.extension.sendRequest(data);
 	      this.props.parent.setState({ replyButton: true });
+	      this.props.sendData();
 	    }
 	  }, {
 	    key: 'keyDownHandler',
