@@ -244,53 +244,18 @@
 	      if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay-inner') {
 	        this.state.pins.forEach((function (pin) {
 	          if (!pin.text) {
-	            this.state.pins.splice(this.state.pins.indexOf(pin));
+	            this.state.pins.splice(this.state.pins.indexOf(pin), 1);
 	          }
 	        }).bind(this));
 	
 	        var pin = {
 	          x: e.pageX,
-	          y: e.pageY
+	          y: e.pageY,
+	          children: [],
+	          user: this.state.me.user
 	        };
 	        this.state.pins.push(pin);
 	        this.setState({ resentPin: pin });
-	      }
-	    }
-	  }, {
-	    key: 'addPin',
-	    value: function addPin(pin, i) {
-	      var text = this.refs['textarea' + i].value;
-	      if (!text) return;
-	      pin.text = text;
-	      pin.added = true;
-	      var timeSeg = new Date().toString().split(' ');
-	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
-	      pin.time = time;
-	      this.setState({ resentPin: null });
-	      var data = {
-	        msg: 'addPin',
-	        pins: this.state.pins,
-	        url: document.location.toString(),
-	        pageTitle: document.title,
-	        time: time
-	      };
-	      chrome.extension.sendRequest(data);
-	    }
-	  }, {
-	    key: 'keyDownHandler',
-	    value: function keyDownHandler(pin, e) {
-	      if (e.keyCode == 13 && !e.shiftKey) {
-	        this.addPin(pin);
-	      }
-	    }
-	  }, {
-	    key: 'cancelPin',
-	    value: function cancelPin(pin) {
-	      if (pin.text) {
-	        pin.added = true;
-	        this.setState({});
-	      } else {
-	        this.deletePin(pin);
 	      }
 	    }
 	  }, {
@@ -315,23 +280,21 @@
 	      this.setState({ activePin: pin });
 	    }
 	  }, {
-	    key: 'showMenu',
-	    value: function showMenu() {
-	      this.state.menuActive = !this.state.menuActive;
-	      this.setState({});
-	    }
-	  }, {
-	    key: 'editPin',
-	    value: function editPin(pin) {
-	      pin.added = !pin.added;
+	    key: 'addComment',
+	    value: function addComment(pin) {
+	      pin.children.push({
+	        children: [],
+	        text: '',
+	        user: this.state.me.user
+	      });
 	      this.setState({
-	        menuActive: false
+	        replyButton: false
 	      });
 	    }
 	  }, {
-	    key: 'deletePin',
-	    value: function deletePin(pin) {
-	      this.state.pins.splice(this.state.pins.indexOf(pin));
+	    key: 'completePin',
+	    value: function completePin(pin) {
+	      pin.completed = !pin.completed;
 	      this.setState({});
 	    }
 	  }, {
@@ -347,6 +310,8 @@
 	        cursor: 'crosshair'
 	      };
 	
+	      var user = this.state.me.user;
+	
 	      return this.state.cancel ? null : _react2.default.createElement(
 	        Frame,
 	        { style: { width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none' } },
@@ -360,7 +325,7 @@
 	            this.state.pins.map((function (pin, i) {
 	              return _react2.default.createElement(
 	                'div',
-	                { ref: pin, key: i, onMouseDown: this.startDrag.bind(this, pin), onMouseUp: this.endDrag.bind(this), className: 'Pin movable', style: { top: pin.y, left: pin.x, position: 'absolute' }, onMouseMove: !this.state.drag && this.showPin.bind(this, pin) },
+	                { ref: pin, key: i, onMouseDown: this.startDrag.bind(this, pin), onMouseUp: this.endDrag.bind(this), className: (0, _classnames2.default)("Pin movable", { completed: pin.completed }), style: { top: pin.y, left: pin.x, position: 'absolute' }, onMouseMove: !this.state.drag && this.showPin.bind(this, pin) },
 	                _react2.default.createElement(
 	                  'span',
 	                  { className: 'title unselectable' },
@@ -375,106 +340,48 @@
 	                    _react2.default.createElement(
 	                      'div',
 	                      { className: 'task-box' },
-	                      _react2.default.createElement(
+	                      _react2.default.createElement(CommentBox, { pin: pin,
+	                        user: pin.user,
+	                        pins: this.state.pins,
+	                        meUser: this.state.me.user,
+	                        allPins: this.state.pins,
+	                        parent: this
+	                      }),
+	                      pin.added ? [_react2.default.createElement(
 	                        'div',
-	                        null,
+	                        { className: 'top-wrapper completed-wrapper' },
 	                        _react2.default.createElement(
 	                          'div',
-	                          { className: 'CommentBox' },
+	                          { className: 'mark-as-completed' },
+	                          _react2.default.createElement('input', { onClick: this.completePin.bind(this, pin), checked: pin.completed, className: 'toggle', type: 'checkbox' }),
 	                          _react2.default.createElement(
-	                            'div',
-	                            { className: 'top-wrapper' },
-	                            _react2.default.createElement(
-	                              'div',
-	                              { className: 'profile' },
-	                              _react2.default.createElement(
-	                                'div',
-	                                { className: 'ProfileBar' },
-	                                _react2.default.createElement('img', { className: 'avatar', src: this.state.me.user.profile.avatar_url,
-	                                  style: { width: '27px', height: '27px' } }),
-	                                _react2.default.createElement(
-	                                  'div',
-	                                  { className: 'user-name' },
-	                                  _react2.default.createElement(
-	                                    'div',
-	                                    null,
-	                                    this.state.me.user.first_name + ' ' + this.state.me.user.last_name
-	                                  ),
-	                                  pin.added && _react2.default.createElement(
-	                                    'div',
-	                                    { className: 'date' },
-	                                    pin.time
-	                                  )
-	                                )
-	                              )
-	                            ),
-	                            _react2.default.createElement(
-	                              'div',
-	                              { className: 'menu', onClick: this.showMenu.bind(this) },
-	                              _react2.default.createElement(
-	                                'div',
-	                                { className: 'KebabMenu' },
-	                                _react2.default.createElement(
-	                                  'div',
-	                                  { className: 'dots' },
-	                                  _react2.default.createElement('figure', { className: 'dot active' }),
-	                                  _react2.default.createElement('figure', { className: 'dot active' }),
-	                                  _react2.default.createElement('figure', { className: 'dot active' })
-	                                ),
-	                                this.state.menuActive && _react2.default.createElement(
-	                                  'div',
-	                                  { className: 'kebab-dropdown' },
-	                                  _react2.default.createElement(
-	                                    'div',
-	                                    { className: 'menu-item' },
-	                                    _react2.default.createElement(
-	                                      'span',
-	                                      { className: 'cs-link', onClick: this.editPin.bind(this, pin) },
-	                                      'Edit'
-	                                    )
-	                                  ),
-	                                  _react2.default.createElement(
-	                                    'div',
-	                                    { className: 'menu-item' },
-	                                    _react2.default.createElement(
-	                                      'span',
-	                                      { className: 'cs-link', onClick: this.deletePin.bind(this, pin) },
-	                                      'Delete'
-	                                    )
-	                                  )
-	                                )
-	                              )
-	                            ),
-	                            _react2.default.createElement(
-	                              'div',
-	                              { className: 'comment' },
-	                              pin.added ? _react2.default.createElement(
-	                                'span',
-	                                { className: 'Linkify' },
-	                                _react2.default.createElement(
-	                                  'div',
-	                                  { className: 'readonly-text' },
-	                                  pin.text
-	                                )
-	                              ) : _react2.default.createElement('textarea', { ref: "textarea" + i, onKeyDown: this.keyDownHandler.bind(this, pin), className: 'input', defaultValue: pin.text })
-	                            )
-	                          ),
-	                          !pin.added && _react2.default.createElement(
-	                            'div',
-	                            { className: 'create-buttons' },
-	                            _react2.default.createElement(
-	                              'button',
-	                              { className: 'bottom-btn cs-btn-flat-active', onClick: this.addPin.bind(this, pin, i) },
-	                              'Add'
-	                            ),
-	                            _react2.default.createElement(
-	                              'button',
-	                              { className: 'bottom-btn cs-btn-flat-gray', onClick: this.cancelPin.bind(this, pin) },
-	                              'Cancel'
-	                            )
+	                            'span',
+	                            { className: 'completed-title' },
+	                            pin.completed ? 'Completed by ' + user.first_name + ' ' + user.last_name : 'Mark as completed'
 	                          )
 	                        )
-	                      )
+	                      ), _react2.default.createElement(
+	                        'div',
+	                        { className: 'comments' },
+	                        pin.children.length ? pin.children.map((function (comment, i) {
+	                          return _react2.default.createElement(
+	                            'div',
+	                            { className: 'comment-area' },
+	                            _react2.default.createElement(CommentBox, { key: i, pin: comment,
+	                              user: comment.user,
+	                              pins: pin.children,
+	                              meUser: this.state.me.user,
+	                              allPins: this.state.pins,
+	                              parent: this
+	
+	                            })
+	                          );
+	                        }).bind(this)) : null
+	                      ), this.state.replyButton && _react2.default.createElement(
+	                        'button',
+	                        { onClick: this.addComment.bind(this, pin), className: 'cs-btn-flat-active bottom-btn reply-btn' },
+	                        'Reply'
+	                      )] : null
 	                    )
 	                  )
 	                )
@@ -487,6 +394,190 @@
 	  }]);
 	
 	  return Comment;
+	})(_react2.default.Component);
+	
+	var CommentBox = (function (_React$Component3) {
+	  _inherits(CommentBox, _React$Component3);
+	
+	  function CommentBox(props) {
+	    _classCallCheck(this, CommentBox);
+	
+	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(CommentBox).call(this, props));
+	
+	    _this3.state = {};
+	    return _this3;
+	  }
+	
+	  _createClass(CommentBox, [{
+	    key: 'showMenu',
+	    value: function showMenu(e) {
+	      e.stopPropagation();
+	      this.state.menuActive = !this.state.menuActive;
+	      this.setState({});
+	    }
+	  }, {
+	    key: 'editPin',
+	    value: function editPin(pin, e) {
+	      e.stopPropagation();
+	      pin.added = !pin.added;
+	      this.state.menuActive = false;
+	      if (this.props.pins.indexOf(pin) == this.props.pins.length - 1) {
+	        this.props.parent.setState({ replyButton: false });
+	      } else {
+	        this.props.parent.setState({});
+	      }
+	    }
+	  }, {
+	    key: 'deletePin',
+	    value: function deletePin(pin) {
+	      this.props.pins.splice(this.props.pins.indexOf(pin), 1);
+	      this.props.parent.setState({});
+	    }
+	  }, {
+	    key: 'addPin',
+	    value: function addPin(pin) {
+	      var text = this.refs['textarea'].value;
+	      if (!text) return;
+	      pin.text = text;
+	      pin.added = true;
+	      var timeSeg = new Date().toString().split(' ');
+	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
+	      pin.time = time;
+	      var data = {
+	        msg: 'addPin',
+	        pins: this.props.allPins,
+	        url: document.location.toString(),
+	        pageTitle: document.title
+	      };
+	      chrome.extension.sendRequest(data);
+	      this.props.parent.setState({ replyButton: true });
+	    }
+	  }, {
+	    key: 'keyDownHandler',
+	    value: function keyDownHandler(pin, e) {
+	      if (e.keyCode == 13 && !e.shiftKey) {
+	        this.addPin(pin);
+	      }
+	    }
+	  }, {
+	    key: 'cancelPin',
+	    value: function cancelPin(pin) {
+	      if (pin.text) {
+	        pin.added = true;
+	        this.setState({});
+	      } else {
+	        this.deletePin(pin);
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var pin = this.props.pin;
+	      var user = this.props.user;
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'CommentBox' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'top-wrapper' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'profile' },
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'ProfileBar' },
+	                _react2.default.createElement('img', { className: 'avatar', src: user.profile.avatar_url,
+	                  style: { width: '27px', height: '27px' } }),
+	                _react2.default.createElement(
+	                  'div',
+	                  { className: 'user-name' },
+	                  _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    user.first_name + ' ' + user.last_name
+	                  ),
+	                  pin.added && _react2.default.createElement(
+	                    'div',
+	                    { className: 'date' },
+	                    pin.time
+	                  )
+	                )
+	              )
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'menu', onClick: this.showMenu.bind(this) },
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'KebabMenu' },
+	                _react2.default.createElement(
+	                  'div',
+	                  { className: 'dots' },
+	                  _react2.default.createElement('figure', { className: 'dot active' }),
+	                  _react2.default.createElement('figure', { className: 'dot active' }),
+	                  _react2.default.createElement('figure', { className: 'dot active' })
+	                ),
+	                this.state.menuActive && _react2.default.createElement(
+	                  'div',
+	                  { className: 'kebab-dropdown' },
+	                  _react2.default.createElement(
+	                    'div',
+	                    { className: 'menu-item' },
+	                    _react2.default.createElement(
+	                      'span',
+	                      { className: 'cs-link', onClick: this.editPin.bind(this, pin) },
+	                      'Edit'
+	                    )
+	                  ),
+	                  _react2.default.createElement(
+	                    'div',
+	                    { className: 'menu-item' },
+	                    _react2.default.createElement(
+	                      'span',
+	                      { className: 'cs-link', onClick: this.deletePin.bind(this, pin) },
+	                      'Delete'
+	                    )
+	                  )
+	                )
+	              )
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'comment' },
+	              pin.added ? _react2.default.createElement(
+	                'span',
+	                { className: 'Linkify' },
+	                _react2.default.createElement(
+	                  'div',
+	                  { className: 'readonly-text' },
+	                  pin.text
+	                )
+	              ) : _react2.default.createElement('textarea', { ref: "textarea", onKeyDown: this.keyDownHandler.bind(this, pin), className: 'input', defaultValue: pin.text })
+	            )
+	          ),
+	          !pin.added && _react2.default.createElement(
+	            'div',
+	            { className: 'create-buttons' },
+	            _react2.default.createElement(
+	              'button',
+	              { className: 'bottom-btn cs-btn-flat-active', onClick: this.addPin.bind(this, pin) },
+	              'Add'
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { className: 'bottom-btn cs-btn-flat-gray', onClick: this.cancelPin.bind(this, pin) },
+	              'Cancel'
+	            )
+	          )
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return CommentBox;
 	})(_react2.default.Component);
 	
 	var el = document.createElement('div');

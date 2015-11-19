@@ -144,52 +144,21 @@ class Comment extends React.Component {
     if (e.fromContextMenu || e.target.getAttribute('id') == 'snap-overlay-inner') {
       this.state.pins.forEach(function(pin){
         if(!pin.text){
-          this.state.pins.splice(this.state.pins.indexOf(pin));
+          this.state.pins.splice(this.state.pins.indexOf(pin) ,1);
         }
       }.bind(this));
 
       var pin  = {
         x: e.pageX,
         y: e.pageY,
+        children: [],
+        user: this.state.me.user
       };
       this.state.pins.push(pin);
       this.setState({resentPin: pin});
     }
   }
 
-  addPin(pin,i){
-    var text = this.refs['textarea'+i].value;
-    if (!text) return;
-    pin.text = text;
-    pin.added = true;
-    var timeSeg = (new Date()).toString().split(' ');
-    var time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
-    pin.time = time;
-    this.setState({resentPin: null});
-    var data = {
-      msg: 'addPin',
-      pins: this.state.pins,
-      url: document.location.toString(),
-      pageTitle: document.title,
-      time: time
-    };
-    chrome.extension.sendRequest(data);
-  }
-
-  keyDownHandler(pin, e){
-    if(e.keyCode == 13 && !e.shiftKey){
-      this.addPin(pin)
-    }
-  }
-
-  cancelPin(pin){
-    if (pin.text){
-      pin.added = true;
-      this.setState({});
-    } else {
-      this.deletePin(pin)
-    }
-  }
 
   hidePin(){
     var me = this;
@@ -211,22 +180,23 @@ class Comment extends React.Component {
   }
 
 
-  showMenu(){
-    this.state.menuActive = !this.state.menuActive;
-    this.setState({})
-  }
 
-  editPin(pin){
-    pin.added = !pin.added;
+  addComment(pin){
+    pin.children.push({
+      children: [],
+      text: '',
+      user: this.state.me.user
+    });
     this.setState({
-      menuActive: false
+      replyButton: false
     })
   }
 
-  deletePin(pin){
-    this.state.pins.splice(this.state.pins.indexOf(pin));
+  completePin(pin){
+    pin.completed = !pin.completed;
     this.setState({});
   }
+
 
   render() {
     var styles = {
@@ -239,64 +209,53 @@ class Comment extends React.Component {
       cursor: 'crosshair'
     };
 
+    var user = this.state.me.user;
+
     return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
       <div id="snap-overlay-inner" style={styles} onMouseMove={this.onMouseMoveHandler.bind(this)}>
       {this.state.pins.map(function(pin, i){
         return (
-          <div ref={pin} key={i} onMouseDown={this.startDrag.bind(this, pin)} onMouseUp={this.endDrag.bind(this)} className="Pin movable" style={{top: pin.y, left: pin.x, position: 'absolute'}} onMouseMove={!this.state.drag && this.showPin.bind(this, pin)}>
+          <div ref={pin} key={i} onMouseDown={this.startDrag.bind(this, pin)} onMouseUp={this.endDrag.bind(this)} className={cx("Pin movable",{completed: pin.completed})} style={{top: pin.y, left: pin.x, position: 'absolute'}} onMouseMove={!this.state.drag && this.showPin.bind(this, pin)}>
             <span className="title unselectable">{i+1}</span>
             <div style={{display: this.state.activePin === pin || this.state.resentPin === pin ? 'block' : 'none'}}>
               <div className="Task">
                 <div className="task-box">
-                  <div>
-                  <div className="CommentBox">
-                      <div className="top-wrapper">
-                        <div className="profile">
-                          <div className="ProfileBar">
-                            <img className="avatar" src={this.state.me.user.profile.avatar_url}
-                                 style={{width:'27px', height:'27px'}}/>
-                            <div className="user-name">
-                              <div>{this.state.me.user.first_name + ' ' + this.state.me.user.last_name}</div>
-                              {pin.added && <div className="date">{pin.time}</div>}
-                            </div>
-                          </div>
-                        </div>
+                    <CommentBox pin={pin}
+                                user={pin.user}
+                                pins={this.state.pins}
+                                meUser={this.state.me.user}
+                                allPins={this.state.pins}
+                                parent={this}
+                    />
 
-
-                        <div className="menu" onClick={this.showMenu.bind(this)}>
-                          <div className="KebabMenu">
-                            <div className="dots">
-                              <figure className="dot active"></figure>
-                              <figure className="dot active"></figure>
-                              <figure className="dot active"></figure>
-                            </div>
-                            {this.state.menuActive && <div className="kebab-dropdown">
-                              <div className="menu-item">
-                                <span className="cs-link" onClick={this.editPin.bind(this, pin)}>Edit</span>
-                              </div>
-                              <div className="menu-item">
-                                <span className="cs-link" onClick={this.deletePin.bind(this, pin)}>Delete</span>
-                              </div>
-                            </div>}
-                          </div>
-                        </div>
-
-
-
-
-
-
-                        <div className="comment">
-                          {pin.added ? <span className="Linkify"><div className="readonly-text">{pin.text}</div></span> : <textarea ref={"textarea"+ i} onKeyDown={this.keyDownHandler.bind(this, pin)} className="input" defaultValue={pin.text} />}
-                        </div>
-                      </div>
-                    {!pin.added && <div className="create-buttons">
-                      <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin, i)}>Add</button>
-                      <button className="bottom-btn cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
-                    </div>}
+                  {pin.added ? [<div className="top-wrapper completed-wrapper">
+                    <div className="mark-as-completed">
+                      <input onClick={this.completePin.bind(this, pin)} checked={pin.completed} className="toggle" type="checkbox"/>
+                      <span className="completed-title">{pin.completed ? 'Completed by ' + user.first_name + ' ' + user.last_name :  'Mark as completed'}</span>
                     </div>
-                  </div>
+                  </div>,
+
+
+                  <div className="comments">
+                    {pin.children.length ? pin.children.map(function (comment,i) {
+                      return (
+                        <div className="comment-area">
+                          <CommentBox key={i}  pin={comment}
+                                      user={comment.user}
+                                      pins={pin.children}
+                                      meUser={this.state.me.user}
+                                      allPins={this.state.pins}
+                                      parent={this}
+
+                          />
+                        </div>
+                      )
+                    }.bind(this)) : null }
+                  </div>,
+
+                    this.state.replyButton && <button onClick={this.addComment.bind(this, pin)} className="cs-btn-flat-active bottom-btn reply-btn">Reply</button>] : null}
+
                 </div>
               </div>
             </div>
@@ -309,6 +268,128 @@ class Comment extends React.Component {
 
   }
 }
+
+
+class CommentBox extends React.Component {
+
+  constructor(props){
+    super(props);
+    this.state = {}
+  }
+
+  showMenu(e){
+    e.stopPropagation();
+    this.state.menuActive = !this.state.menuActive;
+    this.setState({})
+  }
+
+  editPin(pin, e){
+    e.stopPropagation();
+    pin.added = !pin.added;
+    this.state.menuActive = false;
+    if (this.props.pins.indexOf(pin) == this.props.pins.length -1){
+      this.props.parent.setState({replyButton: false})
+    } else {
+      this.props.parent.setState({})
+    }
+  }
+
+  deletePin(pin){
+    this.props.pins.splice(this.props.pins.indexOf(pin), 1);
+    this.props.parent.setState({});
+  }
+
+
+  addPin(pin){
+    var text = this.refs['textarea'].value;
+    if (!text) return;
+    pin.text = text;
+    pin.added = true;
+    var timeSeg = (new Date()).toString().split(' ');
+    var time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
+    pin.time = time;
+    var data = {
+      msg: 'addPin',
+      pins: this.props.allPins,
+      url: document.location.toString(),
+      pageTitle: document.title,
+    };
+    chrome.extension.sendRequest(data);
+    this.props.parent.setState({replyButton: true})
+  }
+
+  keyDownHandler(pin, e){
+    if(e.keyCode == 13 && !e.shiftKey){
+      this.addPin(pin)
+    }
+  }
+
+  cancelPin(pin){
+    if (pin.text){
+      pin.added = true;
+      this.setState({});
+    } else {
+      this.deletePin(pin)
+    }
+  }
+
+
+
+  render(){
+    var pin = this.props.pin;
+    var user = this.props.user;
+    return(
+      <div>
+      <div className="CommentBox">
+        <div className="top-wrapper">
+          <div className="profile">
+            <div className="ProfileBar">
+              <img className="avatar" src={user.profile.avatar_url}
+                   style={{width:'27px', height:'27px'}}/>
+              <div className="user-name">
+                <div>{user.first_name + ' ' + user.last_name}</div>
+                {pin.added && <div className="date">{pin.time}</div>}
+              </div>
+            </div>
+          </div>
+
+
+          <div className="menu" onClick={this.showMenu.bind(this)}>
+            <div className="KebabMenu">
+              <div className="dots">
+                <figure className="dot active"></figure>
+                <figure className="dot active"></figure>
+                <figure className="dot active"></figure>
+              </div>
+              {this.state.menuActive && <div className="kebab-dropdown">
+                <div className="menu-item">
+                  <span className="cs-link" onClick={this.editPin.bind(this, pin)}>Edit</span>
+                </div>
+                <div className="menu-item">
+                  <span className="cs-link" onClick={this.deletePin.bind(this, pin)}>Delete</span>
+                </div>
+              </div>}
+            </div>
+          </div>
+
+
+          <div className="comment">
+            {pin.added ? <span className="Linkify"><div className="readonly-text">{pin.text}</div></span> : <textarea ref={"textarea"} onKeyDown={this.keyDownHandler.bind(this, pin)} className="input" defaultValue={pin.text} />}
+          </div>
+        </div>
+        {!pin.added && <div className="create-buttons">
+          <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin)}>Add</button>
+          <button className="bottom-btn cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
+        </div>}
+      </div>
+
+
+
+    </div>
+    )
+  }
+}
+
 
 var el = document.createElement('div');
 el.setAttribute('id', 'snap-overlay');
