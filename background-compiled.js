@@ -136,7 +136,7 @@
 	  chrome.tabs.getSelected(null, function (tab) {
 	    chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
 	      chrome.tabs.sendRequest(tab.id, { msg: 'scrollPage' }, function () {
-	        screenshotCaptured(screenshot, tab.url);
+	        screenshotCaptured(screenshot, tab.url, tab.title);
 	      });
 	    });
 	  });
@@ -145,7 +145,7 @@
 	function takeVisibleScreenshot() {
 	  captureVisible(function (canvas) {
 	    chrome.tabs.getSelected(null, function (tab) {
-	      screenshotCaptured({ canvas: canvas }, tab.url);
+	      screenshotCaptured({ canvas: canvas }, tab.url, tab.title);
 	    });
 	  });
 	}
@@ -235,7 +235,7 @@
 	  });
 	}
 	
-	function screenshotCaptured(screenshot, pageUrl) {
+	function screenshotCaptured(screenshot, pageUrl, pageTitle) {
 	  console.log(screenshot);
 	  storeFromDataCanvas(screenshot.canvas, pageUrl, function (fileUrl) {
 	
@@ -244,7 +244,7 @@
 	      size: { width: screenshot.canvas.width, height: screenshot.canvas.height },
 	      url: pageUrl.split('?')[0],
 	      pins: sendedrequest.pins,
-	      pageTitle: sendedrequest.pageTitle
+	      pageTitle: sendedrequest.pageTitle || pageTitle
 	    };
 	
 	    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
@@ -265,6 +265,7 @@
 	  var activeBoard = req.activeBoard;
 	  var activeFolder = req.activeFolder;
 	  var posts = [];
+	  var capturedImages = JSON.parse(localStorage.capturedImages);
 	
 	  function logCallBack(value) {
 	    chrome.runtime.sendMessage({ msg: 'progress', progress: value });
@@ -272,7 +273,7 @@
 	
 	  if (activeBoard.id == 'new_board') {
 	    (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	      title: "New Board"
+	      title: capturedImages[0].pageTitle
 	    }, function (data) {
 	      activeBoard = data;
 	      uploadImageProcess(activeBoard, posts, logCallBack);
