@@ -171,7 +171,7 @@ class App extends React.Component {
       return (
         <div id="screenshot-app">
           <div className="actions">
-            {this.state.unsupported ? <p className="unsupported">This page don't supported capture screenshot</p> :
+            {this.state.unsupported ? <p className="unsupported">This page does not support capture screenshot</p> :
                 [<div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>,
                 <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
                 <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,

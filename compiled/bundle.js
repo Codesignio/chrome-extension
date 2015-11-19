@@ -266,7 +266,7 @@
 	            this.state.unsupported ? _react2.default.createElement(
 	              'p',
 	              { className: 'unsupported' },
-	              'This page don\'t supported capture screenshot'
+	              'This page does not support capture screenshot'
 	            ) : [_react2.default.createElement(
 	              'div',
 	              { key: '1', onClick: this.takeFullPageScreenshoot.bind(this) },
