@@ -258,7 +258,10 @@
 	    }
 	  }, {
 	    key: 'addPin',
-	    value: function addPin(pin) {
+	    value: function addPin(pin, i) {
+	      var text = this.refs['textarea' + i].value;
+	      if (!text) return;
+	      pin.text = text;
 	      pin.added = true;
 	      var timeSeg = new Date().toString().split(' ');
 	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
@@ -283,14 +286,12 @@
 	  }, {
 	    key: 'cancelPin',
 	    value: function cancelPin(pin) {
-	      this.state.pins.splice(this.state.pins.indexOf(pin));
-	      this.setState({});
-	    }
-	  }, {
-	    key: 'textChange',
-	    value: function textChange(pin, e) {
-	      pin.text = e.target.value;
-	      this.setState({});
+	      if (pin.text) {
+	        pin.added = true;
+	        this.setState({});
+	      } else {
+	        this.deletePin(pin);
+	      }
 	    }
 	  }, {
 	    key: 'hidePin',
@@ -312,6 +313,26 @@
 	      clearTimeout(this.timeout);
 	      this.timeout = null;
 	      this.setState({ activePin: pin });
+	    }
+	  }, {
+	    key: 'showMenu',
+	    value: function showMenu() {
+	      this.state.menuActive = !this.state.menuActive;
+	      this.setState({});
+	    }
+	  }, {
+	    key: 'editPin',
+	    value: function editPin(pin) {
+	      pin.added = !pin.added;
+	      this.setState({
+	        menuActive: false
+	      });
+	    }
+	  }, {
+	    key: 'deletePin',
+	    value: function deletePin(pin) {
+	      this.state.pins.splice(this.state.pins.indexOf(pin));
+	      this.setState({});
 	    }
 	  }, {
 	    key: 'render',
@@ -389,6 +410,43 @@
 	                            ),
 	                            _react2.default.createElement(
 	                              'div',
+	                              { className: 'menu', onClick: this.showMenu.bind(this) },
+	                              _react2.default.createElement(
+	                                'div',
+	                                { className: 'KebabMenu' },
+	                                _react2.default.createElement(
+	                                  'div',
+	                                  { className: 'dots' },
+	                                  _react2.default.createElement('figure', { className: 'dot active' }),
+	                                  _react2.default.createElement('figure', { className: 'dot active' }),
+	                                  _react2.default.createElement('figure', { className: 'dot active' })
+	                                ),
+	                                this.state.menuActive && _react2.default.createElement(
+	                                  'div',
+	                                  { className: 'kebab-dropdown' },
+	                                  _react2.default.createElement(
+	                                    'div',
+	                                    { className: 'menu-item' },
+	                                    _react2.default.createElement(
+	                                      'span',
+	                                      { className: 'cs-link', onClick: this.editPin.bind(this, pin) },
+	                                      'Edit'
+	                                    )
+	                                  ),
+	                                  _react2.default.createElement(
+	                                    'div',
+	                                    { className: 'menu-item' },
+	                                    _react2.default.createElement(
+	                                      'span',
+	                                      { className: 'cs-link', onClick: this.deletePin.bind(this, pin) },
+	                                      'Delete'
+	                                    )
+	                                  )
+	                                )
+	                              )
+	                            ),
+	                            _react2.default.createElement(
+	                              'div',
 	                              { className: 'comment' },
 	                              pin.added ? _react2.default.createElement(
 	                                'span',
@@ -398,7 +456,7 @@
 	                                  { className: 'readonly-text' },
 	                                  pin.text
 	                                )
-	                              ) : _react2.default.createElement('textarea', { onKeyDown: this.keyDownHandler.bind(this, pin), className: 'input', value: pin.text, onChange: this.textChange.bind(this, pin) })
+	                              ) : _react2.default.createElement('textarea', { ref: "textarea" + i, onKeyDown: this.keyDownHandler.bind(this, pin), className: 'input', defaultValue: pin.text })
 	                            )
 	                          ),
 	                          !pin.added && _react2.default.createElement(
@@ -406,7 +464,7 @@
 	                            { className: 'create-buttons' },
 	                            _react2.default.createElement(
 	                              'button',
-	                              { className: 'bottom-btn cs-btn-flat-active', onClick: this.addPin.bind(this, pin), disabled: !pin.text },
+	                              { className: 'bottom-btn cs-btn-flat-active', onClick: this.addPin.bind(this, pin, i) },
 	                              'Add'
 	                            ),
 	                            _react2.default.createElement(

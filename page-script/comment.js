@@ -157,7 +157,10 @@ class Comment extends React.Component {
     }
   }
 
-  addPin(pin){
+  addPin(pin,i){
+    var text = this.refs['textarea'+i].value;
+    if (!text) return;
+    pin.text = text;
     pin.added = true;
     var timeSeg = (new Date()).toString().split(' ');
     var time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
@@ -180,13 +183,12 @@ class Comment extends React.Component {
   }
 
   cancelPin(pin){
-    this.state.pins.splice(this.state.pins.indexOf(pin));
-    this.setState({});
-  }
-
-  textChange(pin,e){
-    pin.text = e.target.value;
-    this.setState({})
+    if (pin.text){
+      pin.added = true;
+      this.setState({});
+    } else {
+      this.deletePin(pin)
+    }
   }
 
   hidePin(){
@@ -206,6 +208,24 @@ class Comment extends React.Component {
     clearTimeout(this.timeout);
     this.timeout = null;
     this.setState({activePin: pin});
+  }
+
+
+  showMenu(){
+    this.state.menuActive = !this.state.menuActive;
+    this.setState({})
+  }
+
+  editPin(pin){
+    pin.added = !pin.added;
+    this.setState({
+      menuActive: false
+    })
+  }
+
+  deletePin(pin){
+    this.state.pins.splice(this.state.pins.indexOf(pin));
+    this.setState({});
   }
 
   render() {
@@ -242,12 +262,37 @@ class Comment extends React.Component {
                             </div>
                           </div>
                         </div>
+
+
+                        <div className="menu" onClick={this.showMenu.bind(this)}>
+                          <div className="KebabMenu">
+                            <div className="dots">
+                              <figure className="dot active"></figure>
+                              <figure className="dot active"></figure>
+                              <figure className="dot active"></figure>
+                            </div>
+                            {this.state.menuActive && <div className="kebab-dropdown">
+                              <div className="menu-item">
+                                <span className="cs-link" onClick={this.editPin.bind(this, pin)}>Edit</span>
+                              </div>
+                              <div className="menu-item">
+                                <span className="cs-link" onClick={this.deletePin.bind(this, pin)}>Delete</span>
+                              </div>
+                            </div>}
+                          </div>
+                        </div>
+
+
+
+
+
+
                         <div className="comment">
-                          {pin.added ? <span className="Linkify"><div className="readonly-text">{pin.text}</div></span> : <textarea onKeyDown={this.keyDownHandler.bind(this, pin)} className="input" value={pin.text} onChange={this.textChange.bind(this, pin)} />}
+                          {pin.added ? <span className="Linkify"><div className="readonly-text">{pin.text}</div></span> : <textarea ref={"textarea"+ i} onKeyDown={this.keyDownHandler.bind(this, pin)} className="input" defaultValue={pin.text} />}
                         </div>
                       </div>
                     {!pin.added && <div className="create-buttons">
-                      <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin)} disabled={!pin.text}>Add</button>
+                      <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin, i)}>Add</button>
                       <button className="bottom-btn cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
                     </div>}
                     </div>
