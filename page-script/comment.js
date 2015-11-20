@@ -102,7 +102,7 @@ class Comment extends React.Component {
           }
           return me.transformPin(pin, {children: comments || []});
         });
-        me.setState({pins: myPins})
+        me.setState({pins: myPins, commentMode: true})
       }
     });
   }
@@ -230,13 +230,15 @@ class Comment extends React.Component {
   }
 
   sendData(){
-    var data = {
-      msg: 'addPin',
-      pins: this.state.pins,
-      url: document.location.toString(),
-      pageTitle: document.title,
-    };
-    chrome.extension.sendRequest(data);
+    if (!this.state.commentMode){
+      var data = {
+        msg: 'addPin',
+        pins: this.state.pins,
+        url: document.location.toString(),
+        pageTitle: document.title,
+      };
+      chrome.extension.sendRequest(data);
+    }
   }
 
 

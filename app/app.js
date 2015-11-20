@@ -18,7 +18,8 @@ class App extends React.Component {
       checkedImages: [],
       unsupported: false,
       currentAction: localStorage.currentAction,
-      showHideIcon: []
+      showHideIcon: [],
+      me: JSON.parse(localStorage.me)
     }
   }
 
@@ -30,11 +31,6 @@ class App extends React.Component {
 
     chrome.browserAction.setBadgeText({text: ''});
     var me = this;
-    var token = localStorage.token;
-    request('http://api.codesign.io/users/me/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
-      me.setState({me: data});
-      localStorage.me = JSON.stringify(data);
-    });
 
     chrome.tabs.getSelected(null, function(tab) {
       chrome.tabs.executeScript(tab.id, {code:"{}"}, function () {

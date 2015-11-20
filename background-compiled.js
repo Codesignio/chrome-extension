@@ -99,7 +99,12 @@
 	      localStorage.token = request.token;
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.remove(tab.id);
-	        chrome.tabs.create({ 'url': chrome.extension.getURL('login-sucessfully.html') }, function (tab) {});
+	        chrome.tabs.create({ 'url': chrome.extension.getURL('login-sucessfully.html') }, function (tab) {
+	          var token = localStorage.token;
+	          (0, _utils.request)('http://api.codesign.io/users/me/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
+	            localStorage.me = JSON.stringify(data);
+	          });
+	        });
 	        if (!request.fromSite) chrome.tabs.create({ 'url': 'http://www.codesign.io/syncauthorization', selected: false }, function (tab) {});
 	      });
 	    } else {

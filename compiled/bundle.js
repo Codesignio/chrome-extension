@@ -98,7 +98,8 @@
 	      checkedImages: [],
 	      unsupported: false,
 	      currentAction: localStorage.currentAction,
-	      showHideIcon: []
+	      showHideIcon: [],
+	      me: JSON.parse(localStorage.me)
 	    };
 	    return _this;
 	  }
@@ -112,11 +113,6 @@
 	
 	      chrome.browserAction.setBadgeText({ text: '' });
 	      var me = this;
-	      var token = localStorage.token;
-	      (0, _utils.request)('http://api.codesign.io/users/me/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
-	        me.setState({ me: data });
-	        localStorage.me = JSON.stringify(data);
-	      });
 	
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { code: "{}" }, function () {

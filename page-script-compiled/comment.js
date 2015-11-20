@@ -196,7 +196,7 @@
 	            }
 	            return me.transformPin(pin, { children: comments || [] });
 	          });
-	          me.setState({ pins: myPins });
+	          me.setState({ pins: myPins, commentMode: true });
 	        }
 	      });
 	    }
@@ -331,13 +331,15 @@
 	  }, {
 	    key: 'sendData',
 	    value: function sendData() {
-	      var data = {
-	        msg: 'addPin',
-	        pins: this.state.pins,
-	        url: document.location.toString(),
-	        pageTitle: document.title
-	      };
-	      chrome.extension.sendRequest(data);
+	      if (!this.state.commentMode) {
+	        var data = {
+	          msg: 'addPin',
+	          pins: this.state.pins,
+	          url: document.location.toString(),
+	          pageTitle: document.title
+	        };
+	        chrome.extension.sendRequest(data);
+	      }
 	    }
 	  }, {
 	    key: 'render',
