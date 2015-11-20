@@ -183,8 +183,38 @@
 	            me.setState({ cancel: true });
 	          }
 	          callback();
+	        } else if (request.msg == 'loadPins') {
+	
+	          var pins = window.codesignPins;
+	          var myPins = pins.map(function (pin) {
+	
+	            var comments;
+	            if (pin.comments.length) {
+	              comments = pin.comments.map(function (comment) {
+	                return me.transformPin(comment);
+	              });
+	            }
+	            return me.transformPin(pin, { children: comments || [] });
+	          });
+	          me.setState({ pins: myPins });
 	        }
 	      });
+	    }
+	  }, {
+	    key: 'transformPin',
+	    value: function transformPin(pin, attrs) {
+	      var timeSeg = new Date(Date.parse(pin.date_created)).toString().split(' ');
+	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
+	      return (0, _objectAssign2.default)({
+	        user: pin.creator,
+	        x: pin.markers[0].geometry.left * document.body.scrollWidth / 100,
+	        y: pin.markers[0].geometry.top * document.body.scrollHeight / 100,
+	        completed: pin.status !== 'AC',
+	        id: pin.id,
+	        text: pin.title,
+	        time: time,
+	        added: true
+	      }, attrs || {});
 	    }
 	  }, {
 	    key: 'componentDidMount',

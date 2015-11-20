@@ -51,7 +51,7 @@ html {
     width: 270px;
     border: 1px solid whitesmoke;
     position: relative;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 img {
@@ -430,4 +430,36 @@ form {
 
 .title-and-links p {
     margin-left: 20px;
+}
+
+
+#shareButton {
+    height: 20px;
+    width: 100%;
+    margin: auto;
+    background-color: #22bc85;
+    border-radius: 20px;
+    outline: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+
+.sharedLink {
+    height: 40px;
+    text-align: center;
+    background-color: whitesmoke;
+    font-size: 14px;
+    margin: 0px;
+    margin-bottom: 10px;
+    padding: 7px;
+}
+
+.sharedTitle {
+    text-align: center;
+    font-size: 14px;
+    margin: 4px;
 }

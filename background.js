@@ -73,6 +73,8 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
   } else if (request.msg == 'closeWindow'){
     console.log('closeWindow');
     chrome.tabs.remove(sender.tab.id);
+  } else if (request.msg == 'liveBoard'){
+    loadBoardData(request, sender, callback)
   }
 });
 
@@ -86,6 +88,8 @@ chrome.runtime.onMessage.addListener(
       uploadImages(request, sender, sendResponse)
     } else if (request.msg == 'startOauth'){
       startOauth = true;
+    } else if (request.msg == 'shareImage'){
+      shareImage(request, sender, sendResponse)
     }
   });
 
@@ -212,7 +216,7 @@ function screenshotCaptured(screenshot, pageUrl, pageTitle){
     var capturedImage = {
       link: fileUrl,
       size: {width: screenshot.canvas.width, height: screenshot.canvas.height},
-      url: pageUrl.split('?')[0],
+      url: pageUrl,
       pins: sendedrequest.pins,
       pageTitle: sendedrequest.pageTitle || pageTitle
     };
@@ -233,9 +237,153 @@ function screenshotCaptured(screenshot, pageUrl, pageTitle){
 }
 
 
+function loadBoardData(req, sender, sendResponse){
+  var token = localStorage.token
+  var code = req.boardCode;
+  request('http://api.codesign.io/get_board/?code='+code, 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+
+    var url = data.board.title;
+    sendResponse({url: url});
+
+    var pins = data.board.posts[0].tasks;
+
+    setTimeout(function(){
+      chrome.tabs.getSelected(null, function (tab) {
+        chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins)}, function () {
+          chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+            chrome.tabs.sendRequest(tab.id, {msg: 'loadPins'}, function () {
+            });
+          });
+        });
+      })
+    }, 1000)
+
+  })
+}
 
 
 
+function shareImage (req, sender, sendResponse){
+  var token = localStorage.token;
+  var capturedImages = JSON.parse(localStorage.capturedImages);
+  var sharedImage = capturedImages.filter((img)=> img.link == req.image.link)[0];
+
+  request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+
+    var folders = data.results;
+    var sharedFolder = data.results.filter((fol) => fol.title == "LIVE COMMENTED PAGES")[0];
+
+    if (!sharedFolder){
+      request('http://api.codesign.io/folders/', 'POST', {"Authorization": 'Token ' +  token, "Content-Type": "application/json;charset=UTF-8"}, {
+
+        title: "LIVE COMMENTED PAGES"
+
+      }, function (data) {
+        createSharedPage(data)
+      })
+    } else {
+      createSharedPage(sharedFolder)
+    }
+
+
+    function createSharedPage(sharedFolder){
+      request('http://api.codesign.io/folders/'+ sharedFolder.id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+        title: sharedImage.url
+      }, function (boardData) {
+
+        request('http://api.codesign.io/boards/'+ boardData.id + '/posts/', 'POST', {
+          "Authorization": 'Token ' + token,
+          "Content-Type": "application/json;charset=UTF-8"
+        }, {
+          title: (new Date).toString()
+        }, function (postData) {
+
+
+          var reqCount = 0;
+          for (var i = 0; i < sharedImage.pins.length;i++) {
+            var pin = sharedImage.pins[i];
+            request('http://api.codesign.io/posts/' + postData.id + '/tasks/', 'POST', {
+              "Authorization": 'Token ' + token,
+              "Content-Type": "application/json;charset=UTF-8"
+            }, {
+              marker: {
+                geometry: {
+                  left: pin.x/sharedImage.size.width * 100,
+                  top: pin.y/sharedImage.size.height * 100
+                },
+                measure: 'pixel',
+                shape: "PN"
+              },
+              title: pin.text
+            }, function (data3) {
+
+
+
+              function CompleteRequest(){
+                reqCount++;
+                if (reqCount == sharedImage.pins.length) {
+
+                  var url = 'http://www.codesign.io/board/'+boardData.client_code+'?liveBoardPage'
+                  sharedImage.sharedLink = url;
+                  localStorage.capturedImages = JSON.stringify(capturedImages);
+                  chrome.runtime.sendMessage({msg: 'sharedImage', url: url})
+                }
+              }
+
+
+              function CheckComments(){
+                if(!pin.children.length){
+                  CompleteRequest();
+                } else {
+                  var commentsCount = 0;
+                  for (var i = 0; i < pin.children.length; i++) {
+                    var comment = sharedImage.pins[i];
+
+
+                    request('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
+                      "Authorization": 'Token ' + token,
+                      "Content-Type": "application/json;charset=UTF-8"
+                    }, {
+                      title: comment.text
+                    }, function () {
+                      commentsCount++;
+                      if (commentsCount == pin.children.length){
+                        CompleteRequest();
+                      }
+
+                    })
+                  }
+                }
+              }
+
+              if (pin.completed){
+                request('http://api.codesign.io/tasks/'+ data3.id, 'PUT', {
+                  "Authorization": 'Token ' + token,
+                  "Content-Type": "application/json;charset=UTF-8"
+                }, {
+                  status: "CP"
+                }, function () {
+                  CheckComments()
+                })
+
+              } else {
+                CheckComments();
+              }
+
+            });
+          }
+
+
+
+        })
+
+      });
+    }
+
+  })
+
+
+}
 
 
 

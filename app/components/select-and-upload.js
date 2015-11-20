@@ -41,6 +41,15 @@ export default class SelectAndUpload extends React.Component {
       }.bind(this))
     }.bind(this));
 
+    var me = this;
+
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+      if (request.msg == 'sharedImage') {
+        me.state.currentShareImage.sharedLink = request.url;
+        me.setState({})
+      }
+    })
+
   }
 
   setFolder(e) {
@@ -65,6 +74,18 @@ export default class SelectAndUpload extends React.Component {
 
     });
   }
+
+  shareImage(img){
+    var me = this;
+    chrome.runtime.sendMessage({
+      msg: 'shareImage',
+      image: img
+    });
+
+    img.sharedLink = 'sending...';
+    me.setState({currentShareImage: img})
+  }
+
 
   handleRemove(){
     this.state.images.pop();
@@ -117,7 +138,16 @@ export default class SelectAndUpload extends React.Component {
     return (
       <div>
         <div key="screenshot"  className="screenshot">
-          {this.state.images.concat([]).reverse().map((img, i) => <div className="image"><img onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.link}/><div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}></div></div>)}
+          {this.state.images.concat([]).reverse().map(function(img, i) {
+            return (
+              [<div className="image">
+                <img onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.link}/>
+                <div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}></div>
+              </div>,
+                img.pins && img.sharedLink ? [<div className="sharedTitle">Share link and disscuss online:</div>,<div className="sharedLink">{img.sharedLink}</div>] : img.pins && <button id="shareButton" onClick={this.shareImage.bind(this, img)}>SHARE THIS PAGE</button>]
+            )
+
+          }.bind(this)) }
         </div>
         <div className="uploadWidget">
           <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : null}</button>

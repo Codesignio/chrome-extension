@@ -20799,6 +20799,15 @@
 	          localStorage.boards = JSON.stringify(this.state.boards);
 	        }).bind(this));
 	      }).bind(this));
+	
+	      var me = this;
+	
+	      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	        if (request.msg == 'sharedImage') {
+	          me.state.currentShareImage.sharedLink = request.url;
+	          me.setState({});
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'setFolder',
@@ -20825,6 +20834,18 @@
 	        activeFolder: this.state.activeFolder
 	
 	      });
+	    }
+	  }, {
+	    key: 'shareImage',
+	    value: function shareImage(img) {
+	      var me = this;
+	      chrome.runtime.sendMessage({
+	        msg: 'shareImage',
+	        image: img
+	      });
+	
+	      img.sharedLink = 'sending...';
+	      me.setState({ currentShareImage: img });
 	    }
 	  }, {
 	    key: 'handleRemove',
@@ -20892,14 +20913,26 @@
 	        _react2.default.createElement(
 	          'div',
 	          { key: 'screenshot', className: 'screenshot' },
-	          this.state.images.concat([]).reverse().map(function (img, i) {
-	            return _react2.default.createElement(
+	          this.state.images.concat([]).reverse().map((function (img, i) {
+	            return [_react2.default.createElement(
 	              'div',
 	              { className: 'image' },
-	              _react2.default.createElement('img', { onMouseOut: _this2.hideIcon.bind(_this2, i), onMouseMove: _this2.showIcon.bind(_this2, i), key: i, src: img.link }),
-	              _react2.default.createElement('div', { onClick: _this2.handleRemove.bind(_this2), onMouseMove: _this2.showIcon.bind(_this2, i), className: 'removeIcon', style: { display: _this2.state.showHideIcon[i] ? 'block' : 'none' } })
-	            );
-	          })
+	              _react2.default.createElement('img', { onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.link }),
+	              _react2.default.createElement('div', { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' } })
+	            ), img.pins && img.sharedLink ? [_react2.default.createElement(
+	              'div',
+	              { className: 'sharedTitle' },
+	              'Share link and disscuss online:'
+	            ), _react2.default.createElement(
+	              'div',
+	              { className: 'sharedLink' },
+	              img.sharedLink
+	            )] : img.pins && _react2.default.createElement(
+	              'button',
+	              { id: 'shareButton', onClick: this.shareImage.bind(this, img) },
+	              'SHARE THIS PAGE'
+	            )];
+	          }).bind(this))
 	        ),
 	        _react2.default.createElement(
 	          'div',
