@@ -20548,7 +20548,7 @@
 	  };
 	  xhr.onreadystatechange = function () {
 	    if (xhr.readyState != 4) return;
-	    callback(JSON.parse(xhr.responseText));
+	    callback(JSON.parse(xhr.responseText || '{}'));
 	  };
 	  xhr.send(json);
 	}

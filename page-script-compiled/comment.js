@@ -207,8 +207,8 @@
 	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
 	      return (0, _objectAssign2.default)({
 	        user: pin.creator,
-	        x: pin.markers[0].geometry.left * document.body.scrollWidth / 100,
-	        y: pin.markers[0].geometry.top * document.body.scrollHeight / 100,
+	        x: pin.markers && pin.markers[0].geometry.left * document.body.scrollWidth / 100,
+	        y: pin.markers && pin.markers[0].geometry.top * document.body.scrollHeight / 100,
 	        completed: pin.status !== 'AC',
 	        id: pin.id,
 	        text: pin.title,
@@ -253,6 +253,7 @@
 	  }, {
 	    key: 'startDrag',
 	    value: function startDrag(pin, e) {
+	      if (pin.user.id !== this.state.me.user.id) return;
 	      if (e.target.getAttribute('class') !== "title unselectable") return;
 	      e.preventDefault();
 	      e.stopPropagation();
@@ -317,29 +318,40 @@
 	        text: '',
 	        user: this.state.me.user
 	      });
-	      this.setState({
-	        replyButton: false
-	      });
+	      pin.reply = false;
+	      this.setState({});
 	    }
 	  }, {
 	    key: 'completePin',
 	    value: function completePin(pin) {
 	      pin.completed = !pin.completed;
 	      this.setState({});
-	      this.sendData();
+	      this.sendData('completePin', pin);
 	    }
 	  }, {
 	    key: 'sendData',
-	    value: function sendData() {
-	      if (!this.state.commentMode) {
-	        var data = {
-	          msg: 'addPin',
-	          pins: this.state.pins,
-	          url: document.location.toString(),
-	          pageTitle: document.title
-	        };
-	        chrome.extension.sendRequest(data);
-	      }
+	    value: function sendData(msg, pin, parentPin) {
+	      var me = this;
+	      var data = {
+	        msg: msg == 'addPin' ? this.state.pins.indexOf(pin) > -1 ? 'addPin' : 'addComment' : msg == 'deletePin' ? this.state.pins.indexOf(pin) > -1 ? 'deletePin' : 'deleteComment' : msg,
+	        pins: this.state.pins,
+	        url: document.location.toString(),
+	        pageTitle: document.title,
+	        pin: pin,
+	        updated: pin.updated,
+	        commentMode: this.state.commentMode,
+	        width: document.body.scrollWidth,
+	        height: document.body.scrollHeight,
+	        boardData: window.codesignBoardData,
+	        parentPin: parentPin
+	      };
+	      chrome.extension.sendRequest(data, function (data) {
+	        if (parentPin) {
+	          parentPin.children[parentPin.children.indexOf(pin)].id = data.id;
+	        } else {
+	          me.state.pins[me.state.pins.indexOf(pin)].id = data.id;
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'render',
@@ -389,7 +401,8 @@
 	                        pins: this.state.pins,
 	                        meUser: this.state.me.user,
 	                        parent: this,
-	                        sendData: this.sendData.bind(this)
+	                        sendData: this.sendData.bind(this),
+	                        parentPin: null
 	                      }),
 	                      pin.added ? [_react2.default.createElement(
 	                        'div',
@@ -416,12 +429,13 @@
 	                              pins: pin.children,
 	                              meUser: this.state.me.user,
 	                              parent: this,
-	                              sendData: this.sendData.bind(this)
+	                              sendData: this.sendData.bind(this),
+	                              parentPin: pin
 	
 	                            })
 	                          );
 	                        }).bind(this)) : null
-	                      ), this.state.replyButton && _react2.default.createElement(
+	                      ), (pin.reply || pin.reply === undefined) && _react2.default.createElement(
 	                        'button',
 	                        { onClick: this.addComment.bind(this, pin), className: 'cs-btn-flat-active bottom-btn reply-btn' },
 	                        'Reply'
@@ -464,23 +478,25 @@
 	    value: function editPin(pin, e) {
 	      e.stopPropagation();
 	      pin.added = !pin.added;
+	      pin.updated = true;
 	      this.state.menuActive = false;
-	      if (this.props.pins.indexOf(pin) == this.props.pins.length - 1) {
-	        this.props.parent.setState({ replyButton: false });
+	      if (this.props.parentPin && this.props.pins.indexOf(pin) == this.props.pins.length - 1) {
+	        this.props.parentPin.reply = false;
+	        this.props.parent.setState({});
 	      } else {
 	        this.props.parent.setState({});
 	      }
 	    }
 	  }, {
 	    key: 'deletePin',
-	    value: function deletePin(pin) {
+	    value: function deletePin(pin, parentPin) {
 	      this.props.pins.splice(this.props.pins.indexOf(pin), 1);
 	      this.props.parent.setState({});
-	      this.props.sendData();
+	      this.props.sendData('deletePin', pin, parentPin);
 	    }
 	  }, {
 	    key: 'addPin',
-	    value: function addPin(pin) {
+	    value: function addPin(pin, parentPin) {
 	      var text = this.refs['textarea'].value;
 	      if (!text) return;
 	      pin.text = text;
@@ -488,8 +504,10 @@
 	      var timeSeg = new Date().toString().split(' ');
 	      var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
 	      pin.time = time;
-	      this.props.parent.setState({ replyButton: true });
-	      this.props.sendData();
+	      if (this.props.parentPin) this.props.parentPin.reply = true;
+	      this.props.sendData('addPin', pin, parentPin);
+	      pin.updated = false;
+	      this.props.parent.setState({});
 	    }
 	  }, {
 	    key: 'keyDownHandler',
@@ -559,7 +577,7 @@
 	                  _react2.default.createElement('figure', { className: 'dot active' }),
 	                  _react2.default.createElement('figure', { className: 'dot active' })
 	                ),
-	                this.state.menuActive && _react2.default.createElement(
+	                pin.user.id == this.props.meUser.id && this.state.menuActive && _react2.default.createElement(
 	                  'div',
 	                  { className: 'kebab-dropdown' },
 	                  _react2.default.createElement(
@@ -576,7 +594,7 @@
 	                    { className: 'menu-item' },
 	                    _react2.default.createElement(
 	                      'span',
-	                      { className: 'cs-link', onClick: this.deletePin.bind(this, pin) },
+	                      { className: 'cs-link', onClick: this.deletePin.bind(this, pin, this.props.parentPin) },
 	                      'Delete'
 	                    )
 	                  )
@@ -602,7 +620,7 @@
 	            { className: 'create-buttons' },
 	            _react2.default.createElement(
 	              'button',
-	              { className: 'bottom-btn cs-btn-flat-active', onClick: this.addPin.bind(this, pin) },
+	              { className: 'bottom-btn cs-btn-flat-active', onClick: this.addPin.bind(this, pin, this.props.parentPin) },
 	              'Add'
 	            ),
 	            _react2.default.createElement(
@@ -20882,7 +20900,7 @@
 	  };
 	  xhr.onreadystatechange = function () {
 	    if (xhr.readyState != 4) return;
-	    callback(JSON.parse(xhr.responseText));
+	    callback(JSON.parse(xhr.responseText || '{}'));
 	  };
 	  xhr.send(json);
 	}

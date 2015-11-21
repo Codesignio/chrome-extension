@@ -113,8 +113,8 @@ class Comment extends React.Component {
     var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
     return assign({
       user: pin.creator,
-      x: pin.markers[0].geometry.left * document.body.scrollWidth / 100,
-      y: pin.markers[0].geometry.top * document.body.scrollHeight / 100,
+      x: pin.markers && pin.markers[0].geometry.left * document.body.scrollWidth / 100,
+      y: pin.markers && pin.markers[0].geometry.top * document.body.scrollHeight / 100,
       completed: pin.status !== 'AC',
       id: pin.id,
       text: pin.title,
@@ -155,6 +155,7 @@ class Comment extends React.Component {
   }
 
   startDrag(pin, e){
+    if (pin.user.id !== this.state.me.user.id) return;
     if (e.target.getAttribute('class') !== "title unselectable") return;
     e.preventDefault();
     e.stopPropagation();
@@ -183,7 +184,7 @@ class Comment extends React.Component {
         x: e.pageX,
         y: e.pageY,
         children: [],
-        user: this.state.me.user
+        user: this.state.me.user,
       };
       this.state.pins.push(pin);
       this.setState({resentPin: pin});
@@ -216,29 +217,41 @@ class Comment extends React.Component {
     pin.children.push({
       children: [],
       text: '',
-      user: this.state.me.user
+      user: this.state.me.user,
     });
-    this.setState({
-      replyButton: false
-    });
+    pin.reply = false;
+    this.setState({});
   }
 
   completePin(pin){
     pin.completed = !pin.completed;
     this.setState({});
-    this.sendData()
+    this.sendData('completePin', pin)
   }
 
-  sendData(){
-    if (!this.state.commentMode){
+  sendData(msg, pin, parentPin){
+    var me = this;
       var data = {
-        msg: 'addPin',
+        msg: msg == 'addPin' ? (this.state.pins.indexOf(pin) > -1 ? 'addPin' : 'addComment') : (msg == 'deletePin' ? (this.state.pins.indexOf(pin) > -1 ? 'deletePin' : 'deleteComment') : msg),
         pins: this.state.pins,
         url: document.location.toString(),
         pageTitle: document.title,
+        pin: pin,
+        updated: pin.updated,
+        commentMode: this.state.commentMode,
+        width: document.body.scrollWidth,
+        height: document.body.scrollHeight,
+        boardData: window.codesignBoardData,
+        parentPin: parentPin
       };
-      chrome.extension.sendRequest(data);
-    }
+      chrome.extension.sendRequest(data, function(data){
+        if (parentPin){
+          parentPin.children[parentPin.children.indexOf(pin)].id = data.id;
+        } else {
+          me.state.pins[me.state.pins.indexOf(pin)].id = data.id;
+        }
+      });
+
   }
 
 
@@ -271,6 +284,7 @@ class Comment extends React.Component {
                                 meUser={this.state.me.user}
                                 parent={this}
                                 sendData={this.sendData.bind(this)}
+                                parentPin={null}
                     />
 
                   {pin.added ? [<div className="top-wrapper completed-wrapper">
@@ -291,6 +305,7 @@ class Comment extends React.Component {
                                       meUser={this.state.me.user}
                                       parent={this}
                                       sendData={this.sendData.bind(this)}
+                                      parentPin={pin}
 
                           />
                         </div>
@@ -298,7 +313,7 @@ class Comment extends React.Component {
                     }.bind(this)) : null }
                   </div>,
 
-                    this.state.replyButton && <button onClick={this.addComment.bind(this, pin)} className="cs-btn-flat-active bottom-btn reply-btn">Reply</button>] : null}
+                    (pin.reply || pin.reply === undefined) && <button onClick={this.addComment.bind(this, pin)} className="cs-btn-flat-active bottom-btn reply-btn">Reply</button>] : null}
 
                 </div>
               </div>
@@ -330,22 +345,24 @@ class CommentBox extends React.Component {
   editPin(pin, e){
     e.stopPropagation();
     pin.added = !pin.added;
+    pin.updated = true;
     this.state.menuActive = false;
-    if (this.props.pins.indexOf(pin) == this.props.pins.length -1){
-      this.props.parent.setState({replyButton: false})
+    if (this.props.parentPin && this.props.pins.indexOf(pin) == this.props.pins.length -1){
+      this.props.parentPin.reply = false;
+      this.props.parent.setState({})
     } else {
       this.props.parent.setState({})
     }
   }
 
-  deletePin(pin){
+  deletePin(pin, parentPin){
     this.props.pins.splice(this.props.pins.indexOf(pin), 1);
     this.props.parent.setState({});
-    this.props.sendData()
+    this.props.sendData('deletePin', pin, parentPin)
   }
 
 
-  addPin(pin){
+  addPin(pin, parentPin){
     var text = this.refs['textarea'].value;
     if (!text) return;
     pin.text = text;
@@ -353,8 +370,10 @@ class CommentBox extends React.Component {
     var timeSeg = (new Date()).toString().split(' ');
     var time = timeSeg[4].split(':')[0]+':'+timeSeg[4].split(':')[1]+' '+timeSeg[1]+' '+timeSeg[2];
     pin.time = time;
-    this.props.parent.setState({replyButton: true})
-    this.props.sendData()
+    if(this.props.parentPin) this.props.parentPin.reply = true;
+    this.props.sendData('addPin', pin, parentPin);
+    pin.updated = false;
+    this.props.parent.setState({});
   }
 
   keyDownHandler(pin, e){
@@ -400,12 +419,12 @@ class CommentBox extends React.Component {
                 <figure className="dot active"></figure>
                 <figure className="dot active"></figure>
               </div>
-              {this.state.menuActive && <div className="kebab-dropdown">
-                <div className="menu-item">
+              {pin.user.id == this.props.meUser.id && this.state.menuActive && <div className="kebab-dropdown">
+                 <div className="menu-item">
                   <span className="cs-link" onClick={this.editPin.bind(this, pin)}>Edit</span>
                 </div>
-                <div className="menu-item">
-                  <span className="cs-link" onClick={this.deletePin.bind(this, pin)}>Delete</span>
+                 <div className="menu-item">
+                  <span className="cs-link" onClick={this.deletePin.bind(this, pin, this.props.parentPin)}>Delete</span>
                 </div>
               </div>}
             </div>
@@ -417,7 +436,7 @@ class CommentBox extends React.Component {
           </div>
         </div>
         {!pin.added && <div className="create-buttons">
-          <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin)}>Add</button>
+          <button className="bottom-btn cs-btn-flat-active" onClick={this.addPin.bind(this, pin, this.props.parentPin)}>Add</button>
           <button className="bottom-btn cs-btn-flat-gray" onClick={this.cancelPin.bind(this, pin)}>Cancel</button>
         </div>}
       </div>

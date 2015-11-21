@@ -39,10 +39,18 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
     cropData = request;
     localStorage.currentAction = 'crop';
     chrome.browserAction.setBadgeText({text: 'crop'});
-  } else if (request.msg == 'addPin'){
-    sendedrequest = request;
-    localStorage.currentAction = 'comment';
+  } else if (request.msg == 'addPin' || request.msg == 'deletePin' || request.msg == 'completePin' || request.msg == 'addComment' || request.msg == 'deleteComment'){
+
+
+    if (!request.commentMode){
+      sendedrequest = request;
+      localStorage.currentAction = 'comment';
+    } else {
+      sendRequestPin(request,sender, callback)
+    }
+
     chrome.browserAction.setBadgeText({text: request.pins.length.toString() });
+
   } else if (request.msg == 'cancelCrop'){
     cropData = null;
     localStorage.currentAction = '';
@@ -242,6 +250,77 @@ function screenshotCaptured(screenshot, pageUrl, pageTitle){
 }
 
 
+
+function sendRequestPin(request, sender, callback){
+  var pin = request.pin;
+  var token = localStorage.token;
+  var post = request.boardData.posts[0];
+  var parentPin = request.parentPin;
+
+  console.log(request);
+
+  if (request.msg == 'addPin'){
+
+    var method = pin.updated ? 'PUT' : 'POST';
+    var urlPart = method == 'POST' ? 'posts/' + post.id + '/tasks/' : 'tasks/'+ pin.id;
+
+    httprequest('http://api.codesign.io/' + urlPart, pin.updated ? 'PUT' :'POST', {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, {
+      marker: {
+        geometry: {
+          left: pin.x/request.width * 100,
+          top: pin.y/request.height * 100
+        },
+        measure: 'pixel',
+        shape: "PN"
+      },
+      title: pin.text
+    }, function (data) {
+      callback(data)
+    })
+  } else if (request.msg == 'addComment'){
+
+    var method = pin.updated ? 'PUT' : 'POST';
+    var urlPart = method == 'POST' ? 'tasks/' + request.parentPin.id + '/comments/' : 'comments/'+ pin.id;
+
+      httprequest('http://api.codesign.io/'+ urlPart, method , {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, {
+      title: pin.text
+    }, function (data) {
+        callback(data)
+      })
+
+  } else if (request.msg == 'deletePin'){
+
+    httprequest('http://api.codesign.io/tasks/' + pin.id, 'DELETE', {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, {}, function (data) {})
+
+  } else if (request.msg == 'deleteComment'){
+
+    httprequest('http://api.codesign.io/comments/' + pin.id, 'DELETE', {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, {}, function (data) {})
+
+
+  } else if (request.msg == 'completePin'){
+
+    httprequest('http://api.codesign.io/tasks/'+ pin.id, 'PUT', {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, {
+      status: pin.completed ? "CP" : "AC"
+    }, function (data) {})
+  }
+}
+
+
 function loadBoardData(req, sender, sendResponse){
   var token = localStorage.token
   var code = req.boardCode;
@@ -254,7 +333,7 @@ function loadBoardData(req, sender, sendResponse){
 
     setTimeout(function(){
       chrome.tabs.getSelected(null, function (tab) {
-        chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins)}, function () {
+        chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins) + ';'+ 'window.codesignBoardData = ' + JSON.stringify(data.board)}, function () {
           chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
             chrome.tabs.sendRequest(tab.id, {msg: 'loadPins'}, function () {
             });
