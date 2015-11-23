@@ -89,8 +89,8 @@ if (window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/
     localStorage["user.token"] = JSON.stringify(token);
     chrome.extension.sendRequest({msg: 'closeWindow'})
   })
-} else if (window.location.toString().match(/liveBoardPage/)){
-  var match = window.location.toString().match(/http:\/\/www.codesign.io\/board\/(\w+)\?liveBoardPage/);
+} else if (window.location.toString().match(/http:\/\/www.codesign.io\/live\//)){
+  var match = window.location.toString().match(/http:\/\/www.codesign.io\/live\/(\w+)/);
   var code = match[1];
   chrome.extension.sendRequest({msg: 'liveBoard', boardCode:code}, function(data){
     window.location = data.url;

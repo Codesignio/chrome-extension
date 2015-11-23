@@ -31,6 +31,8 @@ chrome.runtime.onInstalled.addListener(function(){
   chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
 });
 
+chrome.runtime.setUninstallURL('http://localhost:3000/uninstalled');
+
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
   if (request.msg === 'capturePage') {
@@ -413,7 +415,7 @@ function shareImage (req, sender, sendResponse){
                 reqCount++;
                 if (reqCount == sharedImage.pins.length) {
 
-                  var url = 'http://www.codesign.io/board/'+boardData.client_code+'?liveBoardPage'
+                  var url = 'http://www.codesign.io/live/'+boardData.client_code;
                   sharedImage.sharedLink = url;
                   localStorage.capturedImages = JSON.stringify(capturedImages);
                   chrome.runtime.sendMessage({msg: 'sharedImage', url: url})
