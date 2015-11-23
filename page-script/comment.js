@@ -4,6 +4,36 @@ import cx from 'classnames';
 import assign from 'object-assign';
 import {request} from './../app/utils';
 import cssString from "raw!./../pageStyles.css";
+import cssPath from "css-path";
+
+
+function elementsFromPoint(x,y) {
+  var elements = [], previousPointerEvents = [], current, i, d;
+
+  // get all elements via elementFromPoint, and remove them from hit-testing in order
+  while ((current = document.elementFromPoint(x,y)) && elements.indexOf(current)===-1 && current != null) {
+
+    // push the element and its current style
+    elements.push(current);
+    previousPointerEvents.push({
+      value: current.style.getPropertyValue('pointer-events'),
+      priority: current.style.getPropertyPriority('pointer-events')
+    });
+
+    // add "pointer-events: none", to get to the underlying element
+    current.style.setProperty('pointer-events', 'none', 'important');
+  }
+
+  // restore the previous pointer-events values
+  for(i = previousPointerEvents.length; d=previousPointerEvents[--i]; ) {
+    elements[i].style.setProperty('pointer-events', d.value?d.value:'', d.priority);
+  }
+
+  // return our results
+  return elements;
+}
+
+
 
 
 class Frame extends React.Component{
@@ -111,10 +141,29 @@ class Comment extends React.Component {
   transformPin(pin, attrs) {
     var timeSeg = (new Date(Date.parse(pin.date_created))).toString().split(' ');
     var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
+
+    var x, y, relativeX,relativeY;
+    var cssPath = pin.markers && pin.markers[0].geometry.cssPath;
+    if (cssPath){
+      relativeX = pin.markers && pin.markers[0].geometry.relativeX;
+      relativeY = pin.markers && pin.markers[0].geometry.relativeY;
+      var elem = document.querySelector(cssPath);
+      var elemRect = elem.getBoundingClientRect();
+      x = relativeX * elemRect.width + elemRect.left;
+      y = relativeY * elemRect.height + elemRect.top;
+    } else {
+      x = pin.markers && pin.markers[0].geometry.left * document.body.scrollWidth / 100;
+      y = pin.markers && pin.markers[0].geometry.top * document.body.scrollHeight / 100;
+    }
+
+
     return assign({
       user: pin.creator,
-      x: pin.markers && pin.markers[0].geometry.left * document.body.scrollWidth / 100,
-      y: pin.markers && pin.markers[0].geometry.top * document.body.scrollHeight / 100,
+      x: x,
+      y: y,
+      relativeX: relativeX,
+      relativeY: relativeY,
+      cssPath: cssPath,
       completed: pin.status !== 'AC',
       id: pin.id,
       text: pin.title,
@@ -146,8 +195,16 @@ class Comment extends React.Component {
       e.preventDefault();
       e.stopPropagation();
       var pin = this.state.dragPin;
+
+
+      var target = elementsFromPoint(e.pageX, e.pageY)[2];
+      var elemRect = target.getBoundingClientRect();
+
       pin.x = e.pageX;
       pin.y = e.pageY;
+      pin.relativeX = (e.pageX - elemRect.left)/elemRect.width;
+      pin.relativeY = (e.pageY - elemRect.top)/elemRect.height;
+      pin.cssPath = cssPath(target);
       this.setState({});
     } else {
       this.hidePin()
@@ -180,9 +237,16 @@ class Comment extends React.Component {
         }
       }.bind(this));
 
+
+      var target = elementsFromPoint(e.pageX, e.pageY)[2];
+      var elemRect = target.getBoundingClientRect();
+
       var pin  = {
         x: e.pageX,
         y: e.pageY,
+        relativeX: (e.pageX - elemRect.left)/elemRect.width,
+        relativeY: (e.pageY - elemRect.top)/elemRect.height,
+        cssPath: cssPath(target),
         children: [],
         user: this.state.me.user,
       };

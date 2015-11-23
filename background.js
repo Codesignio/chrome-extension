@@ -271,7 +271,10 @@ function sendRequestPin(request, sender, callback){
       marker: {
         geometry: {
           left: pin.x/request.width * 100,
-          top: pin.y/request.height * 100
+          top: pin.y/request.height * 100,
+          relativeX: pin.relativeX,
+          relativeY: pin.relativeY,
+          cssPath: pin.cssPath,
         },
         measure: 'pixel',
         shape: "PN"
@@ -393,7 +396,10 @@ function shareImage (req, sender, sendResponse){
               marker: {
                 geometry: {
                   left: pin.x/sharedImage.size.width * 100,
-                  top: pin.y/sharedImage.size.height * 100
+                  top: pin.y/sharedImage.size.height * 100,
+                  relativeX: pin.relativeX,
+                  relativeY: pin.relativeY,
+                  cssPath: pin.cssPath,
                 },
                 measure: 'pixel',
                 shape: "PN"
@@ -562,7 +568,10 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                             marker: {
                               geometry: {
                                 left: pin.x/capturedImage.size.width * 100,
-                                top: pin.y/capturedImage.size.height * 100
+                                top: pin.y/capturedImage.size.height * 100,
+                                relativeX: pin.relativeX,
+                                relativeY: pin.relativeY,
+                                cssPath: pin.cssPath,
                               },
                               measure: 'pixel',
                               shape: "PN"
