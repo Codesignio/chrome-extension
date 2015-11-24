@@ -450,7 +450,7 @@ form {
 
 
 #shareButton {
-    height: 20px;
+    height: 45px;
     width: 100%;
     margin: auto;
     background-color: #22bc85;
@@ -472,6 +472,7 @@ form {
     margin: 0px;
     margin-bottom: 10px;
     padding: 7px;
+    width: 100%;
 }
 
 .sharedTitle {

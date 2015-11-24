@@ -352,7 +352,7 @@
 	              { className: 'links' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'http://www.codesign.io/dashboard/', target: '_blank', style: !this.state.images.length ? { marginLeft: '-25px;' } : {} },
+	                { href: 'http://www.codesign.io/dashboard/', target: '_blank', style: !this.state.images.length ? { marginLeft: '-25px' } : {} },
 	                'Dashboard'
 	              ),
 	              this.state.images.length ? _react2.default.createElement(
@@ -20862,14 +20862,16 @@
 	    }
 	  }, {
 	    key: 'shareImage',
-	    value: function shareImage(img) {
+	    value: function shareImage() {
+	      var img = this.state.images.filter(function (img) {
+	        return img.pins;
+	      })[0];
 	      var me = this;
 	      chrome.runtime.sendMessage({
 	        msg: 'shareImage',
 	        image: img
 	      });
 	
-	      img.sharedLink = 'sending...';
 	      me.setState({ currentShareImage: img });
 	    }
 	  }, {
@@ -20934,6 +20936,30 @@
 	      this.props.backToActions();
 	    }
 	  }, {
+	    key: 'copytext',
+	    value: function copytext(text) {
+	      var textField = document.createElement('textarea');
+	      textField.innerText = text;
+	      document.body.appendChild(textField);
+	      textField.select();
+	      document.execCommand('copy');
+	      textField.remove();
+	    }
+	  }, {
+	    key: 'copyLink',
+	    value: function copyLink() {
+	      var text = this.state.images.filter(function (img) {
+	        return img.sharedLink;
+	      })[0].sharedLink;
+	      this.copytext(text);
+	    }
+	  }, {
+	    key: 'selectInputText',
+	    value: function selectInputText(text, e) {
+	      e.target.selectionStart = 0;
+	      e.target.selectionEnd = text.length;
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _this2 = this;
@@ -20950,24 +20976,27 @@
 	              { className: 'image' },
 	              _react2.default.createElement('img', { onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.link }),
 	              _react2.default.createElement('div', { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' } })
-	            ), img.pins && img.sharedLink ? [_react2.default.createElement(
+	            ), img.sharedLink ? [_react2.default.createElement(
 	              'div',
 	              { className: 'sharedTitle' },
 	              'Share link and disscuss online:'
-	            ), _react2.default.createElement(
-	              'div',
-	              { className: 'sharedLink' },
-	              img.sharedLink
-	            )] : img.pins && _react2.default.createElement(
-	              'button',
-	              { id: 'shareButton', onClick: this.shareImage.bind(this, img) },
-	              'SHARE THIS PAGE'
-	            )];
+	            ), _react2.default.createElement('input', { disabled: 'true', onClick: this.selectInputText.bind(this, img.sharedLink), className: 'sharedLink', value: img.sharedLink })] : null];
 	          }).bind(this))
 	        ),
 	        _react2.default.createElement(
 	          'div',
 	          { className: 'uploadWidget' },
+	          this.state.images.filter(function (img) {
+	            return img.sharedLink;
+	          }).length ? _react2.default.createElement(
+	            'button',
+	            { id: 'shareButton', onClick: this.copyLink.bind(this) },
+	            'COPY LIVE LINK'
+	          ) : _react2.default.createElement(
+	            'button',
+	            { id: 'shareButton', onClick: this.shareImage.bind(this) },
+	            'SHARE LIVE LINK'
+	          ),
 	          _react2.default.createElement(
 	            'button',
 	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
@@ -21048,7 +21077,9 @@
 	                } },
 	              'Cancel'
 	            ),
-	            _react2.default.createElement(
+	            this.state.images.filter(function (img) {
+	              return img.pins && img.pins.length;
+	            }).length ? null : _react2.default.createElement(
 	              'a',
 	              { onClick: function onClick() {
 	                  return _this2.props.backToActions();

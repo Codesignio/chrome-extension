@@ -75,14 +75,14 @@ export default class SelectAndUpload extends React.Component {
     });
   }
 
-  shareImage(img){
+  shareImage(){
+    var img = this.state.images.filter((img)=> img.pins)[0];
     var me = this;
     chrome.runtime.sendMessage({
       msg: 'shareImage',
       image: img
     });
 
-    img.sharedLink = 'sending...';
     me.setState({currentShareImage: img})
   }
 
@@ -139,6 +139,25 @@ export default class SelectAndUpload extends React.Component {
     this.props.backToActions();
   }
 
+  copytext(text) {
+    var textField = document.createElement('textarea');
+    textField.innerText = text;
+    document.body.appendChild(textField);
+    textField.select();
+    document.execCommand('copy');
+    textField.remove();
+  }
+
+  copyLink(){
+    var text = this.state.images.filter((img)=> img.sharedLink)[0].sharedLink;
+    this.copytext(text);
+  }
+
+  selectInputText(text,e){
+    e.target.selectionStart = 0;
+    e.target.selectionEnd = text.length;
+  }
+
   render(){
     return (
       <div>
@@ -149,12 +168,13 @@ export default class SelectAndUpload extends React.Component {
                 <img onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.link}/>
                 <div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}></div>
               </div>,
-                img.pins && img.sharedLink ? [<div className="sharedTitle">Share link and disscuss online:</div>,<div className="sharedLink">{img.sharedLink}</div>] : img.pins && <button id="shareButton" onClick={this.shareImage.bind(this, img)}>SHARE THIS PAGE</button>]
+                img.sharedLink ? [<div className="sharedTitle">Share link and disscuss online:</div>,<input disabled="true" onClick={this.selectInputText.bind(this, img.sharedLink)} className="sharedLink" value={img.sharedLink}/>] : null ]
             )
 
           }.bind(this)) }
         </div>
         <div className="uploadWidget">
+          {this.state.images.filter((img)=> img.sharedLink).length  ? <button id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</button> : <button id="shareButton" onClick={this.shareImage.bind(this)}>SHARE LIVE LINK</button>}
           <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</button>
           { this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
@@ -176,7 +196,7 @@ export default class SelectAndUpload extends React.Component {
           <div className="upload-actions">
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
-            <a onClick={()=> this.props.backToActions()}>+ Snap more</a>
+            {this.state.images.filter((img)=> img.pins && img.pins.length).length ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
             <a onClick={this.cleanCapturesList.bind(this)}>Cancel</a>
           </div>
         </div>

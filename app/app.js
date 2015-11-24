@@ -191,7 +191,7 @@ class App extends React.Component {
             <p>codesign.io</p>
             <p>Simplest feedback tool</p>
             <div className="links">
-              <a href="http://www.codesign.io/dashboard/" target="_blank" style={!this.state.images.length ? {marginLeft: '-25px;'} : {}}>Dashboard</a>
+              <a href="http://www.codesign.io/dashboard/" target="_blank" style={!this.state.images.length ? {marginLeft: '-25px'} : {}}>Dashboard</a>
               {this.state.images.length ? <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>History({this.state.images.length})</a> : null}
               <a className="logOut" onClick={this.logOut.bind(this)}>Log out</a>
             </div>
