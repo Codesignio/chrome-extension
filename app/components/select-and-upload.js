@@ -159,6 +159,9 @@ export default class SelectAndUpload extends React.Component {
   }
 
   render(){
+
+    var hasPinsImages = this.state.images.filter((img)=> img.pins && img.pins.length).length;
+
     return (
       <div>
         <div key="screenshot"  className="screenshot">
@@ -174,7 +177,7 @@ export default class SelectAndUpload extends React.Component {
           }.bind(this)) }
         </div>
         <div className="uploadWidget">
-          {this.state.images.filter((img)=> img.sharedLink).length  ? <button id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</button> : <button id="shareButton" onClick={this.shareImage.bind(this)}>SHARE LIVE LINK</button>}
+          {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <button id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</button> : (hasPinsImages ? <button id="shareButton" onClick={this.shareImage.bind(this)}>SHARE LIVE LINK</button> : null)}
           <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</button>
           { this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
@@ -196,7 +199,7 @@ export default class SelectAndUpload extends React.Component {
           <div className="upload-actions">
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
-            {this.state.images.filter((img)=> img.pins && img.pins.length).length ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
+            {hasPinsImages ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
             <a onClick={this.cleanCapturesList.bind(this)}>Cancel</a>
           </div>
         </div>

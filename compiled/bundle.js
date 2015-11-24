@@ -20967,6 +20967,10 @@
 	    value: function render() {
 	      var _this2 = this;
 	
+	      var hasPinsImages = this.state.images.filter(function (img) {
+	        return img.pins && img.pins.length;
+	      }).length;
+	
 	      return _react2.default.createElement(
 	        'div',
 	        null,
@@ -20989,17 +20993,17 @@
 	        _react2.default.createElement(
 	          'div',
 	          { className: 'uploadWidget' },
-	          this.state.images.filter(function (img) {
+	          hasPinsImages && this.state.images.filter(function (img) {
 	            return img.sharedLink;
 	          }).length ? _react2.default.createElement(
 	            'button',
 	            { id: 'shareButton', onClick: this.copyLink.bind(this) },
 	            'COPY LIVE LINK'
-	          ) : _react2.default.createElement(
+	          ) : hasPinsImages ? _react2.default.createElement(
 	            'button',
 	            { id: 'shareButton', onClick: this.shareImage.bind(this) },
 	            'SHARE LIVE LINK'
-	          ),
+	          ) : null,
 	          _react2.default.createElement(
 	            'button',
 	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
@@ -21080,9 +21084,7 @@
 	                } },
 	              'Cancel'
 	            ),
-	            this.state.images.filter(function (img) {
-	              return img.pins && img.pins.length;
-	            }).length ? null : _react2.default.createElement(
+	            hasPinsImages ? null : _react2.default.createElement(
 	              'a',
 	              { onClick: function onClick() {
 	                  return _this2.props.backToActions();
