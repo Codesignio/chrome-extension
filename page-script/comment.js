@@ -175,10 +175,12 @@ class Comment extends React.Component {
 
   componentDidMount(){
     window.addEventListener('scroll', this.onScrollHandler.bind(this));
+    window.addEventListener('resize', this.resizeHandler.bind(this));
   }
 
   componentWillUnmount(){
     window.removeEventListener('scroll', this.onScrollHandler.bind(this));
+    window.removeEventListener('resize', this.resizeHandler.bind(this));
   }
 
   onScrollHandler(){
@@ -188,6 +190,19 @@ class Comment extends React.Component {
         x: window.parent.document.body.scrollLeft + window.innerWidth
       }
     });
+  }
+
+  resizeHandler(){
+    this.state.pins.forEach(function(pin){
+      var cssPath = pin.cssPath;
+      if (cssPath){
+        var elem = document.querySelector(cssPath);
+        var elemRect = elem.getBoundingClientRect();
+        pin.x = pin.relativeX * elemRect.width + elemRect.left;
+        pin.y = pin.relativeY * elemRect.height + elemRect.top;
+      }
+    }.bind(this));
+    this.setState({});
   }
 
   onMouseMoveHandler(e){
@@ -332,7 +347,7 @@ class Comment extends React.Component {
 
     var user = this.state.me.user;
 
-    return this.state.cancel ? null : <Frame style={{width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={styles}
+    return this.state.cancel ? null : <Frame style={{display: 'block' , width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
       <div id="snap-overlay-inner" style={styles} onMouseMove={this.onMouseMoveHandler.bind(this)}>
       {this.state.pins.map(function(pin, i){
@@ -515,6 +530,6 @@ class CommentBox extends React.Component {
 
 var el = document.createElement('div');
 el.setAttribute('id', 'snap-overlay');
-el.setAttribute('style', 'width: '+document.body.scrollWidth + 'px;height:'+document.body.scrollHeight+'px; z-index:1000000; position: absolute; top: 0px; left: 0px;');
+el.setAttribute('style', 'z-index:1000000; position: absolute; top: 0px; left: 0px;');
 document.body.appendChild(el);
 ReactDOM.render(<Comment />, el);

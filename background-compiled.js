@@ -441,7 +441,7 @@
 	                } else {
 	                  var commentsCount = 0;
 	                  for (var i = 0; i < pin.children.length; i++) {
-	                    var comment = sharedImage.pins[i];
+	                    var comment = pin.children[i];
 	
 	                    (0, _utils.request)('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
 	                      "Authorization": 'Token ' + token,
@@ -597,7 +597,7 @@
 	                              } else {
 	                                var commentsCount = 0;
 	                                for (var i = 0; i < pin.children.length; i++) {
-	                                  var comment = capturedImage.pins[i];
+	                                  var comment = pin.children[i];
 	
 	                                  (0, _utils.request)('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
 	                                    "Authorization": 'Token ' + token,

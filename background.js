@@ -427,7 +427,7 @@ function shareImage (req, sender, sendResponse){
                 } else {
                   var commentsCount = 0;
                   for (var i = 0; i < pin.children.length; i++) {
-                    var comment = sharedImage.pins[i];
+                    var comment = pin.children[i];
 
 
                     httprequest('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
@@ -603,7 +603,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                               } else {
                                 var commentsCount = 0;
                                 for (var i = 0; i < pin.children.length; i++) {
-                                  var comment = capturedImage.pins[i];
+                                  var comment = pin.children[i];
 
 
                                   httprequest('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {

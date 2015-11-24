@@ -272,11 +272,13 @@
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      window.addEventListener('scroll', this.onScrollHandler.bind(this));
+	      window.addEventListener('resize', this.resizeHandler.bind(this));
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
 	    value: function componentWillUnmount() {
 	      window.removeEventListener('scroll', this.onScrollHandler.bind(this));
+	      window.removeEventListener('resize', this.resizeHandler.bind(this));
 	    }
 	  }, {
 	    key: 'onScrollHandler',
@@ -287,6 +289,20 @@
 	          x: window.parent.document.body.scrollLeft + window.innerWidth
 	        }
 	      });
+	    }
+	  }, {
+	    key: 'resizeHandler',
+	    value: function resizeHandler() {
+	      this.state.pins.forEach((function (pin) {
+	        var cssPath = pin.cssPath;
+	        if (cssPath) {
+	          var elem = document.querySelector(cssPath);
+	          var elemRect = elem.getBoundingClientRect();
+	          pin.x = pin.relativeX * elemRect.width + elemRect.left;
+	          pin.y = pin.relativeY * elemRect.height + elemRect.top;
+	        }
+	      }).bind(this));
+	      this.setState({});
 	    }
 	  }, {
 	    key: 'onMouseMoveHandler',
@@ -435,7 +451,7 @@
 	
 	      return this.state.cancel ? null : _react2.default.createElement(
 	        Frame,
-	        { style: { width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none' } },
+	        { style: { display: 'block', width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none' } },
 	        _react2.default.createElement(
 	          'div',
 	          { id: 'snap-overlay', style: styles,
@@ -704,7 +720,7 @@
 	
 	var el = document.createElement('div');
 	el.setAttribute('id', 'snap-overlay');
-	el.setAttribute('style', 'width: ' + document.body.scrollWidth + 'px;height:' + document.body.scrollHeight + 'px; z-index:1000000; position: absolute; top: 0px; left: 0px;');
+	el.setAttribute('style', 'z-index:1000000; position: absolute; top: 0px; left: 0px;');
 	document.body.appendChild(el);
 	_reactDom2.default.render(_react2.default.createElement(Comment, null), el);
 
