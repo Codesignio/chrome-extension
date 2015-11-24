@@ -166,19 +166,27 @@
 	  }, {
 	    key: 'snapScreen',
 	    value: function snapScreen() {
+	      var me = this;
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {
-	          window.close();
+	          me.setState({ status: 'crop-click-title' });
+	          setTimeout(function () {
+	            window.close();
+	          }, 3000);
 	        });
 	      });
 	    }
 	  }, {
 	    key: 'addComment',
 	    value: function addComment() {
+	      var me = this;
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { code: 'window.codesign = {me: ' + localStorage.me + '}' }, function () {
 	          chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
-	            window.close();
+	            me.setState({ status: 'comment-click-title' });
+	            setTimeout(function () {
+	              window.close();
+	            }, 3000);
 	          });
 	        });
 	      });
@@ -253,6 +261,18 @@
 	          { className: 'progress_bar-title' },
 	          'Capturing...'
 	        )];
+	      } else if (this.state.status == 'comment-click-title') {
+	        return _react2.default.createElement(
+	          'div',
+	          { className: 'comment-click-title' },
+	          'Pick a screen area you need to snap and click on the icon ↑ to crop and share!'
+	        );
+	      } else if (this.state.status == 'crop-click-title') {
+	        return _react2.default.createElement(
+	          'div',
+	          { className: 'crop-click-title' },
+	          'Click everywhere you need to leave your feedback right here!'
+	        );
 	      } else if (this.state.status == 'captured') {
 	        return _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
