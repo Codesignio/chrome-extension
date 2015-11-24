@@ -122,6 +122,9 @@ class App extends React.Component {
   removeImage(img){
     this.state.images.splice(this.state.images.indexOf(img), 1);
     localStorage.images = JSON.stringify(this.state.images);
+    if (!this.state.images.length){
+      this.state.status =  'actions';
+    }
     this.setState({});
   }
 
@@ -154,7 +157,7 @@ class App extends React.Component {
   renderPopup(){
 
     if (this.state.status == 'progress'){
-      return <div className="progress_bar" style={{width: this.state.progress}}></div>
+      return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">Capturing...</span>]
     } else if (this.state.status == 'captured'){
       return (
         <SelectAndUpload
@@ -172,15 +175,15 @@ class App extends React.Component {
                 <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
                 <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,
                 <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div>,
-                  this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span>Back to upload dialog</span></div> : null
+                  this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span className="back-link">Back to upload dialog</span></div> : null
               ]}
           </div>
           {!this.state.capturedImages.length ? <div className="title-and-links">
             <p>codesign.io</p>
             <p>Simplest feedback tool</p>
             <div className="links">
-              <a href="http://www.codesign.io/dashboard/" target="_blank">Dashboard</a>
-              <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>History</a>
+              <a href="http://www.codesign.io/dashboard/" target="_blank" style={!this.state.images.length ? {marginLeft: '-25px;'} : {}}>Dashboard</a>
+              {this.state.images.length ? <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>History({this.state.images.length})</a> : null}
               <a className="logOut" onClick={this.logOut.bind(this)}>Log out</a>
             </div>
           </div> : null}

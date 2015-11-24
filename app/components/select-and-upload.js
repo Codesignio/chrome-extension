@@ -134,6 +134,11 @@ export default class SelectAndUpload extends React.Component {
     this.setState({})
   }
 
+  cleanCapturesList(){
+    localStorage.capturedImages = '';
+    this.props.backToActions();
+  }
+
   render(){
     return (
       <div>
@@ -150,7 +155,7 @@ export default class SelectAndUpload extends React.Component {
           }.bind(this)) }
         </div>
         <div className="uploadWidget">
-          <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : null}</button>
+          <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</button>
           { this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
             <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
@@ -160,18 +165,19 @@ export default class SelectAndUpload extends React.Component {
             </select>
             <p>BOARD</p>
             <select defaultValue={this.state.activeBoard.id} ref="boardsSelect">
-              <option key="new board" className="new_board_option" value="new_board">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new board</option>
+              <option key="new board" className="new_board_option" value="new_board">Create new board</option>
               {this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function(board,i){
                 return <option key={i} value={board.id}>{board.title}</option>
               })}
             </select>
           </div> : <div className="selectors-titles">
-            {this.state.activeBoard.id == 'new_board' ? <p key="1">Wiil creating new board in folder: "{this.state.activeFolder.title}"</p> : <p key="1">Upload to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
+            {this.state.activeBoard.id == 'new_board' ? <p key="1">Upload image to a new board in "{this.state.activeFolder.title}" folder</p> : <p key="1">Upload image to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
           </div>}
           <div className="upload-actions">
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
             <a onClick={()=> this.props.backToActions()}>+ Snap more</a>
+            <a onClick={this.cleanCapturesList.bind(this)}>Cancel</a>
           </div>
         </div>
       </div>

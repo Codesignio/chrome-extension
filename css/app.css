@@ -24,7 +24,7 @@ a {
 
 
 html {
-    background-color: #9fd3b5;
+    background-color: #E0E0E0;
     min-height: 30px;
 }
 
@@ -35,8 +35,22 @@ html {
 
 .progress_bar {
     min-height: 30px;
-    background: #5fb583;
+    background: #969696;
     width: 0%;
+}
+
+.progress_bar-title{
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin-left: 14px;
+    line-height: 30px;
+    font-size: 16px;
+    font-weight: 300;
+    color: #222;
 }
 
 .screenshot {
@@ -97,6 +111,7 @@ img {
 
 .selectors-titles {
     margin-top: 25px;
+    line-height: 1.2;
 }
 
 .uploadWidget .selectors-titles p {
@@ -188,6 +203,10 @@ img {
 .actions > div > span {
     margin-left: 35px;
     align-items: center;
+}
+
+.actions > div:nth-child(1) {
+    background-color: #9fd3b5;
 }
 
 .actions > div:nth-child(2){
@@ -377,9 +396,7 @@ form {
     text-align: center;
     line-height: 35px;
     color: white;
-
-    color: white;
-    font-size: 20px;
+    font-size: 13px;
     font-weight: 300;
 }
 
@@ -391,8 +408,7 @@ form {
     line-height: 35px;
     color: white;
 
-    color: white;
-    font-size: 20px;
+    font-size: 13px;
     font-weight: 300;
 }
 
@@ -462,4 +478,13 @@ form {
     text-align: center;
     font-size: 14px;
     margin: 4px;
+}
+
+.back-link {
+    font-size: 13px;
+    font-weight: 300;
+}
+
+.back-link:hover {
+    color: #58b684;
 }

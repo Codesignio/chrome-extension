@@ -38,18 +38,20 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
   } else if (request.msg === 'cropData'){
     cropData = request;
     localStorage.currentAction = 'crop';
-    chrome.browserAction.setBadgeText({text: 'crop'});
+    chrome.browserAction.setBadgeText({text: 'SHARE'});
   } else if (request.msg == 'addPin' || request.msg == 'deletePin' || request.msg == 'completePin' || request.msg == 'addComment' || request.msg == 'deleteComment'){
 
 
     if (!request.commentMode){
       sendedrequest = request;
-      localStorage.currentAction = 'comment';
+      if(request.pins.length){
+        localStorage.currentAction = 'comment';
+      }
     } else {
       sendRequestPin(request,sender, callback)
     }
 
-    chrome.browserAction.setBadgeText({text: request.pins.length.toString() });
+    chrome.browserAction.setBadgeText({text: request.pins.length ? 'SHARE' : '' });
 
   } else if (request.msg == 'cancelCrop'){
     cropData = null;
@@ -358,12 +360,12 @@ function shareImage (req, sender, sendResponse){
   httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
 
     var folders = data.results;
-    var sharedFolder = data.results.filter((fol) => fol.title == "LIVE COMMENTED PAGES")[0];
+    var sharedFolder = data.results.filter((fol) => fol.title == "My live boards")[0];
 
     if (!sharedFolder){
       httprequest('http://api.codesign.io/folders/', 'POST', {"Authorization": 'Token ' +  token, "Content-Type": "application/json;charset=UTF-8"}, {
 
-        title: "LIVE COMMENTED PAGES"
+        title: "My live boards"
 
       }, function (data) {
         createSharedPage(data)

@@ -206,6 +206,9 @@
 	    value: function removeImage(img) {
 	      this.state.images.splice(this.state.images.indexOf(img), 1);
 	      localStorage.images = JSON.stringify(this.state.images);
+	      if (!this.state.images.length) {
+	        this.state.status = 'actions';
+	      }
 	      this.setState({});
 	    }
 	  }, {
@@ -245,7 +248,11 @@
 	      var _this2 = this;
 	
 	      if (this.state.status == 'progress') {
-	        return _react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } });
+	        return [_react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } }), _react2.default.createElement(
+	          'span',
+	          { className: 'progress_bar-title' },
+	          'Capturing...'
+	        )];
 	      } else if (this.state.status == 'captured') {
 	        return _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
@@ -302,7 +309,7 @@
 	                } },
 	              _react2.default.createElement(
 	                'span',
-	                null,
+	                { className: 'back-link' },
 	                'Back to upload dialog'
 	              )
 	            ) : null]
@@ -325,16 +332,18 @@
 	              { className: 'links' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'http://www.codesign.io/dashboard/', target: '_blank' },
+	                { href: 'http://www.codesign.io/dashboard/', target: '_blank', style: !this.state.images.length ? { marginLeft: '-25px;' } : {} },
 	                'Dashboard'
 	              ),
-	              _react2.default.createElement(
+	              this.state.images.length ? _react2.default.createElement(
 	                'a',
 	                { className: 'imagesList', onClick: function onClick() {
 	                    return _this2.setState({ status: 'list' });
 	                  } },
-	                'History'
-	              ),
+	                'History(',
+	                this.state.images.length,
+	                ')'
+	              ) : null,
 	              _react2.default.createElement(
 	                'a',
 	                { className: 'logOut', onClick: this.logOut.bind(this) },
@@ -20899,6 +20908,12 @@
 	      this.setState({});
 	    }
 	  }, {
+	    key: 'cleanCapturesList',
+	    value: function cleanCapturesList() {
+	      localStorage.capturedImages = '';
+	      this.props.backToActions();
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _this2 = this;
@@ -20937,7 +20952,7 @@
 	            'button',
 	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
 	            'UPLOAD ',
-	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : null
+	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
 	          ),
 	          this.state.edit ? _react2.default.createElement(
 	            'div',
@@ -20969,7 +20984,7 @@
 	              _react2.default.createElement(
 	                'option',
 	                { key: 'new board', className: 'new_board_option', value: 'new_board' },
-	                '                Create new board'
+	                'Create new board'
 	              ),
 	              this.state.boards[this.state.selectActiveFolder.id] && this.state.boards[this.state.selectActiveFolder.id].map(function (board, i) {
 	                return _react2.default.createElement(
@@ -20985,13 +21000,13 @@
 	            this.state.activeBoard.id == 'new_board' ? _react2.default.createElement(
 	              'p',
 	              { key: '1' },
-	              'Wiil creating new board in folder: "',
+	              'Upload image to a new board in "',
 	              this.state.activeFolder.title,
-	              '"'
+	              '" folder'
 	            ) : _react2.default.createElement(
 	              'p',
 	              { key: '1' },
-	              'Upload to "',
+	              'Upload image to "',
 	              this.state.activeBoard.title,
 	              '" board in "',
 	              this.state.activeFolder.title,
@@ -21019,6 +21034,11 @@
 	                  return _this2.props.backToActions();
 	                } },
 	              '+ Snap more'
+	            ),
+	            _react2.default.createElement(
+	              'a',
+	              { onClick: this.cleanCapturesList.bind(this) },
+	              'Cancel'
 	            )
 	          )
 	        )
