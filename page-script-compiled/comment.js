@@ -198,7 +198,9 @@
 	        y: window.parent.document.body.scrollTop + window.innerHeight,
 	        x: window.parent.document.body.scrollLeft + window.innerWidth
 	      },
-	      me: window.codesign.me
+	      me: window.codesign.me,
+	      windowHeight: document.body.scrollHeight,
+	      windowWidth: document.body.scrollWidth
 	    };
 	    return _this2;
 	  }
@@ -302,7 +304,10 @@
 	          pin.y = pin.relativeY * elemRect.height + elemRect.top;
 	        }
 	      }).bind(this));
-	      this.setState({});
+	      this.setState({
+	        windowHeight: document.body.scrollHeight,
+	        windowWidth: document.body.scrollWidth
+	      });
 	    }
 	  }, {
 	    key: 'onMouseMoveHandler',
@@ -312,7 +317,9 @@
 	        e.stopPropagation();
 	        var pin = this.state.dragPin;
 	
-	        var target = elementsFromPoint(e.pageX, e.pageY)[2];
+	        var scrollPos = { x: document.body.scrollLeft, y: document.body.scrollTop };
+	
+	        var target = elementsFromPoint(e.pageX - scrollPos.y, e.pageY - scrollPos.y)[2];
 	        var elemRect = target.getBoundingClientRect();
 	
 	        pin.x = e.pageX;
@@ -354,7 +361,8 @@
 	          }
 	        }).bind(this));
 	
-	        var target = elementsFromPoint(e.pageX, e.pageY)[2];
+	        var scrollPos = { x: document.body.scrollLeft, y: document.body.scrollTop };
+	        var target = elementsFromPoint(e.pageX - scrollPos.x, e.pageY - scrollPos.y)[2];
 	        var elemRect = target.getBoundingClientRect();
 	
 	        var pin = {
@@ -451,7 +459,7 @@
 	
 	      return this.state.cancel ? null : _react2.default.createElement(
 	        Frame,
-	        { style: { display: 'block', width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none' } },
+	        { style: { display: 'block', width: this.state.windowWidth, height: this.state.windowHeight, border: 'none' } },
 	        _react2.default.createElement(
 	          'div',
 	          { id: 'snap-overlay', style: styles,

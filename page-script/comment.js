@@ -103,7 +103,9 @@ class Comment extends React.Component {
         y: window.parent.document.body.scrollTop + window.innerHeight,
         x: window.parent.document.body.scrollLeft + window.innerWidth
       },
-      me: window.codesign.me
+      me: window.codesign.me,
+      windowHeight: document.body.scrollHeight,
+      windowWidth: document.body.scrollWidth,
     }
   }
 
@@ -202,7 +204,10 @@ class Comment extends React.Component {
         pin.y = pin.relativeY * elemRect.height + elemRect.top;
       }
     }.bind(this));
-    this.setState({});
+    this.setState({
+      windowHeight: document.body.scrollHeight,
+      windowWidth: document.body.scrollWidth,
+    });
   }
 
   onMouseMoveHandler(e){
@@ -211,8 +216,10 @@ class Comment extends React.Component {
       e.stopPropagation();
       var pin = this.state.dragPin;
 
+      var scrollPos = {x: document.body.scrollLeft, y: document.body.scrollTop};
 
-      var target = elementsFromPoint(e.pageX, e.pageY)[2];
+
+      var target = elementsFromPoint(e.pageX - scrollPos.y, e.pageY - scrollPos.y)[2];
       var elemRect = target.getBoundingClientRect();
 
       pin.x = e.pageX;
@@ -252,8 +259,8 @@ class Comment extends React.Component {
         }
       }.bind(this));
 
-
-      var target = elementsFromPoint(e.pageX, e.pageY)[2];
+      var scrollPos = {x: document.body.scrollLeft, y: document.body.scrollTop};
+      var target = elementsFromPoint(e.pageX - scrollPos.x, e.pageY - scrollPos.y)[2];
       var elemRect = target.getBoundingClientRect();
 
       var pin  = {
@@ -347,7 +354,7 @@ class Comment extends React.Component {
 
     var user = this.state.me.user;
 
-    return this.state.cancel ? null : <Frame style={{display: 'block' , width: document.body.scrollWidth, height: document.body.scrollHeight, border: 'none'}}><div id="snap-overlay" style={styles}
+    return this.state.cancel ? null : <Frame style={{display: 'block' , width: this.state.windowWidth, height: this.state.windowHeight, border: 'none'}}><div id="snap-overlay" style={styles}
                 onClick={this.newPin.bind(this)}>
       <div id="snap-overlay-inner" style={styles} onMouseMove={this.onMouseMoveHandler.bind(this)}>
       {this.state.pins.map(function(pin, i){
