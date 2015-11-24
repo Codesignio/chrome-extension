@@ -283,14 +283,10 @@
 	        return _react2.default.createElement(
 	          'div',
 	          { id: 'screenshot-app' },
-	          _react2.default.createElement(
+	          this.state.unsupported ? null : _react2.default.createElement(
 	            'div',
 	            { className: 'actions' },
-	            this.state.unsupported ? _react2.default.createElement(
-	              'p',
-	              { className: 'unsupported' },
-	              'This page does not support capture screenshot'
-	            ) : [_react2.default.createElement(
+	            _react2.default.createElement(
 	              'div',
 	              { key: '1', onClick: this.takeFullPageScreenshoot.bind(this) },
 	              _react2.default.createElement(
@@ -298,7 +294,8 @@
 	                null,
 	                'Snap a full page'
 	              )
-	            ), _react2.default.createElement(
+	            ),
+	            _react2.default.createElement(
 	              'div',
 	              { key: '2', onClick: this.takeScreenshoot.bind(this) },
 	              _react2.default.createElement(
@@ -306,7 +303,8 @@
 	                null,
 	                'Snap visible part'
 	              )
-	            ), _react2.default.createElement(
+	            ),
+	            _react2.default.createElement(
 	              'div',
 	              { key: '3', onClick: this.snapScreen.bind(this) },
 	              _react2.default.createElement(
@@ -314,7 +312,8 @@
 	                null,
 	                'Snap screen area'
 	              )
-	            ), _react2.default.createElement(
+	            ),
+	            _react2.default.createElement(
 	              'div',
 	              { key: '4', onClick: this.addComment.bind(this) },
 	              _react2.default.createElement(
@@ -322,7 +321,8 @@
 	                null,
 	                'Add comment'
 	              )
-	            ), this.state.capturedImages.length ? _react2.default.createElement(
+	            ),
+	            this.state.capturedImages.length ? _react2.default.createElement(
 	              'div',
 	              { className: 'back-to-upload', key: '5', onClick: function onClick() {
 	                  return _this2.setState({ status: 'captured' });
@@ -332,21 +332,24 @@
 	                { className: 'back-link' },
 	                'Back to upload dialog'
 	              )
-	            ) : null]
+	            ) : null
 	          ),
 	          !this.state.capturedImages.length ? _react2.default.createElement(
 	            'div',
 	            { className: 'title-and-links' },
-	            _react2.default.createElement(
+	            this.state.unsupported ? [_react2.default.createElement('p', null), _react2.default.createElement(
+	              'p',
+	              { className: 'unsapported-title' },
+	              'Please, open web-page to leave feedback and screen capture!'
+	            )] : [_react2.default.createElement(
 	              'p',
 	              null,
 	              'codesign.io'
-	            ),
-	            _react2.default.createElement(
+	            ), _react2.default.createElement(
 	              'p',
 	              null,
 	              'Simplest feedback tool'
-	            ),
+	            )],
 	            _react2.default.createElement(
 	              'div',
 	              { className: 'links' },

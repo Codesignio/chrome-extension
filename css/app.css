@@ -501,3 +501,8 @@ form {
     font-weight: 400;
     line-height: 1.2;
 }
+
+.unsapported-title {
+    margin-left: 16px !important;
+    margin-top: -5px !important;
+}

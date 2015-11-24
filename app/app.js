@@ -178,18 +178,16 @@ class App extends React.Component {
     } else if (this.state.status == 'actions'){
       return (
         <div id="screenshot-app">
-          <div className="actions">
-            {this.state.unsupported ? <p className="unsupported">This page does not support capture screenshot</p> :
-                [<div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>,
-                <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>,
-                <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>,
-                <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div>,
-                  this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span className="back-link">Back to upload dialog</span></div> : null
-              ]}
-          </div>
+          {this.state.unsupported ? null : <div className="actions">
+                <div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>
+                <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>
+                <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>
+                <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div>
+                {this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span className="back-link">Back to upload dialog</span></div> : null}
+          </div>}
           {!this.state.capturedImages.length ? <div className="title-and-links">
-            <p>codesign.io</p>
-            <p>Simplest feedback tool</p>
+            {this.state.unsupported ? [<p></p>, <p className="unsapported-title">Please, open web-page to leave feedback and screen capture!</p>]: [<p>codesign.io</p>,
+            <p>Simplest feedback tool</p>]}
             <div className="links">
               <a href="http://www.codesign.io/dashboard/" target="_blank" style={!this.state.images.length ? {marginLeft: '-25px'} : {}}>Dashboard</a>
               {this.state.images.length ? <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>History({this.state.images.length})</a> : null}
