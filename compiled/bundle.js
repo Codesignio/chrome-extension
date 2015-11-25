@@ -20996,7 +20996,7 @@
 	          _react2.default.createElement(
 	            'div',
 	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
-	            'UPLOAD ',
+	            'SHARE AS ',
 	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
 	          ),
 	          this.state.edit ? _react2.default.createElement(
