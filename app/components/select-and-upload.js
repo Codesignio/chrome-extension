@@ -177,6 +177,7 @@ export default class SelectAndUpload extends React.Component {
           }.bind(this)) }
         </div>
         <div className="uploadWidget">
+
           {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
           <div id="uploadButton" onClick={this.uploadImage.bind(this)}>SHARE AS {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>
           { this.state.edit ? <div className="selectors">

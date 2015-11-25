@@ -522,3 +522,35 @@ form {
     margin-left: 16px !important;
     margin-top: -5px !important;
 }
+
+
+
+
+.statelist-enter {
+    margin-left: -400px;
+    position: absolute;
+    top:0;
+}
+
+.statelist-enter.statelist-enter-active {
+    transition: all 200ms ease-in;
+    position: static;
+    margin-left: 0;
+}
+
+.statelist-leave {
+    position: absolute;
+    top:0;
+}
+
+.statelist-leave.statelist-leave-active {
+    position: absolute;
+    top:0;
+    margin-left: 400px;
+    transition: all 200ms ease-in;
+}
+
+
+* {
+    transition: all 100ms ease;
+}

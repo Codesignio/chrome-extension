@@ -6,6 +6,8 @@ import {request} from './utils';
 
 import SelectAndUpload from './components/select-and-upload';
 
+var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -225,7 +227,9 @@ class App extends React.Component {
   render() {
     return (
       <div id="popup">
+        <ReactCSSTransitionGroup transitionName="statelist" transitionEnterTimeout={200} transitionLeaveTimeout={200}>
         {this.renderPopup()}
+        </ReactCSSTransitionGroup>
       </div>
     )
   }
