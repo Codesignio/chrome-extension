@@ -55,6 +55,7 @@
 	var sendedrequest = {};
 	var cropData = null;
 	var startOauth;
+	var cancelRequest;
 	
 	chrome.contextMenus.create({
 	  "title": "Add Comment",
@@ -78,7 +79,11 @@
 	
 	chrome.extension.onRequest.addListener(function (request, sender, callback) {
 	  if (request.msg === 'capturePage') {
-	    capturePage(request, sender, callback);
+	    if (!cancelRequest) {
+	      capturePage(request, sender, callback);
+	    } else {
+	      console.log('cancel');
+	    }
 	  } else if (request.msg === 'cropData') {
 	    cropData = request;
 	    localStorage.currentAction = 'crop';
@@ -146,6 +151,16 @@
 	    startOauth = true;
 	  } else if (request.msg == 'shareImage') {
 	    shareImage(request, sender, sendResponse);
+	  } else if (request.msg == 'cancel') {
+	    cancelRequest = true;
+	    screenshot.canvas = null;
+	    sendedrequest = {};
+	    cropData = null;
+	    chrome.runtime.sendMessage({ msg: 'cancelXHR' });
+	    setTimeout(function () {
+	      cancelRequest = false;
+	      chrome.browserAction.setBadgeText({ text: JSON.parse(localStorage.capturedImages || '[]').length || '' });
+	    }, 500);
 	  }
 	});
 	
@@ -680,6 +695,13 @@
 	    if (xhr.readyState != 4) return;
 	    callback(JSON.parse(xhr.responseText || '{}'));
 	  };
+	
+	  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	    if (request.msg === 'cancelXHR') {
+	      xhr.abort();
+	    }
+	  });
+	
 	  xhr.send(json);
 	}
 	
@@ -704,6 +726,12 @@
 	      }
 	    }
 	  };
+	
+	  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	    if (request.msg === 'cancelXHR') {
+	      xhr.abort();
+	    }
+	  });
 	
 	  xhr.open('PUT', url, true);
 	  xhr.setRequestHeader('Content-Type', 'image/jpeg');

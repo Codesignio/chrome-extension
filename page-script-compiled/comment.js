@@ -20991,6 +20991,13 @@
 	    if (xhr.readyState != 4) return;
 	    callback(JSON.parse(xhr.responseText || '{}'));
 	  };
+	
+	  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	    if (request.msg === 'cancelXHR') {
+	      xhr.abort();
+	    }
+	  });
+	
 	  xhr.send(json);
 	}
 	
@@ -21015,6 +21022,12 @@
 	      }
 	    }
 	  };
+	
+	  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	    if (request.msg === 'cancelXHR') {
+	      xhr.abort();
+	    }
+	  });
 	
 	  xhr.open('PUT', url, true);
 	  xhr.setRequestHeader('Content-Type', 'image/jpeg');

@@ -109,6 +109,18 @@
 	  _createClass(App, [{
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
+	      var me = this;
+	      document.addEventListener('keydown', function (e) {
+	        if (e.keyCode == 27 && me.state.status == 'progress') {
+	          chrome.runtime.sendMessage({ msg: 'cancel' });
+	          if (this.state.capturedImages.length) {
+	            this.setState({ status: 'captured' });
+	          } else {
+	            this.setState({ status: 'actions' });
+	          }
+	        }
+	      });
+	
 	      if (!localStorage.token) {
 	        chrome.tabs.create({ 'url': chrome.extension.getURL('login.html') }, function (tab) {});
 	      }
@@ -20749,6 +20761,13 @@
 	    if (xhr.readyState != 4) return;
 	    callback(JSON.parse(xhr.responseText || '{}'));
 	  };
+	
+	  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	    if (request.msg === 'cancelXHR') {
+	      xhr.abort();
+	    }
+	  });
+	
 	  xhr.send(json);
 	}
 	
@@ -20773,6 +20792,12 @@
 	      }
 	    }
 	  };
+	
+	  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	    if (request.msg === 'cancelXHR') {
+	      xhr.abort();
+	    }
+	  });
 	
 	  xhr.open('PUT', url, true);
 	  xhr.setRequestHeader('Content-Type', 'image/jpeg');

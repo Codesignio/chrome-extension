@@ -9,6 +9,16 @@ export function request(url, method, headers, body, callback){
     if (xhr.readyState != 4) return;
     callback(JSON.parse(xhr.responseText || '{}'));
   };
+
+  chrome.runtime.onMessage.addListener(
+    function (request, sender, sendResponse) {
+      if (request.msg === 'cancelXHR') {
+        xhr.abort();
+      }
+    });
+
+
+
   xhr.send(json);
 }
 
@@ -33,6 +43,13 @@ export function s3Upload(url, imageFile, logCallback, callBack){
       }
     }
   };
+
+  chrome.runtime.onMessage.addListener(
+    function (request, sender, sendResponse) {
+      if (request.msg === 'cancelXHR') {
+        xhr.abort();
+      }
+    });
 
   xhr.open('PUT', url, true);
   xhr.setRequestHeader('Content-Type', 'image/jpeg');

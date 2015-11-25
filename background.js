@@ -2,6 +2,7 @@ var screenshot = {};
 var sendedrequest = {};
 var cropData = null;
 var startOauth;
+var cancelRequest;
 
 import {request as httprequest} from './app/utils';
 import {s3Upload} from './app/utils';
@@ -34,7 +35,11 @@ chrome.runtime.onInstalled.addListener(function(){
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
   if (request.msg === 'capturePage') {
-    capturePage(request, sender, callback);
+    if (!cancelRequest) {
+      capturePage(request, sender, callback)
+    } else {
+      console.log('cancel');
+    }
   } else if (request.msg === 'cropData'){
     cropData = request;
     localStorage.currentAction = 'crop';
@@ -105,6 +110,16 @@ chrome.runtime.onMessage.addListener(
       startOauth = true;
     } else if (request.msg == 'shareImage'){
       shareImage(request, sender, sendResponse)
+    } else if (request.msg == 'cancel'){
+      cancelRequest = true;
+      screenshot.canvas = null;
+      sendedrequest = {};
+      cropData = null;
+      chrome.runtime.sendMessage({msg: 'cancelXHR'});
+      setTimeout(function () {
+        cancelRequest = false;
+        chrome.browserAction.setBadgeText({text: JSON.parse(localStorage.capturedImages || '[]').length || ''});
+      }, 500);
     }
   });
 
