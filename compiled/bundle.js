@@ -20880,6 +20880,7 @@
 	      localStorage.capturedImages = JSON.stringify(this.state.images);
 	      if (!this.state.images.length) {
 	        this.props.backToActions();
+	        chrome.browserAction.setBadgeText({ text: '' });
 	      } else {
 	        this.setState({});
 	      }
