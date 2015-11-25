@@ -190,7 +190,7 @@ img.fixedHeight {
 .actions {
     display: flex;
     flex-direction: column;
-    height: 300px;
+    height: 225px;
 
     color: white;
     font-size: 20px;
@@ -203,7 +203,6 @@ img.fixedHeight {
 
 .actions > div {
     cursor: pointer;
-    flex: auto ;
     display: flex;
     align-items: center;
     height: 75px;
@@ -228,7 +227,7 @@ img.fixedHeight {
 }
 
 .actions > div:nth-child(4){
-    background-color: #5fb583;
+    background-color: white;
 }
 
 .title-and-links {

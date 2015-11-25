@@ -295,15 +295,6 @@
 	            ),
 	            _react2.default.createElement(
 	              'div',
-	              { key: '2', onClick: this.takeScreenshoot.bind(this) },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                'Snap visible part'
-	              )
-	            ),
-	            _react2.default.createElement(
-	              'div',
 	              { key: '3', onClick: this.snapScreen.bind(this) },
 	              _react2.default.createElement(
 	                'span',

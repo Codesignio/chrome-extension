@@ -178,7 +178,6 @@ class App extends React.Component {
         <div id="screenshot-app">
           {this.state.unsupported ? null : <div className="actions">
                 <div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>
-                <div key="2" onClick={this.takeScreenshoot.bind(this)}><span>Snap visible part</span></div>
                 <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>
                 <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div>
                 {this.state.capturedImages.length ? <div className="back-to-upload" key="5" onClick={()=> this.setState({status: 'captured'})}><span className="back-link">Back to upload dialog</span></div> : null}
