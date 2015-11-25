@@ -113,7 +113,7 @@
 	        chrome.tabs.create({ 'url': chrome.extension.getURL('login.html') }, function (tab) {});
 	      }
 	
-	      chrome.browserAction.setBadgeText({ text: '' });
+	      chrome.browserAction.setBadgeText({ text: this.state.capturedImages.length ? this.state.capturedImages.length.toString() : '' });
 	      var me = this;
 	
 	      chrome.tabs.getSelected(null, function (tab) {
@@ -128,6 +128,7 @@
 	          me.state.images.push(request.capturedImage);
 	          me.state.capturedImages.push(request.capturedImage);
 	          me.setState({ status: 'captured' });
+	          chrome.browserAction.setBadgeText({ text: me.state.capturedImages.length ? me.state.capturedImages.length.toString() : '' });
 	        } else if (request.msg == 'progress') {
 	          me.setState({ status: 'progress', progress: request.progress, progressMsg: request.progressMsg });
 	        }
@@ -20932,6 +20933,7 @@
 	    value: function cleanCapturesList() {
 	      localStorage.capturedImages = '';
 	      this.props.backToActions();
+	      chrome.browserAction.setBadgeText({ text: '' });
 	    }
 	  }, {
 	    key: 'copytext',
@@ -21089,7 +21091,7 @@
 	            _react2.default.createElement(
 	              'a',
 	              { onClick: this.cleanCapturesList.bind(this) },
-	              'Cancel'
+	              'xCancel'
 	            )
 	          )
 	        )

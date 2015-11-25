@@ -549,8 +549,3 @@ form {
     margin-left: 400px;
     transition: all 200ms ease-in;
 }
-
-
-* {
-    transition: all 100ms ease;
-}

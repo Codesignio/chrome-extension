@@ -137,6 +137,7 @@ export default class SelectAndUpload extends React.Component {
   cleanCapturesList(){
     localStorage.capturedImages = '';
     this.props.backToActions();
+    chrome.browserAction.setBadgeText({text: ''});
   }
 
   copytext(text) {
@@ -201,7 +202,7 @@ export default class SelectAndUpload extends React.Component {
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
             {hasPinsImages ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
-            <a onClick={this.cleanCapturesList.bind(this)}>Cancel</a>
+            <a onClick={this.cleanCapturesList.bind(this)}>xCancel</a>
           </div>
         </div>
       </div>

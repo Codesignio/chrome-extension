@@ -31,7 +31,7 @@ class App extends React.Component {
       });
     }
 
-    chrome.browserAction.setBadgeText({text: ''});
+    chrome.browserAction.setBadgeText({text: this.state.capturedImages.length ? this.state.capturedImages.length.toString() : ''});
     var me = this;
 
     chrome.tabs.getSelected(null, function(tab) {
@@ -46,6 +46,7 @@ class App extends React.Component {
           me.state.images.push(request.capturedImage);
           me.state.capturedImages.push(request.capturedImage);
           me.setState({status: 'captured'});
+          chrome.browserAction.setBadgeText({text: me.state.capturedImages.length ? me.state.capturedImages.length.toString() : ''});
         } else if (request.msg == 'progress'){
           me.setState({status: 'progress', progress: request.progress, progressMsg: request.progressMsg})
         }
