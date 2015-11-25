@@ -38,7 +38,7 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
   } else if (request.msg === 'cropData'){
     cropData = request;
     localStorage.currentAction = 'crop';
-    chrome.browserAction.setBadgeText({text: 'SHARE'});
+    chrome.browserAction.setBadgeText({text: 'share'});
   } else if (request.msg == 'addPin' || request.msg == 'deletePin' || request.msg == 'completePin' || request.msg == 'addComment' || request.msg == 'deleteComment'){
 
 
@@ -51,7 +51,7 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
       sendRequestPin(request,sender, callback)
     }
 
-    chrome.browserAction.setBadgeText({text: request.pins.length ? 'SHARE' : '' });
+    chrome.browserAction.setBadgeText({text: request.pins.length ? 'share' : '' });
 
   } else if (request.msg == 'cancelCrop'){
     cropData = null;
@@ -97,6 +97,8 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.msg === 'takeFullPageScreenshot'){
       takeFullPageScreenshot();
+    } else if (request.msg === 'takeFullPageScreenshotWithComments'){
+      takeFullPageScreenshotWithComments();
     } else if(request.msg === 'takeVisiblePageScreenshot'){
       takeVisibleScreenshot();
     } else if (request.msg == 'uploadImages'){
@@ -109,15 +111,29 @@ chrome.runtime.onMessage.addListener(
   });
 
 
-function takeFullPageScreenshot(){
+function takeFullPageScreenshot(img){
   chrome.tabs.getSelected(null, function (tab) {
     chrome.tabs.executeScript(tab.id, {file: 'page.js'}, function () {
       chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function () {
-        screenshotCaptured(screenshot, tab.url, tab.title)
+        screenshotCaptured(screenshot, tab.url, tab.title, null, img)
       });
     });
   });
 }
+
+
+function takeFullPageScreenshotWithComments(){
+  captureVisible(function(canvas){
+    chrome.tabs.getSelected(null, function (tab) {
+      screenshotCaptured({canvas: canvas}, tab.url, tab.title, function(img){
+        chrome.tabs.sendRequest(tab.id, {msg: 'removeOverlay'}, function () {
+          takeFullPageScreenshot(img);
+        });
+      })
+    })
+  })
+}
+
 
 
 function takeVisibleScreenshot(){
@@ -131,7 +147,7 @@ function takeVisibleScreenshot(){
 
 function capturePage(data, sender, callback) {
   var progressStatus = parseInt(data.complete * 100, 10) + '%';
-  chrome.runtime.sendMessage({msg: 'progress', progress: progressStatus});
+  chrome.runtime.sendMessage({msg: 'progress', progress: progressStatus, progressMsg: 'Capturing...'});
   chrome.browserAction.setBadgeText({text: progressStatus});
 
   var scale = data.devicePixelRatio && data.devicePixelRatio !== 1 ?
@@ -224,11 +240,12 @@ function storeFromDataCanvas(canvas, pageUrl, callBack){
 }
 
 
-function screenshotCaptured(screenshot, pageUrl, pageTitle){
+function screenshotCaptured(screenshot, pageUrl, pageTitle, callBack, previewImage){
   console.log(screenshot);
   storeFromDataCanvas(screenshot.canvas, pageUrl, function(fileUrl){
 
     var capturedImage = {
+      previewImage: previewImage,
       link: fileUrl,
       size: {width: screenshot.canvas.width, height: screenshot.canvas.height},
       url: pageUrl,
@@ -236,17 +253,22 @@ function screenshotCaptured(screenshot, pageUrl, pageTitle){
       pageTitle: sendedrequest.pageTitle || pageTitle
     };
 
-    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
-    var images = JSON.parse(localStorage.images || '[]');
-    images.push(capturedImage);
-    capturedImages.push(capturedImage);
-    localStorage.capturedImages = JSON.stringify(capturedImages);
-    localStorage.images = JSON.stringify(images);
-    chrome.runtime.sendMessage({msg: 'captured', capturedImage: capturedImage});
-    screenshot.canvas = null;
-    sendedrequest = {};
-    cropData = null;
+    if(callBack){
+      callBack(capturedImage)
 
+    } else {
+
+      var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
+      var images = JSON.parse(localStorage.images || '[]');
+      images.push(capturedImage);
+      capturedImages.push(capturedImage);
+      localStorage.capturedImages = JSON.stringify(capturedImages);
+      localStorage.images = JSON.stringify(images);
+      chrome.runtime.sendMessage({msg: 'captured', capturedImage: capturedImage});
+      screenshot.canvas = null;
+      sendedrequest = {};
+      cropData = null;
+    }
 
   });
 }
@@ -489,7 +511,7 @@ function uploadImages(req, sender, sendResponse){
   var capturedImages = JSON.parse(localStorage.capturedImages);
 
   function logCallBack(value){
-    chrome.runtime.sendMessage({msg: 'progress', progress: value})
+    chrome.runtime.sendMessage({msg: 'progress', progress: value, progressMsg: 'Uploading...'})
   }
 
 

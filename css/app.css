@@ -72,6 +72,14 @@ img {
     width:100%;
 }
 
+img.fixedHeight {
+    height: 200px;
+    width: auto;
+    text-align: center;
+    display: block;
+    margin: auto;
+}
+
 .removeIcon {
     width: 15px;
     height: 15px;
@@ -103,6 +111,8 @@ img {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    text-align: center;
+    line-height: 45px;
 }
 
 .uploadWidget > p:first-of-type {
@@ -461,6 +471,8 @@ form {
     font-weight: 500;
     cursor: pointer;
     margin-bottom: 10px;
+    text-align: center;
+    line-height: 45px;
 }
 
 

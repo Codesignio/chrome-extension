@@ -219,7 +219,7 @@ class Comment extends React.Component {
       var scrollPos = {x: document.body.scrollLeft, y: document.body.scrollTop};
 
 
-      var target = elementsFromPoint(e.pageX - scrollPos.y, e.pageY - scrollPos.y)[2];
+      var target = elementsFromPoint(e.pageX - scrollPos.x, e.pageY - scrollPos.y)[2];
       var elemRect = target.getBoundingClientRect();
 
       pin.x = e.pageX;
@@ -441,10 +441,10 @@ class CommentBox extends React.Component {
     }
   }
 
-  deletePin(pin, parentPin){
+  deletePin(pin, parentPin, local){
     this.props.pins.splice(this.props.pins.indexOf(pin), 1);
     this.props.parent.setState({});
-    this.props.sendData('deletePin', pin, parentPin)
+    if (!local) this.props.sendData('deletePin', pin, parentPin)
   }
 
 
@@ -473,7 +473,7 @@ class CommentBox extends React.Component {
       pin.added = true;
       this.setState({});
     } else {
-      this.deletePin(pin)
+      this.deletePin(pin, null, true)
     }
   }
 

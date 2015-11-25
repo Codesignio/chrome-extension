@@ -127,7 +127,7 @@
 	          me.state.capturedImages.push(request.capturedImage);
 	          me.setState({ status: 'captured' });
 	        } else if (request.msg == 'progress') {
-	          me.setState({ status: 'progress', progress: request.progress });
+	          me.setState({ status: 'progress', progress: request.progress, progressMsg: request.progressMsg });
 	        }
 	      }).bind(this));
 	    }
@@ -137,11 +137,9 @@
 	      var me = this;
 	      if (this.state.currentAction == 'comment') {
 	        chrome.tabs.getSelected(null, function (tab) {
-	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
-	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
-	            me.setState({ status: 'progress' });
-	            localStorage.currentAction = "";
-	          });
+	          chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshotWithComments' });
+	          me.setState({ status: 'progress' });
+	          localStorage.currentAction = "";
 	        });
 	      } else if (this.state.currentAction == 'crop') {
 	        chrome.tabs.getSelected(null, function (tab) {
@@ -259,7 +257,7 @@
 	        return [_react2.default.createElement('div', { className: 'progress_bar', style: { width: this.state.progress } }), _react2.default.createElement(
 	          'span',
 	          { className: 'progress_bar-title' },
-	          'Capturing...'
+	          this.state.progressMsg
 	        )];
 	      } else if (this.state.status == 'comment-click-title') {
 	        return _react2.default.createElement(
@@ -20833,7 +20831,7 @@
 	      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	        if (request.msg == 'sharedImage') {
 	          me.state.currentShareImage.sharedLink = request.url;
-	          me.setState({});
+	          me.setState({ shareProgress: false });
 	        }
 	      });
 	    }
@@ -20875,7 +20873,7 @@
 	        image: img
 	      });
 	
-	      me.setState({ currentShareImage: img });
+	      me.setState({ currentShareImage: img, shareProgress: true });
 	    }
 	  }, {
 	    key: 'handleRemove',
@@ -20981,8 +20979,8 @@
 	            return [_react2.default.createElement(
 	              'div',
 	              { className: 'image' },
-	              _react2.default.createElement('img', { onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.link }),
-	              _react2.default.createElement('div', { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' } })
+	              _react2.default.createElement('img', { className: img.pins && img.pins.length ? 'fixedHeight' : '', onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.previewImage ? img.previewImage.link : img.link }),
+	              _react2.default.createElement('div', { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'block' } })
 	            ), img.sharedLink ? [_react2.default.createElement(
 	              'div',
 	              { className: 'sharedTitle' },
@@ -20996,16 +20994,16 @@
 	          hasPinsImages && this.state.images.filter(function (img) {
 	            return img.sharedLink;
 	          }).length ? _react2.default.createElement(
-	            'button',
+	            'div',
 	            { id: 'shareButton', onClick: this.copyLink.bind(this) },
 	            'COPY LIVE LINK'
 	          ) : hasPinsImages ? _react2.default.createElement(
-	            'button',
+	            'div',
 	            { id: 'shareButton', onClick: this.shareImage.bind(this) },
-	            'SHARE LIVE LINK'
+	            this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'
 	          ) : null,
 	          _react2.default.createElement(
-	            'button',
+	            'div',
 	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
 	            'UPLOAD ',
 	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'

@@ -319,7 +319,7 @@
 	
 	        var scrollPos = { x: document.body.scrollLeft, y: document.body.scrollTop };
 	
-	        var target = elementsFromPoint(e.pageX - scrollPos.y, e.pageY - scrollPos.y)[2];
+	        var target = elementsFromPoint(e.pageX - scrollPos.x, e.pageY - scrollPos.y)[2];
 	        var elemRect = target.getBoundingClientRect();
 	
 	        pin.x = e.pageX;
@@ -578,10 +578,10 @@
 	    }
 	  }, {
 	    key: 'deletePin',
-	    value: function deletePin(pin, parentPin) {
+	    value: function deletePin(pin, parentPin, local) {
 	      this.props.pins.splice(this.props.pins.indexOf(pin), 1);
 	      this.props.parent.setState({});
-	      this.props.sendData('deletePin', pin, parentPin);
+	      if (!local) this.props.sendData('deletePin', pin, parentPin);
 	    }
 	  }, {
 	    key: 'addPin',
@@ -612,7 +612,7 @@
 	        pin.added = true;
 	        this.setState({});
 	      } else {
-	        this.deletePin(pin);
+	        this.deletePin(pin, null, true);
 	      }
 	    }
 	  }, {

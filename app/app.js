@@ -45,7 +45,7 @@ class App extends React.Component {
           me.state.capturedImages.push(request.capturedImage);
           me.setState({status: 'captured'});
         } else if (request.msg == 'progress'){
-          me.setState({status: 'progress', progress: request.progress})
+          me.setState({status: 'progress', progress: request.progress, progressMsg: request.progressMsg})
         }
       }.bind(this));
 
@@ -56,11 +56,9 @@ class App extends React.Component {
     var me = this;
     if(this.state.currentAction == 'comment'){
       chrome.tabs.getSelected(null, function (tab) {
-          chrome.tabs.sendRequest(tab.id, {msg: 'removeOverlay'}, function () {
-            chrome.runtime.sendMessage({msg: 'takeFullPageScreenshot'});
-            me.setState({status: 'progress'})
-            localStorage.currentAction = "";
-          });
+        chrome.runtime.sendMessage({msg: 'takeFullPageScreenshotWithComments'});
+        me.setState({status: 'progress'})
+        localStorage.currentAction = "";
       });
     } else if(this.state.currentAction == 'crop'){
       chrome.tabs.getSelected(null, function (tab) {
@@ -162,7 +160,7 @@ class App extends React.Component {
   renderPopup(){
 
     if (this.state.status == 'progress'){
-      return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">Capturing...</span>]
+      return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">{this.state.progressMsg}</span>]
     } else if(this.state.status == 'comment-click-title'){
       return <div className="comment-click-title">Pick a screen area you need to snap and click on the icon ↑ to crop and share!</div>
     } else if(this.state.status == 'crop-click-title'){

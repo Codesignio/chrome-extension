@@ -46,7 +46,7 @@ export default class SelectAndUpload extends React.Component {
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
       if (request.msg == 'sharedImage') {
         me.state.currentShareImage.sharedLink = request.url;
-        me.setState({})
+        me.setState({shareProgress: false})
       }
     })
 
@@ -83,7 +83,7 @@ export default class SelectAndUpload extends React.Component {
       image: img
     });
 
-    me.setState({currentShareImage: img})
+    me.setState({currentShareImage: img, shareProgress: true})
   }
 
 
@@ -168,8 +168,8 @@ export default class SelectAndUpload extends React.Component {
           {this.state.images.concat([]).reverse().map(function(img, i) {
             return (
               [<div className="image">
-                <img onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.link}/>
-                <div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}></div>
+                <img className={img.pins && img.pins.length ? 'fixedHeight' : ''} onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.previewImage ? img.previewImage.link :  img.link}/>
+                <div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'block'}}></div>
               </div>,
                 img.sharedLink ? [<div className="sharedTitle">Share link and disscuss online:</div>,<input disabled="true" onClick={this.selectInputText.bind(this, img.sharedLink)} className="sharedLink" value={img.sharedLink}/>] : null ]
             )
@@ -177,8 +177,8 @@ export default class SelectAndUpload extends React.Component {
           }.bind(this)) }
         </div>
         <div className="uploadWidget">
-          {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <button id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</button> : (hasPinsImages ? <button id="shareButton" onClick={this.shareImage.bind(this)}>SHARE LIVE LINK</button> : null)}
-          <button id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</button>
+          {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
+          <div id="uploadButton" onClick={this.uploadImage.bind(this)}>UPLOAD {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>
           { this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
             <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
