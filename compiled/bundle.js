@@ -302,7 +302,7 @@
 	                'Snap screen area'
 	              )
 	            ),
-	            _react2.default.createElement(
+	            !this.state.capturedImages.length ? _react2.default.createElement(
 	              'div',
 	              { key: '4', onClick: this.addComment.bind(this) },
 	              _react2.default.createElement(
@@ -310,10 +310,10 @@
 	                null,
 	                'Add comment'
 	              )
-	            ),
+	            ) : null,
 	            this.state.capturedImages.length ? _react2.default.createElement(
 	              'div',
-	              { className: 'back-to-upload', key: '5', onClick: function onClick() {
+	              { className: 'back-to-upload', key: '5', style: { backgroundColor: 'white' }, onClick: function onClick() {
 	                  return _this2.setState({ status: 'captured' });
 	                } },
 	              _react2.default.createElement(
