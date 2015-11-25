@@ -111,6 +111,10 @@ img {
     line-height: 45px;
 }
 
+#uploadButton:hover {
+    background-color: #25d89b;
+}
+
 .uploadWidget > p:first-of-type {
     margin-top: 25px;
 }
@@ -469,6 +473,10 @@ form {
     margin-bottom: 10px;
     text-align: center;
     line-height: 45px;
+}
+
+#shareButton:hover {
+    background-color: #25d89b;
 }
 
 

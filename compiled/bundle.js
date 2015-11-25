@@ -319,7 +319,7 @@
 	              _react2.default.createElement(
 	                'span',
 	                { className: 'back-link' },
-	                'Back to upload dialog'
+	                '← Back to upload dialog'
 	              )
 	            ) : null
 	          ),

@@ -180,7 +180,7 @@ class App extends React.Component {
                 <div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>
                 <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>
                 {!this.state.capturedImages.length ? <div key="4" onClick={this.addComment.bind(this)}><span>Add comment</span></div> : null}
-                {this.state.capturedImages.length ? <div className="back-to-upload" key="5" style={{backgroundColor: 'white'}} onClick={()=> this.setState({status: 'captured'})}><span className="back-link">Back to upload dialog</span></div> : null}
+                {this.state.capturedImages.length ? <div className="back-to-upload" key="5" style={{backgroundColor: 'white'}} onClick={()=> this.setState({status: 'captured'})}><span className="back-link">← Back to upload dialog</span></div> : null}
           </div>}
           {!this.state.capturedImages.length ? <div className="title-and-links">
             {this.state.unsupported ? [<p></p>, <p className="unsapported-title">Please, open web-page to leave feedback and screen capture!</p>]: [<p>codesign.io</p>,
