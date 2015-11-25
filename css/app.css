@@ -22,9 +22,13 @@ a {
     text-decoration: none;
 }
 
+a:visited {
+    color: black;
+}
+
 
 html {
-    background-color: #E0E0E0;
+    background-color: #9fd3b5;
     min-height: 30px;
 }
 
@@ -35,7 +39,7 @@ html {
 
 .progress_bar {
     min-height: 30px;
-    background: #969696;
+    background: #5fb583;
     width: 0%;
 }
 
@@ -260,14 +264,15 @@ img.fixedHeight {
     display: flex;
 }
 
+
 .title-and-links .links a {
-    flex: auto;
     font-size: 13px;
     font-weight: 300;
     outline: none;
     justify-content: center;
     display: flex;
     cursor: pointer;
+    margin-left: 20px;
 }
 
 .title-and-links .links a:hover {

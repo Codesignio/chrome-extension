@@ -344,7 +344,7 @@
 	              { className: 'links' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'http://www.codesign.io/dashboard/', target: '_blank', style: !this.state.images.length ? { marginLeft: '-25px' } : {} },
+	                { href: 'http://www.codesign.io/dashboard/', target: '_blank' },
 	                'Dashboard'
 	              ),
 	              this.state.images.length ? _react2.default.createElement(
@@ -352,7 +352,7 @@
 	                { className: 'imagesList', onClick: function onClick() {
 	                    return _this2.setState({ status: 'list' });
 	                  } },
-	                'History(',
+	                'History (',
 	                this.state.images.length,
 	                ')'
 	              ) : null,
