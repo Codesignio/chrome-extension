@@ -172,10 +172,12 @@
 	      var me = this;
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/bundle.js' }, function () {
-	          me.setState({ status: 'crop-click-title' });
-	          setTimeout(function () {
+	
+	          if (!localStorage.okCropButton) {
+	            me.setState({ status: 'crop-click-title' });
+	          } else {
 	            window.close();
-	          }, 3000);
+	          }
 	        });
 	      });
 	    }
@@ -186,10 +188,11 @@
 	      chrome.tabs.getSelected(null, function (tab) {
 	        chrome.tabs.executeScript(tab.id, { code: 'window.codesign = {me: ' + localStorage.me + '}' }, function () {
 	          chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
-	            me.setState({ status: 'comment-click-title' });
-	            setTimeout(function () {
+	            if (!localStorage.okCommentButton) {
+	              me.setState({ status: 'comment-click-title' });
+	            } else {
 	              window.close();
-	            }, 3000);
+	            }
 	          });
 	        });
 	      });
@@ -254,6 +257,18 @@
 	      this.setState({});
 	    }
 	  }, {
+	    key: 'okCropButton',
+	    value: function okCropButton() {
+	      localStorage.okCropButton = 'true';
+	      window.close();
+	    }
+	  }, {
+	    key: 'okCommentButton',
+	    value: function okCommentButton() {
+	      localStorage.okCommentButton = 'true';
+	      window.close();
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -268,13 +283,55 @@
 	        return _react2.default.createElement(
 	          'div',
 	          { className: 'comment-click-title' },
-	          'Pick a screen area you need to snap and click on the icon ↑ to crop and share!'
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'popupProfile' },
+	            _react2.default.createElement('img', { className: 'avatar',
+	              src: 'https://graph.facebook.com/v2.2/1518963022/picture?type=square&height=600&width=600&return_ssl_resources=1',
+	              style: { width: '27px', height: '27px' } }),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Vad Mikhalyov'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            null,
+	            'Pick a screen area you need to snap and click on the icon ↑ to crop and share!'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            { onClick: this.okCommentButton.bind(this) },
+	            'OK'
+	          )
 	        );
 	      } else if (this.state.status == 'crop-click-title') {
 	        return _react2.default.createElement(
 	          'div',
 	          { className: 'crop-click-title' },
-	          'Click everywhere you need to leave your feedback right here!'
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'popupProfile' },
+	            _react2.default.createElement('img', { className: 'avatar',
+	              src: 'https://graph.facebook.com/v2.2/1518963022/picture?type=square&height=600&width=600&return_ssl_resources=1',
+	              style: { width: '27px', height: '27px' } }),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Vad Mikhalyov'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            null,
+	            'Click everywhere you need to leave your feedback right here!'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            { onClick: this.okCropButton.bind(this) },
+	            'OK'
+	          )
 	        );
 	      } else if (this.state.status == 'captured') {
 	        return _react2.default.createElement(_selectAndUpload2.default, {

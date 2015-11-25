@@ -88,8 +88,12 @@ class App extends React.Component {
     var me = this;
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/bundle.js'}, function () {
-        me.setState({status: 'crop-click-title'});
-        setTimeout(function(){window.close()}, 3000);
+
+        if(!localStorage.okCropButton){
+          me.setState({status: 'crop-click-title'});
+        } else {
+          window.close()
+        }
       });
     });
   }
@@ -99,8 +103,11 @@ class App extends React.Component {
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'}'}, function () {
         chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
-          me.setState({status: 'comment-click-title'});
-          setTimeout(function(){window.close()}, 3000);
+          if(!localStorage.okCommentButton){
+            me.setState({status: 'comment-click-title'});
+          } else {
+            window.close()
+          }
 
         });
       });
@@ -162,14 +169,46 @@ class App extends React.Component {
     this.setState({})
   }
 
+  okCropButton(){
+    localStorage.okCropButton = 'true';
+    window.close()
+  }
+
+  okCommentButton(){
+    localStorage.okCommentButton = 'true';
+    window.close()
+  }
+
   renderPopup(){
 
     if (this.state.status == 'progress'){
       return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">{this.state.progressMsg}</span>]
     } else if(this.state.status == 'comment-click-title'){
-      return <div className="comment-click-title">Pick a screen area you need to snap and click on the icon ↑ to crop and share!</div>
+      return (
+          <div className="comment-click-title">
+            <div className="popupProfile">
+              <img className="avatar"
+                   src="https://graph.facebook.com/v2.2/1518963022/picture?type=square&amp;height=600&amp;width=600&amp;return_ssl_resources=1"
+                   style={{width:'27px', height:'27px'}}/>
+              <div>Vad Mikhalyov</div>
+            </div>
+            <div>Pick a screen area you need to snap and click on the icon ↑ to crop and share!</div>
+            <button onClick={this.okCommentButton.bind(this)}>OK</button>
+          </div>
+        )
     } else if(this.state.status == 'crop-click-title'){
-      return <div className="crop-click-title">Click everywhere you need to leave your feedback right here!</div>
+      return (
+        <div className="crop-click-title">
+          <div className="popupProfile">
+            <img className="avatar"
+                 src="https://graph.facebook.com/v2.2/1518963022/picture?type=square&amp;height=600&amp;width=600&amp;return_ssl_resources=1"
+                 style={{width:'27px', height:'27px'}}/>
+            <div>Vad Mikhalyov</div>
+          </div>
+          <div>Click everywhere you need to leave your feedback right here!</div>
+          <button onClick={this.okCropButton.bind(this)}>OK</button>
+        </div>
+      )
     } else if (this.state.status == 'captured'){
       return (
         <SelectAndUpload
