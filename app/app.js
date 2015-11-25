@@ -56,7 +56,7 @@ class App extends React.Component {
     var me = this;
     if(this.state.currentAction == 'comment'){
       chrome.tabs.getSelected(null, function (tab) {
-        chrome.runtime.sendMessage({msg: 'takeFullPageScreenshotWithComments'});
+        chrome.runtime.sendMessage({msg: 'takeFullPageScreenshot'});
         me.setState({status: 'progress'})
         localStorage.currentAction = "";
       });

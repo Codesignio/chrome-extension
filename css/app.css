@@ -76,14 +76,6 @@ img {
     width:100%;
 }
 
-img.fixedHeight {
-    height: 200px;
-    width: auto;
-    text-align: center;
-    display: block;
-    margin: auto;
-}
-
 .removeIcon {
     width: 15px;
     height: 15px;

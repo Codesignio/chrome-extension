@@ -137,7 +137,7 @@
 	      var me = this;
 	      if (this.state.currentAction == 'comment') {
 	        chrome.tabs.getSelected(null, function (tab) {
-	          chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshotWithComments' });
+	          chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
 	          me.setState({ status: 'progress' });
 	          localStorage.currentAction = "";
 	        });
@@ -20970,7 +20970,7 @@
 	            return [_react2.default.createElement(
 	              'div',
 	              { className: 'image' },
-	              _react2.default.createElement('img', { className: img.pins && img.pins.length ? 'fixedHeight' : '', onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.previewImage ? img.previewImage.link : img.link }),
+	              _react2.default.createElement('img', { onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.link }),
 	              _react2.default.createElement('div', { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'block' } })
 	            ), img.sharedLink ? [_react2.default.createElement(
 	              'div',

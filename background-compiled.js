@@ -138,8 +138,6 @@
 	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	  if (request.msg === 'takeFullPageScreenshot') {
 	    takeFullPageScreenshot();
-	  } else if (request.msg === 'takeFullPageScreenshotWithComments') {
-	    takeFullPageScreenshotWithComments();
 	  } else if (request.msg === 'takeVisiblePageScreenshot') {
 	    takeVisibleScreenshot();
 	  } else if (request.msg == 'uploadImages') {
@@ -151,22 +149,12 @@
 	  }
 	});
 	
-	function takeFullPageScreenshot(img) {
+	function takeFullPageScreenshot() {
 	  chrome.tabs.getSelected(null, function (tab) {
-	    chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
-	      chrome.tabs.sendRequest(tab.id, { msg: 'scrollPage' }, function () {
-	        screenshotCaptured(screenshot, tab.url, tab.title, null, img);
-	      });
-	    });
-	  });
-	}
-	
-	function takeFullPageScreenshotWithComments() {
-	  captureVisible(function (canvas) {
-	    chrome.tabs.getSelected(null, function (tab) {
-	      screenshotCaptured({ canvas: canvas }, tab.url, tab.title, function (img) {
-	        chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
-	          takeFullPageScreenshot(img);
+	    chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
+	      chrome.tabs.executeScript(tab.id, { file: 'page.js' }, function () {
+	        chrome.tabs.sendRequest(tab.id, { msg: 'scrollPage' }, function () {
+	          screenshotCaptured(screenshot, tab.url, tab.title);
 	        });
 	      });
 	    });
@@ -266,12 +254,11 @@
 	  });
 	}
 	
-	function screenshotCaptured(screenshot, pageUrl, pageTitle, callBack, previewImage) {
+	function screenshotCaptured(screenshot, pageUrl, pageTitle) {
 	  console.log(screenshot);
 	  storeFromDataCanvas(screenshot.canvas, pageUrl, function (fileUrl) {
 	
 	    var capturedImage = {
-	      previewImage: previewImage,
 	      link: fileUrl,
 	      size: { width: screenshot.canvas.width, height: screenshot.canvas.height },
 	      url: pageUrl,
@@ -279,21 +266,16 @@
 	      pageTitle: sendedrequest.pageTitle || pageTitle
 	    };
 	
-	    if (callBack) {
-	      callBack(capturedImage);
-	    } else {
-	
-	      var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
-	      var images = JSON.parse(localStorage.images || '[]');
-	      images.push(capturedImage);
-	      capturedImages.push(capturedImage);
-	      localStorage.capturedImages = JSON.stringify(capturedImages);
-	      localStorage.images = JSON.stringify(images);
-	      chrome.runtime.sendMessage({ msg: 'captured', capturedImage: capturedImage });
-	      screenshot.canvas = null;
-	      sendedrequest = {};
-	      cropData = null;
-	    }
+	    var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
+	    var images = JSON.parse(localStorage.images || '[]');
+	    images.push(capturedImage);
+	    capturedImages.push(capturedImage);
+	    localStorage.capturedImages = JSON.stringify(capturedImages);
+	    localStorage.images = JSON.stringify(images);
+	    chrome.runtime.sendMessage({ msg: 'captured', capturedImage: capturedImage });
+	    screenshot.canvas = null;
+	    sendedrequest = {};
+	    cropData = null;
 	  });
 	}
 	

@@ -168,7 +168,7 @@ export default class SelectAndUpload extends React.Component {
           {this.state.images.concat([]).reverse().map(function(img, i) {
             return (
               [<div className="image">
-                <img className={img.pins && img.pins.length ? 'fixedHeight' : ''} onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.previewImage ? img.previewImage.link :  img.link}/>
+                <img onMouseOut={this.hideIcon.bind(this, i)} onMouseMove={this.showIcon.bind(this, i)} key={i} src={img.link}/>
                 <div onClick={this.handleRemove.bind(this)} onMouseMove={this.showIcon.bind(this, i)} className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'block'}}></div>
               </div>,
                 img.sharedLink ? [<div className="sharedTitle">Share link and disscuss online:</div>,<input disabled="true" onClick={this.selectInputText.bind(this, img.sharedLink)} className="sharedLink" value={img.sharedLink}/>] : null ]
