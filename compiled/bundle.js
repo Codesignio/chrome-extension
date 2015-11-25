@@ -140,9 +140,11 @@
 	      var me = this;
 	      if (this.state.currentAction == 'comment') {
 	        chrome.tabs.getSelected(null, function (tab) {
-	          chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
-	          me.setState({ status: 'progress' });
-	          localStorage.currentAction = "";
+	          chrome.tabs.sendRequest(tab.id, { msg: 'removeOverlay' }, function () {
+	            chrome.runtime.sendMessage({ msg: 'takeFullPageScreenshot' });
+	            me.setState({ status: 'progress' });
+	            localStorage.currentAction = "";
+	          });
 	        });
 	      } else if (this.state.currentAction == 'crop') {
 	        chrome.tabs.getSelected(null, function (tab) {
@@ -20953,6 +20955,14 @@
 	        return img.sharedLink;
 	      })[0].sharedLink;
 	      this.copytext(text);
+	      this.setState({
+	        copiedLink: true
+	      });
+	      setTimeout((function () {
+	        this.setState({
+	          copiedLink: false
+	        });
+	      }).bind(this), 3000);
 	    }
 	  }, {
 	    key: 'selectInputText',
@@ -20996,7 +21006,7 @@
 	          }).length ? _react2.default.createElement(
 	            'div',
 	            { id: 'shareButton', onClick: this.copyLink.bind(this) },
-	            'COPY LIVE LINK'
+	            this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'
 	          ) : hasPinsImages ? _react2.default.createElement(
 	            'div',
 	            { id: 'shareButton', onClick: this.shareImage.bind(this) },
@@ -21054,7 +21064,10 @@
 	            this.state.activeBoard.id == 'new_board' ? _react2.default.createElement(
 	              'p',
 	              { key: '1' },
-	              'Upload image to a new board in "',
+	              hasPinsImages && this.state.images.filter(function (img) {
+	                return img.sharedLink;
+	              }).length ? 'Create new board with full-length page snap' : 'Upload image to a new board',
+	              '  in "',
 	              this.state.activeFolder.title,
 	              '" folder'
 	            ) : _react2.default.createElement(

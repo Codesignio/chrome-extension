@@ -59,9 +59,11 @@ class App extends React.Component {
     var me = this;
     if(this.state.currentAction == 'comment'){
       chrome.tabs.getSelected(null, function (tab) {
-        chrome.runtime.sendMessage({msg: 'takeFullPageScreenshot'});
-        me.setState({status: 'progress'})
-        localStorage.currentAction = "";
+        chrome.tabs.sendRequest(tab.id, {msg: 'removeOverlay'}, function () {
+          chrome.runtime.sendMessage({msg: 'takeFullPageScreenshot'});
+          me.setState({status: 'progress'})
+          localStorage.currentAction = "";
+        });
       });
     } else if(this.state.currentAction == 'crop'){
       chrome.tabs.getSelected(null, function (tab) {

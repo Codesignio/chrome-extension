@@ -111,13 +111,11 @@ chrome.runtime.onMessage.addListener(
 
 function takeFullPageScreenshot(){
   chrome.tabs.getSelected(null, function (tab) {
-    chrome.tabs.sendRequest(tab.id, {msg: 'removeOverlay'}, function () {
       chrome.tabs.executeScript(tab.id, {file: 'page.js'}, function () {
         chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function () {
           screenshotCaptured(screenshot, tab.url, tab.title)
         });
       });
-    });
   });
 }
 

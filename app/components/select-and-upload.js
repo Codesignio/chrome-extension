@@ -153,6 +153,14 @@ export default class SelectAndUpload extends React.Component {
   copyLink(){
     var text = this.state.images.filter((img)=> img.sharedLink)[0].sharedLink;
     this.copytext(text);
+    this.setState({
+      copiedLink: true
+    });
+    setTimeout(function(){
+      this.setState({
+        copiedLink: false
+      })
+    }.bind(this), 3000)
   }
 
   selectInputText(text,e){
@@ -180,7 +188,7 @@ export default class SelectAndUpload extends React.Component {
         </div>
         <div className="uploadWidget">
 
-          {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>COPY LIVE LINK</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
+          {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>{ this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'}</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
           <div id="uploadButton" onClick={this.uploadImage.bind(this)}>SHARE AS {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>
           { this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
@@ -197,7 +205,7 @@ export default class SelectAndUpload extends React.Component {
               })}
             </select>
           </div> : <div className="selectors-titles">
-            {this.state.activeBoard.id == 'new_board' ? <p key="1">Upload image to a new board in "{this.state.activeFolder.title}" folder</p> : <p key="1">Upload image to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
+            {this.state.activeBoard.id == 'new_board' ? <p key="1">{ hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length ? 'Create new board with full-length page snap' : 'Upload image to a new board' }  in "{this.state.activeFolder.title}" folder</p> : <p key="1">Upload image to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
           </div>}
           <div className="upload-actions">
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
