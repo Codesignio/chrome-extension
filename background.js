@@ -436,7 +436,7 @@ function shareImage (req, sender, sendResponse){
                   canvas.height = 150;
                   var image = new Image();
                   image.onload = function () {
-                    canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
+                    canvas.getContext('2d').drawImage(image, 0,0, this.width, this.width*0.6, 0,0, 250,150);
 
                     var blob =  dataURItoBlob(canvas.toDataURL());
                     s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {
@@ -618,7 +618,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
               canvas.height = 150;
               var image = new Image();
               image.onload = function () {
-                canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
+                canvas.getContext('2d').drawImage(image, 0,0, this.width, this.width*0.6, 0,0, 250,150);
 
                 var blob =  dataURItoBlob(canvas.toDataURL());
                 s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {

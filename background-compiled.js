@@ -450,7 +450,7 @@
 	                  canvas.height = 150;
 	                  var image = new Image();
 	                  image.onload = function () {
-	                    canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
+	                    canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.width * 0.6, 0, 0, 250, 150);
 	
 	                    var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
 	                    (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, logCallBack, function () {
@@ -605,7 +605,7 @@
 	              canvas.height = 150;
 	              var image = new Image();
 	              image.onload = function () {
-	                canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.height, 0, 0, 250, 150);
+	                canvas.getContext('2d').drawImage(image, 0, 0, this.width, this.width * 0.6, 0, 0, 250, 150);
 	
 	                var blob = (0, _utils.dataURItoBlob)(canvas.toDataURL());
 	                (0, _utils.s3Upload)(data1.thumbnail_upload_url, blob, logCallBack, function () {
