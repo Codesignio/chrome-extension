@@ -32,6 +32,8 @@ chrome.runtime.onInstalled.addListener(function(){
   chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
 });
 
+chrome.runtime.setUninstallURL('http://localhost:3000/uninstalled');
+
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
   if (request.msg === 'capturePage') {
@@ -350,7 +352,7 @@ function loadBoardData(req, sender, sendResponse){
     var url = data.board.title;
     sendResponse({url: url});
 
-    var liveUrl ='http://www.codesign.io/board/'+ code + '?liveBoardPage/';
+    var liveUrl ='http://www.codesign.io/live/'+ code;
     var boardThumbnail = data.board.posts[0].images[0];
     var capturedImage = {
       link: boardThumbnail && boardThumbnail.thumbnail_url,
@@ -395,7 +397,8 @@ function shareImage (req, sender, sendResponse){
     if (!sharedFolder){
       httprequest('http://api.codesign.io/folders/', 'POST', {"Authorization": 'Token ' +  token, "Content-Type": "application/json;charset=UTF-8"}, {
 
-        title: "My live boards"
+        title: "My live boards",
+        personal: true,
 
       }, function (data) {
         createSharedPage(data)
@@ -496,7 +499,7 @@ function shareImage (req, sender, sendResponse){
                 reqCount++;
                 if (reqCount == sharedImage.pins.length) {
 
-                  var url = 'http://www.codesign.io/board/'+boardData.client_code+'?liveBoardPage'
+                  var url = 'http://www.codesign.io/live/'+boardData.client_code;
                   sharedImage.sharedLink = url;
                   localStorage.capturedImages = JSON.stringify(capturedImages);
                   chrome.runtime.sendMessage({msg: 'sharedImage', url: url})
