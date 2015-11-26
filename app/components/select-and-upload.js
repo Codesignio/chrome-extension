@@ -137,6 +137,7 @@ export default class SelectAndUpload extends React.Component {
 
   cleanCapturesList(){
     localStorage.capturedImages = '';
+    localStorage.currentLiveBoard = null;
     this.props.backToActions();
     chrome.browserAction.setBadgeText({text: ''});
   }
@@ -190,8 +191,8 @@ export default class SelectAndUpload extends React.Component {
         <div className="uploadWidget">
 
           {hasPinsImages && (this.state.images.filter((img)=> img.sharedLink).length) || hasliveUrl  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>{ this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'}</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
-          <div id="uploadButton" className={hasPinsImages || hasliveUrl ? "grayButton": null} onClick={this.uploadImage.bind(this)}>SHARE {hasPinsImages || hasliveUrl ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>
-          { this.state.edit ? <div className="selectors">
+          {hasliveUrl ? null : <div id="uploadButton" className={hasPinsImages ? "grayButton": null} onClick={this.uploadImage.bind(this)}>SHARE {hasPinsImages ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>}
+          {hasliveUrl ? null : (this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
             <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
               {this.state.folders && this.state.folders.map(function(folder, i){
@@ -207,11 +208,11 @@ export default class SelectAndUpload extends React.Component {
             </select>
           </div> : <div className="selectors-titles">
             {this.state.activeBoard.id == 'new_board' ? <p key="1">{ hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length ? 'Create new board with full-length page snap' : 'Upload image to a new board' }  in "{this.state.activeFolder.title}" folder</p> : <p key="1">Upload image to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
-          </div>}
+          </div>)}
           <div className="upload-actions">
-            <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
-            {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
-            {hasPinsImages || hasliveUrl ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
+            {hasliveUrl ? null : <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}
+            {hasliveUrl ? null : (this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>)}
+            {hasliveUrl ? null : (hasPinsImages ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>)}
             <a onClick={this.cleanCapturesList.bind(this)}>xCancel</a>
           </div>
         </div>

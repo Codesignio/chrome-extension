@@ -21039,6 +21039,7 @@
 	    key: 'cleanCapturesList',
 	    value: function cleanCapturesList() {
 	      localStorage.capturedImages = '';
+	      localStorage.currentLiveBoard = null;
 	      this.props.backToActions();
 	      chrome.browserAction.setBadgeText({ text: '' });
 	    }
@@ -21119,15 +21120,15 @@
 	            { id: 'shareButton', onClick: this.shareImage.bind(this) },
 	            this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'
 	          ) : null,
-	          _react2.default.createElement(
+	          hasliveUrl ? null : _react2.default.createElement(
 	            'div',
-	            { id: 'uploadButton', className: hasPinsImages || hasliveUrl ? "grayButton" : null, onClick: this.uploadImage.bind(this) },
+	            { id: 'uploadButton', className: hasPinsImages ? "grayButton" : null, onClick: this.uploadImage.bind(this) },
 	            'SHARE ',
-	            hasPinsImages || hasliveUrl ? 'AS' : '',
+	            hasPinsImages ? 'AS' : '',
 	            ' ',
 	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
 	          ),
-	          this.state.edit ? _react2.default.createElement(
+	          hasliveUrl ? null : this.state.edit ? _react2.default.createElement(
 	            'div',
 	            { className: 'selectors' },
 	            _react2.default.createElement(
@@ -21192,19 +21193,19 @@
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'upload-actions' },
-	            _react2.default.createElement(
+	            hasliveUrl ? null : _react2.default.createElement(
 	              'a',
 	              { onClick: this.toogleSelectors.bind(this) },
 	              this.state.edit ? 'Save' : 'Edit'
 	            ),
-	            this.state.edit && _react2.default.createElement(
+	            hasliveUrl ? null : this.state.edit && _react2.default.createElement(
 	              'a',
 	              { onClick: function onClick() {
 	                  return _this2.setState({ edit: false });
 	                } },
 	              'Cancel'
 	            ),
-	            hasPinsImages || hasliveUrl ? null : _react2.default.createElement(
+	            hasliveUrl ? null : hasPinsImages ? null : _react2.default.createElement(
 	              'a',
 	              { onClick: function onClick() {
 	                  return _this2.props.backToActions();
