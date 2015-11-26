@@ -226,6 +226,19 @@ img {
     background-color: #6fbd90;
 }
 
+
+.actions > div:nth-child(1):hover{
+    background-color: #7ea78c;
+}
+
+.actions > div:nth-child(2):hover{
+    background-color: #64a17b;
+}
+
+.actions > div:nth-child(3):hover{
+    background-color: #579f75;
+}
+
 .actions > div:nth-child(4){
     background-color: white;
 }
@@ -507,38 +520,99 @@ form {
 }
 
 
-.crop-click-title > button, .comment-click-title > button {
-    width: 100%;
-    height: 25px;
-    background-color: #22bc85;
-    color: white;
-}
-
-.crop-click-title, .comment-click-title {
-    background-color: white;
-    width: 100%;
-    padding: 8px;
-    color: #222;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.2;
-}
 
 
-.popupProfile{
-    display: flex;
-    align-items: center;
+
+
+
+
+
+
+.task-box {
+    position: relative;
+    background-color: #fff;
 }
-.popupProfile > div {
-    margin-left: 10px;
+
+.top-wrapper {
+    padding: 14px;
 }
-.popupProfile > img {
+
+.CommentBox .profile {
+    float: left;
+}
+
+.ProfileBar {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.ProfileBar .avatar {
+    width: 3pc;
+    height: 3pc;
     border-radius: 50%;
+    display: inline;
+    vertical-align: middle;
+    margin-right: 10px;
 }
 
-.popupProfile + div {
-    margin: 5px;
+.ProfileBar .user-name {
+    display: inline-block;
+    width: 100%;
+    min-width: 50px;
+    vertical-align: middle;
+    line-height: 15px;
 }
+
+.ProfileBar .user-name .date {
+    color: #9f9f9f;
+    font-size: 10px;
+}
+
+.CommentBox .comment {
+    width: 100%;
+    display: inline-block;
+}
+
+
+.CommentBox .comment .readonly-text {
+    margin-top: 7px;
+    font-size: 14px;
+    word-wrap: break-word;
+    white-space: pre-line;
+}
+
+
+
+
+
+
+.cs-btn-active, .cs-btn-block, .cs-btn-flat-active, .cs-btn-flat-gray, .cs-btn-gray {
+    padding: 13px 35px;
+    border: none;
+    text-decoration: none;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    outline: 0;
+    cursor: pointer;
+    font-family: avenir-next-medium;
+    font-size: 14px;
+    line-height: normal;
+}
+
+.cs-btn-flat-active {
+    background-color: #22bc85;
+    color: #fff;
+}
+
+.cs-btn-flat-active:hover {
+    background-color: #24d99c;
+}
+
+.reply-btn {
+    width: 100%;
+}
+
 
 
 .unsapported-title {
@@ -571,4 +645,15 @@ form {
     top:0;
     margin-left: 400px;
     transition: all 200ms ease-in;
+}
+
+
+.grayButton {
+    background-color: #e6e6e6 !important;
+    color: #000 !important;
+}
+
+.grayButton:hover {
+    background-color: #f4f4f4 !important;
+    color: #000 !important;
 }

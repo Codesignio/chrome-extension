@@ -191,36 +191,37 @@ class App extends React.Component {
     window.close()
   }
 
+  renderVadMikhalyov(text, callBack){
+    return (
+      <div className="task-box">
+        <div>
+          <div className="CommentBox">
+            <div className="top-wrapper">
+              <div className="profile">
+                <div className="ProfileBar"><img className="avatar" src="https://graph.facebook.com/v2.2/1518963022/picture?type=square&amp;height=600&amp;width=600&amp;return_ssl_resources=1" style={{width:'27px', height:'27px'}}/>
+                  <div className="user-name">
+                    <div>Vad Mikhalyov</div>
+                    <div className="date">CEO and co-founder at Codesign.io</div>
+                  </div></div>
+              </div>
+              <div className="comment"><span className="Linkify"><div className="readonly-text">{text}</div></span></div>
+            </div>
+          </div>
+        </div>
+        <button className="cs-btn-flat-active bottom-btn reply-btn" onClick={callBack}>OK</button>
+      </div>
+    )
+  }
+
   renderPopup(){
 
     if (this.state.status == 'progress'){
       return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">{this.state.progressMsg}</span>]
     } else if(this.state.status == 'comment-click-title'){
-      return (
-          <div className="comment-click-title">
-            <div className="popupProfile">
-              <img className="avatar"
-                   src="https://graph.facebook.com/v2.2/1518963022/picture?type=square&amp;height=600&amp;width=600&amp;return_ssl_resources=1"
-                   style={{width:'27px', height:'27px'}}/>
-              <div>Vad Mikhalyov</div>
-            </div>
-            <div>Pick a screen area you need to snap and click on the icon ↑ to crop and share!</div>
-            <button onClick={this.okCommentButton.bind(this)}>OK</button>
-          </div>
-        )
+      return this.renderVadMikhalyov('Pick a screen area you need to snap and click on the icon ↑ to crop and share!',this.okCommentButton.bind(this))
+
     } else if(this.state.status == 'crop-click-title'){
-      return (
-        <div className="crop-click-title">
-          <div className="popupProfile">
-            <img className="avatar"
-                 src="https://graph.facebook.com/v2.2/1518963022/picture?type=square&amp;height=600&amp;width=600&amp;return_ssl_resources=1"
-                 style={{width:'27px', height:'27px'}}/>
-            <div>Vad Mikhalyov</div>
-          </div>
-          <div>Click everywhere you need to leave your feedback right here!</div>
-          <button onClick={this.okCropButton.bind(this)}>OK</button>
-        </div>
-      )
+      return this.renderVadMikhalyov('Click everywhere you need to leave your feedback right here!',this.okCropButton.bind(this))
     } else if (this.state.status == 'captured'){
       return (
         <SelectAndUpload

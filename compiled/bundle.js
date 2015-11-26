@@ -281,6 +281,67 @@
 	      window.close();
 	    }
 	  }, {
+	    key: 'renderVadMikhalyov',
+	    value: function renderVadMikhalyov(text, callBack) {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'task-box' },
+	        _react2.default.createElement(
+	          'div',
+	          null,
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'CommentBox' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'top-wrapper' },
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'profile' },
+	                _react2.default.createElement(
+	                  'div',
+	                  { className: 'ProfileBar' },
+	                  _react2.default.createElement('img', { className: 'avatar', src: 'https://graph.facebook.com/v2.2/1518963022/picture?type=square&height=600&width=600&return_ssl_resources=1', style: { width: '27px', height: '27px' } }),
+	                  _react2.default.createElement(
+	                    'div',
+	                    { className: 'user-name' },
+	                    _react2.default.createElement(
+	                      'div',
+	                      null,
+	                      'Vad Mikhalyov'
+	                    ),
+	                    _react2.default.createElement(
+	                      'div',
+	                      { className: 'date' },
+	                      'CEO and co-founder at Codesign.io'
+	                    )
+	                  )
+	                )
+	              ),
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'comment' },
+	                _react2.default.createElement(
+	                  'span',
+	                  { className: 'Linkify' },
+	                  _react2.default.createElement(
+	                    'div',
+	                    { className: 'readonly-text' },
+	                    text
+	                  )
+	                )
+	              )
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'button',
+	          { className: 'cs-btn-flat-active bottom-btn reply-btn', onClick: callBack },
+	          'OK'
+	        )
+	      );
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -292,59 +353,9 @@
 	          this.state.progressMsg
 	        )];
 	      } else if (this.state.status == 'comment-click-title') {
-	        return _react2.default.createElement(
-	          'div',
-	          { className: 'comment-click-title' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'popupProfile' },
-	            _react2.default.createElement('img', { className: 'avatar',
-	              src: 'https://graph.facebook.com/v2.2/1518963022/picture?type=square&height=600&width=600&return_ssl_resources=1',
-	              style: { width: '27px', height: '27px' } }),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Vad Mikhalyov'
-	            )
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            null,
-	            'Pick a screen area you need to snap and click on the icon ↑ to crop and share!'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.okCommentButton.bind(this) },
-	            'OK'
-	          )
-	        );
+	        return this.renderVadMikhalyov('Pick a screen area you need to snap and click on the icon ↑ to crop and share!', this.okCommentButton.bind(this));
 	      } else if (this.state.status == 'crop-click-title') {
-	        return _react2.default.createElement(
-	          'div',
-	          { className: 'crop-click-title' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'popupProfile' },
-	            _react2.default.createElement('img', { className: 'avatar',
-	              src: 'https://graph.facebook.com/v2.2/1518963022/picture?type=square&height=600&width=600&return_ssl_resources=1',
-	              style: { width: '27px', height: '27px' } }),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Vad Mikhalyov'
-	            )
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            null,
-	            'Click everywhere you need to leave your feedback right here!'
-	          ),
-	          _react2.default.createElement(
-	            'button',
-	            { onClick: this.okCropButton.bind(this) },
-	            'OK'
-	          )
-	        );
+	        return this.renderVadMikhalyov('Click everywhere you need to leave your feedback right here!', this.okCropButton.bind(this));
 	      } else if (this.state.status == 'captured') {
 	        return _react2.default.createElement(_selectAndUpload2.default, {
 	          key: 'upload',
@@ -21096,8 +21107,10 @@
 	          ) : null,
 	          _react2.default.createElement(
 	            'div',
-	            { id: 'uploadButton', onClick: this.uploadImage.bind(this) },
+	            { id: 'uploadButton', className: hasPinsImages ? "grayButton" : null, onClick: this.uploadImage.bind(this) },
 	            'SHARE ',
+	            hasPinsImages ? 'AS' : '',
+	            ' ',
 	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
 	          ),
 	          this.state.edit ? _react2.default.createElement(
