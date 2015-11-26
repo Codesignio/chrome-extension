@@ -230,10 +230,10 @@ class App extends React.Component {
     if (this.state.status == 'progress'){
       return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">{this.state.progressMsg}</span>]
     } else if(this.state.status == 'comment-click-title'){
-      return this.renderVadMikhalyov('Pick a screen area you need to snap and click on the icon ↑ to crop and share!',this.okCommentButton.bind(this))
+      return this.renderVadMikhalyov('Click everywhere you need to leave your feedback right here!',this.okCommentButton.bind(this))
 
     } else if(this.state.status == 'crop-click-title'){
-      return this.renderVadMikhalyov('Click everywhere you need to leave your feedback right here!',this.okCropButton.bind(this))
+      return this.renderVadMikhalyov('Pick a screen area you need to snap and click on the icon ↑ to crop and share!',this.okCropButton.bind(this))
     } else if (this.state.status == 'captured'){
       return (
         <SelectAndUpload

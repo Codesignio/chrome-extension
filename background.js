@@ -351,9 +351,10 @@ function loadBoardData(req, sender, sendResponse){
     sendResponse({url: url});
 
     var liveUrl ='http://www.codesign.io/board/'+ code + '?liveBoardPage/';
+    var boardThumbnail = data.board.posts[0].images[0];
     var capturedImage = {
-      link: data.board.posts[0].images[0].thumbnail_url,
-      size: {width: data.board.posts[0].images[0].width, height: data.board.posts[0].images[0].height},
+      link: boardThumbnail && boardThumbnail.thumbnail_url,
+      size: {width: boardThumbnail && boardThumbnail.width, height: boardThumbnail && boardThumbnail.height},
       url: url,
       pins: [],
       pageTitle: '',
@@ -374,7 +375,7 @@ function loadBoardData(req, sender, sendResponse){
           });
         });
       })
-    }, 1500)
+    }, 2000)
 
   })
 }

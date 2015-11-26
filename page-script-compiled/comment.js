@@ -244,11 +244,12 @@
 	
 	      var x, y, relativeX, relativeY;
 	      var cssPath = pin.markers && pin.markers[0].geometry.cssPath;
-	      if (cssPath) {
+	      var elem = document.querySelector(cssPath);
+	
+	      if (cssPath && elem) {
+	        var elemRect = elem.getBoundingClientRect();
 	        relativeX = pin.markers && pin.markers[0].geometry.relativeX;
 	        relativeY = pin.markers && pin.markers[0].geometry.relativeY;
-	        var elem = document.querySelector(cssPath);
-	        var elemRect = elem.getBoundingClientRect();
 	        x = relativeX * elemRect.width + elemRect.left;
 	        y = relativeY * elemRect.height + elemRect.top;
 	      } else {
