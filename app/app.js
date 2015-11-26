@@ -21,12 +21,24 @@ class App extends React.Component {
       unsupported: false,
       currentAction: localStorage.currentAction,
       showHideIcon: [],
-      me: JSON.parse(localStorage.me)
+      me: JSON.parse(localStorage.me),
+      currentLiveBoard: JSON.parse(localStorage.currentLiveBoard || 'null'),
     }
   }
 
   componentWillMount() {
     var me = this;
+
+
+    chrome.tabs.getSelected(null, function (tab) {
+      if (me.state.currentLiveBoard.url == tab.url){
+        me.state.status = 'captured';
+        me.state.matchTabUrl = true;
+        localStorage.capturedImages = '[]';
+        me.setState({});
+      }
+    });
+
     document.addEventListener('keydown', function(e){
       if (e.keyCode == 27 && me.state.status == 'progress'){
         chrome.runtime.sendMessage({msg: 'cancel'});
@@ -228,7 +240,7 @@ class App extends React.Component {
           key="upload"
           backToActions={this.backToActions.bind(this)}
           handleUpload={this.backToActions.bind(this)}
-          images={this.state.capturedImages}/>
+          images={this.state.matchTabUrl ? [this.state.currentLiveBoard] : this.state.capturedImages}/>
       )
     } else if (this.state.status == 'actions'){
       return (

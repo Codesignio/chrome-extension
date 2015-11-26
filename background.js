@@ -350,6 +350,19 @@ function loadBoardData(req, sender, sendResponse){
     var url = data.board.title;
     sendResponse({url: url});
 
+    var liveUrl ='http://www.codesign.io/board/'+ code + '?liveBoardPage/';
+    var capturedImage = {
+      link: data.board.posts[0].images[0].thumbnail_url,
+      size: {width: data.board.posts[0].images[0].width, height: data.board.posts[0].images[0].height},
+      url: url,
+      pins: [],
+      pageTitle: '',
+      sharedLink: liveUrl,
+      liveUrl: true
+    };
+
+    localStorage.currentLiveBoard = JSON.stringify(capturedImage);
+
     var pins = data.board.posts[0].tasks;
 
     setTimeout(function(){
@@ -361,7 +374,7 @@ function loadBoardData(req, sender, sendResponse){
           });
         });
       })
-    }, 1000)
+    }, 1500)
 
   })
 }
@@ -402,6 +415,57 @@ function shareImage (req, sender, sendResponse){
         }, {
           title: (new Date).toString()
         }, function (postData) {
+
+
+
+          function logCallBack(){
+            console.log(arguments)
+          }
+
+
+          httprequest('http://api.codesign.io/posts/'+ postData.id + '/images/get_upload_url/?filename='+ sharedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
+            console.log(data1);
+
+            window.webkitResolveLocalFileSystemURL(sharedImage.link, function(fileEntry){
+              console.log('fillllle');
+              fileEntry.file(function(file) {
+                s3Upload(data1.image_upload_url, file, logCallBack, function (data2) {
+
+                  var canvas = document.createElement('canvas');
+                  canvas.width = 250;
+                  canvas.height = 150;
+                  var image = new Image();
+                  image.onload = function () {
+                    canvas.getContext('2d').drawImage(image, 0,0, this.width, this.height, 0,0, 250,150);
+
+                    var blob =  dataURItoBlob(canvas.toDataURL());
+                    s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {
+
+                      httprequest('http://api.codesign.io/posts/'+ postData.id +'/images/', 'POST', {
+                        "Authorization": 'Token ' + token,
+                        "Content-Type": "application/json;charset=UTF-8"
+                      }, {
+                        image_upload_url:data1.image_upload_url,
+                        thumbnail_upload_url: data1.thumbnail_upload_url,
+                        width: sharedImage.size.width,
+                        height: sharedImage.size.height
+                      }, function (data3) {
+
+                        console.log('finish')
+
+                      });
+
+                    });
+
+                  };
+                  image.src = sharedImage.link;
+
+                });
+              });
+            });
+
+          });
+
 
 
           var reqCount = 0;

@@ -171,6 +171,7 @@ export default class SelectAndUpload extends React.Component {
   render(){
 
     var hasPinsImages = this.state.images.filter((img)=> img.pins && img.pins.length).length;
+    var hasliveUrl = this.state.images.filter((img)=> img.liveUrl).length;
 
     return (
       <div>
@@ -188,8 +189,8 @@ export default class SelectAndUpload extends React.Component {
         </div>
         <div className="uploadWidget">
 
-          {hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>{ this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'}</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
-          <div id="uploadButton" className={hasPinsImages ? "grayButton": null} onClick={this.uploadImage.bind(this)}>SHARE {hasPinsImages ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>
+          {hasPinsImages && (this.state.images.filter((img)=> img.sharedLink).length) || hasliveUrl  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>{ this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'}</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
+          <div id="uploadButton" className={hasPinsImages || hasliveUrl ? "grayButton": null} onClick={this.uploadImage.bind(this)}>SHARE {hasPinsImages || hasliveUrl ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>
           { this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
             <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
@@ -210,7 +211,7 @@ export default class SelectAndUpload extends React.Component {
           <div className="upload-actions">
             <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
-            {hasPinsImages ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
+            {hasPinsImages || hasliveUrl ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>}
             <a onClick={this.cleanCapturesList.bind(this)}>xCancel</a>
           </div>
         </div>

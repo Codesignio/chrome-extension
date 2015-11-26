@@ -101,7 +101,8 @@
 	      unsupported: false,
 	      currentAction: localStorage.currentAction,
 	      showHideIcon: [],
-	      me: JSON.parse(localStorage.me)
+	      me: JSON.parse(localStorage.me),
+	      currentLiveBoard: JSON.parse(localStorage.currentLiveBoard || 'null')
 	    };
 	    return _this;
 	  }
@@ -110,6 +111,16 @@
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
 	      var me = this;
+	
+	      chrome.tabs.getSelected(null, function (tab) {
+	        if (me.state.currentLiveBoard.url == tab.url) {
+	          me.state.status = 'captured';
+	          me.state.matchTabUrl = true;
+	          localStorage.capturedImages = '[]';
+	          me.setState({});
+	        }
+	      });
+	
 	      document.addEventListener('keydown', function (e) {
 	        if (e.keyCode == 27 && me.state.status == 'progress') {
 	          chrome.runtime.sendMessage({ msg: 'cancel' });
@@ -361,7 +372,7 @@
 	          key: 'upload',
 	          backToActions: this.backToActions.bind(this),
 	          handleUpload: this.backToActions.bind(this),
-	          images: this.state.capturedImages });
+	          images: this.state.matchTabUrl ? [this.state.currentLiveBoard] : this.state.capturedImages });
 	      } else if (this.state.status == 'actions') {
 	        return _react2.default.createElement(
 	          'div',
@@ -21071,6 +21082,9 @@
 	      var hasPinsImages = this.state.images.filter(function (img) {
 	        return img.pins && img.pins.length;
 	      }).length;
+	      var hasliveUrl = this.state.images.filter(function (img) {
+	        return img.liveUrl;
+	      }).length;
 	
 	      return _react2.default.createElement(
 	        'div',
@@ -21096,7 +21110,7 @@
 	          { className: 'uploadWidget' },
 	          hasPinsImages && this.state.images.filter(function (img) {
 	            return img.sharedLink;
-	          }).length ? _react2.default.createElement(
+	          }).length || hasliveUrl ? _react2.default.createElement(
 	            'div',
 	            { id: 'shareButton', onClick: this.copyLink.bind(this) },
 	            this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'
@@ -21107,9 +21121,9 @@
 	          ) : null,
 	          _react2.default.createElement(
 	            'div',
-	            { id: 'uploadButton', className: hasPinsImages ? "grayButton" : null, onClick: this.uploadImage.bind(this) },
+	            { id: 'uploadButton', className: hasPinsImages || hasliveUrl ? "grayButton" : null, onClick: this.uploadImage.bind(this) },
 	            'SHARE ',
-	            hasPinsImages ? 'AS' : '',
+	            hasPinsImages || hasliveUrl ? 'AS' : '',
 	            ' ',
 	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
 	          ),
@@ -21190,7 +21204,7 @@
 	                } },
 	              'Cancel'
 	            ),
-	            hasPinsImages ? null : _react2.default.createElement(
+	            hasPinsImages || hasliveUrl ? null : _react2.default.createElement(
 	              'a',
 	              { onClick: function onClick() {
 	                  return _this2.props.backToActions();
