@@ -153,7 +153,7 @@
 	          me.setState({ status: 'captured' });
 	          chrome.browserAction.setBadgeText({ text: me.state.capturedImages.length ? me.state.capturedImages.length.toString() : '' });
 	        } else if (request.msg == 'progress') {
-	          me.setState({ status: 'progress', progress: request.progress, progressMsg: request.progressMsg });
+	          if (request.progressMsg != 'Uploading...') me.setState({ status: 'progress', progress: request.progress, progressMsg: request.progressMsg });
 	        }
 	      }).bind(this));
 	    }
@@ -20957,6 +20957,8 @@
 	    key: 'uploadImage',
 	    value: function uploadImage() {
 	
+	      this.setState({ uploadProgress: true });
+	
 	      chrome.runtime.sendMessage({
 	        msg: 'uploadImages',
 	        folders: this.state.folders,
@@ -20996,6 +20998,7 @@
 	    value: function toogleSelectors(e) {
 	      var _this = this;
 	
+	      if (this.state.uploadProgress) return;
 	      if (e.target.innerHTML == 'Save') {
 	        var activeFolder = this.state.selectActiveFolder;
 	
@@ -21038,6 +21041,7 @@
 	  }, {
 	    key: 'cleanCapturesList',
 	    value: function cleanCapturesList() {
+	      if (this.state.uploadProgress) return;
 	      localStorage.capturedImages = '';
 	      localStorage.currentLiveBoard = null;
 	      this.props.backToActions();
@@ -21074,6 +21078,12 @@
 	    value: function selectInputText(text, e) {
 	      e.target.selectionStart = 0;
 	      e.target.selectionEnd = text.length;
+	    }
+	  }, {
+	    key: 'backToAction',
+	    value: function backToAction() {
+	      if (this.state.uploadProgress) return;
+	      this.props.backToActions();
 	    }
 	  }, {
 	    key: 'render',
@@ -21123,10 +21133,18 @@
 	          hasliveUrl ? null : _react2.default.createElement(
 	            'div',
 	            { id: 'uploadButton', className: hasPinsImages ? "grayButton" : null, onClick: this.uploadImage.bind(this) },
-	            'SHARE ',
-	            hasPinsImages ? 'AS' : '',
-	            ' ',
-	            this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
+	            this.state.uploadProgress ? _react2.default.createElement(
+	              'span',
+	              null,
+	              'UPLOADING...'
+	            ) : _react2.default.createElement(
+	              'span',
+	              null,
+	              'SHARE ',
+	              hasPinsImages ? 'AS' : '',
+	              ' ',
+	              this.state.images.length - 1 ? this.state.images.length + ' IMAGES' : ' IMAGE'
+	            )
 	          ),
 	          hasliveUrl ? null : this.state.edit ? _react2.default.createElement(
 	            'div',
@@ -21207,9 +21225,7 @@
 	            ),
 	            hasliveUrl ? null : hasPinsImages ? null : _react2.default.createElement(
 	              'a',
-	              { onClick: function onClick() {
-	                  return _this2.props.backToActions();
-	                } },
+	              { onClick: this.backToAction.bind(this) },
 	              '+ Snap more'
 	            ),
 	            _react2.default.createElement(

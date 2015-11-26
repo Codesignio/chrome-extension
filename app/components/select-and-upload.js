@@ -66,6 +66,8 @@ export default class SelectAndUpload extends React.Component {
 
   uploadImage(){
 
+    this.setState({uploadProgress: true});
+
     chrome.runtime.sendMessage({
       msg: 'uploadImages',
       folders: this.state.folders,
@@ -100,6 +102,7 @@ export default class SelectAndUpload extends React.Component {
   }
 
   toogleSelectors(e){
+    if (this.state.uploadProgress) return;
     if (e.target.innerHTML == 'Save'){
       var activeFolder =  this.state.selectActiveFolder
 
@@ -136,6 +139,7 @@ export default class SelectAndUpload extends React.Component {
   }
 
   cleanCapturesList(){
+    if (this.state.uploadProgress) return;
     localStorage.capturedImages = '';
     localStorage.currentLiveBoard = null;
     this.props.backToActions();
@@ -169,6 +173,11 @@ export default class SelectAndUpload extends React.Component {
     e.target.selectionEnd = text.length;
   }
 
+  backToAction(){
+    if (this.state.uploadProgress) return;
+    this.props.backToActions();
+  }
+
   render(){
 
     var hasPinsImages = this.state.images.filter((img)=> img.pins && img.pins.length).length;
@@ -191,7 +200,7 @@ export default class SelectAndUpload extends React.Component {
         <div className="uploadWidget">
 
           {hasPinsImages && (this.state.images.filter((img)=> img.sharedLink).length) || hasliveUrl  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>{ this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'}</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
-          {hasliveUrl ? null : <div id="uploadButton" className={hasPinsImages ? "grayButton": null} onClick={this.uploadImage.bind(this)}>SHARE {hasPinsImages ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</div>}
+          {hasliveUrl ? null : <div id="uploadButton" className={hasPinsImages ? "grayButton": null} onClick={this.uploadImage.bind(this)}>{this.state.uploadProgress ? <span>UPLOADING...</span> : <span>SHARE {hasPinsImages ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</span>}</div>}
           {hasliveUrl ? null : (this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
             <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
@@ -212,7 +221,7 @@ export default class SelectAndUpload extends React.Component {
           <div className="upload-actions">
             {hasliveUrl ? null : <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}
             {hasliveUrl ? null : (this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>)}
-            {hasliveUrl ? null : (hasPinsImages ? null :<a onClick={()=> this.props.backToActions()}>+ Snap more</a>)}
+            {hasliveUrl ? null : (hasPinsImages ? null :<a onClick={this.backToAction.bind(this)}>+ Snap more</a>)}
             <a onClick={this.cleanCapturesList.bind(this)}>xCancel</a>
           </div>
         </div>

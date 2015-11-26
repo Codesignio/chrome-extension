@@ -72,7 +72,7 @@ class App extends React.Component {
           me.setState({status: 'captured'});
           chrome.browserAction.setBadgeText({text: me.state.capturedImages.length ? me.state.capturedImages.length.toString() : ''});
         } else if (request.msg == 'progress'){
-          me.setState({status: 'progress', progress: request.progress, progressMsg: request.progressMsg})
+          if (request.progressMsg != 'Uploading...') me.setState({status: 'progress', progress: request.progress, progressMsg: request.progressMsg})
         }
       }.bind(this));
 
