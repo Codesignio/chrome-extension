@@ -347,6 +347,7 @@
 	  }, {
 	    key: 'endDrag',
 	    value: function endDrag() {
+	      this.sendData('movePin', this.state.dragPin);
 	      this.setState({
 	        drag: false,
 	        dragPin: null

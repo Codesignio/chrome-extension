@@ -139,7 +139,7 @@
 	                  } else {
 	                    console.log(xhr3.responseText);
 	                    //window.close();
-	                    chrome.extension.sendRequest({ msg: 'stopOauth', token: token });
+	                    chrome.extension.sendRequest({ msg: 'stopOauth', token: token, urlProvider: 'registered' });
 	                  }
 	                };
 	                xhr3.send(json);

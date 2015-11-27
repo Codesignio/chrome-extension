@@ -236,6 +236,7 @@
 	    value: function logOut() {
 	      this.setState({ token: null });
 	      localStorage.token = '';
+	      chrome.runtime.sendMessage({ msg: 'logOutUser' });
 	      chrome.tabs.create({ 'url': chrome.extension.getURL('login.html') }, function (tab) {});
 	    }
 	  }, {

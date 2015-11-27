@@ -71,7 +71,7 @@ if (window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/
               } else {
                 console.log(xhr.responseText);
                 var token = JSON.parse(xhr.responseText).token;
-                chrome.extension.sendRequest({msg: 'stopOauth', token: token});
+                chrome.extension.sendRequest({msg: 'stopOauth', token: token, urlProvider: urlProvider});
               }
             };
             xhr.send(json);

@@ -1,3 +1,81 @@
+import assign from 'object-assign';
+
+(function () {
+  var w = window;
+  var ic = w.Intercom;
+  if (typeof ic === "function") {
+    ic('reattach_activator');
+    ic('update', intercomSettings);
+  } else {
+    var d = document;
+    var i = function () {
+      i.c(arguments)
+    };
+    i.q = [];
+    i.c = function (args) {
+      i.q.push(args)
+    };
+    w.Intercom = i;
+    function l() {
+      var s = d.createElement('script');
+      s.type = 'text/javascript';
+      s.async = true;
+      s.src = 'https://widget.intercom.io/widget/ufe67jbo';
+      var x = d.getElementsByTagName('script')[0];
+      x.parentNode.insertBefore(s, x);
+    }
+
+    if (w.attachEvent) {
+      w.attachEvent('onload', l);
+    } else {
+      w.addEventListener('load', l, false);
+    }
+  }
+})()
+
+
+
+
+
+
+
+
+
+function track (event, data) {
+  window.Intercom('trackEvent', event, data);
+}
+var CoIntercom = {
+  boot (id, name, email, created_at) {
+    console.log('Intercom.boot: start');
+    window.Intercom('boot', {
+      app_id: 'lid3oqje',
+      user_id: id,
+      name: name,
+      email: email,
+      created_at: created_at,
+      extension: true,
+    });
+
+    console.log('Intercom.boot: done');
+  },
+
+  shutdown () {
+    console.log('Intercom.shutdown');
+    window.Intercom('shutdown');
+  },
+
+    // facebook, github, email
+    loggedIn (data) {
+      track('logged in extension user', data);
+    },
+
+    loggedOut (data) {
+      track('logged out extension user', data);
+    },
+};
+
+
+
 var screenshot = {};
 var sendedrequest = {};
 var cropData = null;
@@ -30,6 +108,15 @@ chrome.contextMenus.create({
 
 chrome.runtime.onInstalled.addListener(function(){
   chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
+});
+
+
+chrome.management.getSelf(function(info){
+  chrome.management.onUninstalled.addListener(function(id){
+    if (info.id == id){
+      track('#UNINSTALLED EXTENSION', {user: JSON.parse(localStorage.me || '{}')});
+    }
+  })
 });
 
 chrome.runtime.setUninstallURL('http://localhost:3000/uninstalled');
@@ -76,6 +163,8 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
           var token = localStorage.token;
           httprequest('http://api.codesign.io/users/me/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
             localStorage.me = JSON.stringify(data);
+            CoIntercom.boot(data.user.id, data.user.first_name, data.user.date_joined);
+            CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
           });
         });
         if (!request.fromSite) chrome.tabs.create({'url': 'http://www.codesign.io/syncauthorization', selected: false}, function (tab) {});
@@ -122,6 +211,9 @@ chrome.runtime.onMessage.addListener(
         cancelRequest = false;
         chrome.browserAction.setBadgeText({text: JSON.parse(localStorage.capturedImages || '[]').length || ''});
       }, 500);
+    } else if (request.msg == 'logOutUser'){
+      CoIntercom.loggedOut({});
+      CoIntercom.shutdown();
     }
   });
 
@@ -303,6 +395,9 @@ function sendRequestPin(request, sender, callback){
     }, function (data) {
       callback(data)
     })
+
+    track('#CREATED LIVE BOARD TASK', {user: JSON.parse(localStorage.me || '{}'), task: pin })
+
   } else if (request.msg == 'addComment'){
 
     var method = pin.updated ? 'PUT' : 'POST';
@@ -316,6 +411,8 @@ function sendRequestPin(request, sender, callback){
     }, function (data) {
         callback(data)
       })
+
+    track('#CREATED LIVE BOARD COMMENT', {user: JSON.parse(localStorage.me || '{}'), comment: pin })
 
   } else if (request.msg == 'deletePin'){
 
@@ -334,12 +431,39 @@ function sendRequestPin(request, sender, callback){
 
   } else if (request.msg == 'completePin'){
 
+
     httprequest('http://api.codesign.io/tasks/'+ pin.id, 'PUT', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {
       status: pin.completed ? "CP" : "AC"
     }, function (data) {})
+
+    track('#MARKED LIVE BOARD TASK AS COMPLETED', {user: JSON.parse(localStorage.me || '{}'), pin: pin});
+
+
+  } else if (request.msg == 'movePin'){
+    var payLoadData = {
+      dragging: true,
+      geometry: {
+        left: pin.x/request.width * 100,
+        top: pin.y/request.height * 100,
+        relativeX: pin.relativeX,
+        relativeY: pin.relativeY,
+        cssPath: pin.cssPath,
+      },
+      id: pin.id,
+      shape: "PN",
+      task: pin.id
+    };
+
+    httprequest('http://api.codesign.io/markers/'+ pin.id, 'PUT', {
+      "Authorization": 'Token ' + token,
+      "Content-Type": "application/json;charset=UTF-8"
+    }, payLoadData , function (data) {})
+
+    track('#MOVED LIVE BOARD TASK PIN', {user: JSON.parse(localStorage.me || '{}'), pin: payLoadData});
+
   }
 }
 
@@ -378,6 +502,9 @@ function loadBoardData(req, sender, sendResponse){
         });
       })
     }, 2000)
+
+
+    track('#OPENED LIVE BOARD VIA CLIENT LINK', {user: JSON.parse(localStorage.me || '{}'), board: data});
 
   })
 }
@@ -502,7 +629,12 @@ function shareImage (req, sender, sendResponse){
                   var url = 'http://www.codesign.io/live/'+boardData.client_code;
                   sharedImage.sharedLink = url;
                   localStorage.capturedImages = JSON.stringify(capturedImages);
-                  chrome.runtime.sendMessage({msg: 'sharedImage', url: url})
+                  chrome.runtime.sendMessage({msg: 'sharedImage', url: url});
+
+
+                  track('#CREATED LIVE BOARD', {user: JSON.parse(localStorage.me || '{}'), board: boardData});
+                  track('#CREATED LIVE BOARD CLIENT LINK', {user: JSON.parse(localStorage.me || '{}'), board_link: url});
+
                 }
               }
 

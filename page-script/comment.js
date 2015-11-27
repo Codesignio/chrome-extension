@@ -245,6 +245,7 @@ class Comment extends React.Component {
   }
 
   endDrag(){
+    this.sendData('movePin', this.state.dragPin);
     this.setState({
       drag: false,
       dragPin: null
