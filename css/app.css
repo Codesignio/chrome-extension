@@ -82,8 +82,18 @@ img {
     position: absolute;
     right: 0;
     top: 0;
+    background-color: #222;
+    border-radius: 50%;
+    padding: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
+}
+
+.removeIcon .icon {
     background-image: url(./../remove-icon.svg);
     background-size: contain;
+    width: 5px;
+    height:5px;
 }
 
 
@@ -402,6 +412,8 @@ form {
 
 #images-list .checkbox {
     margin-right: 10px;
+    align-self: baseline;
+    margin-top: 10px;
 }
 
 
@@ -412,15 +424,19 @@ form {
     background-color: whitesmoke;
 }
 
+.history-buttons {
+    background-color: #222;
+    padding: 20px;
+}
+
 .back-to-actions {
     cursor: pointer;
-    background-color: #5fb583;
     height: 35px;
     text-align: center;
     line-height: 35px;
-    color: white;
     font-size: 13px;
     font-weight: 300;
+    color: #9e9e9e;
 }
 
 .upload-to-actions{
@@ -433,6 +449,7 @@ form {
 
     font-size: 13px;
     font-weight: 300;
+    margin-bottom: 10px;
 }
 
 #images-list .image {

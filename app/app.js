@@ -279,14 +279,16 @@ class App extends React.Component {
                        onClick={this.imgClick.bind(this, img.link)}/>
                   <div className="removeIcon" style={{display: this.state.showHideIcon[i] ? 'block' : 'none'}}
                        onMouseMove={this.showIcon.bind(this, i)}
-                       onClick={this.removeImage.bind(this, img)}></div>
+                       onClick={this.removeImage.bind(this, img)}><div className="icon"></div></div>
                   </div>
                 </div>
               )
             }.bind(this))}
           </div>
-          {this.state.checkedImages.length ? <div onClick={this.uploadChecked.bind(this)} className="upload-to-actions">Upload</div> : null}
-          <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>Back</div>
+          <div className="history-buttons">
+          {this.state.checkedImages.length ? <div onClick={this.uploadChecked.bind(this)} id="uploadButton" style={{marginBottom: '10px'}}>UPLOAD{this.state.checkedImages.length > 1 ? this.state.checkedImages.length + ' IMAGES' : ' IMAGE'}</div> : null}
+          <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>← Back to upload dialog</div>
+            </div>
         </div>
       )
     }

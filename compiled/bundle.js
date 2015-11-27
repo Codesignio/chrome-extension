@@ -483,24 +483,33 @@
 	                  _react2.default.createElement('img', { src: img.link,
 	                    onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i),
 	                    onClick: this.imgClick.bind(this, img.link) }),
-	                  _react2.default.createElement('div', { className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' },
-	                    onMouseMove: this.showIcon.bind(this, i),
-	                    onClick: this.removeImage.bind(this, img) })
+	                  _react2.default.createElement(
+	                    'div',
+	                    { className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' },
+	                      onMouseMove: this.showIcon.bind(this, i),
+	                      onClick: this.removeImage.bind(this, img) },
+	                    _react2.default.createElement('div', { className: 'icon' })
+	                  )
 	                )
 	              );
 	            }).bind(this))
 	          ),
-	          this.state.checkedImages.length ? _react2.default.createElement(
-	            'div',
-	            { onClick: this.uploadChecked.bind(this), className: 'upload-to-actions' },
-	            'Upload'
-	          ) : null,
 	          _react2.default.createElement(
 	            'div',
-	            { className: 'back-to-actions', onClick: function onClick() {
-	                return _this2.setState({ status: 'actions' });
-	              } },
-	            'Back'
+	            { className: 'history-buttons' },
+	            this.state.checkedImages.length ? _react2.default.createElement(
+	              'div',
+	              { onClick: this.uploadChecked.bind(this), id: 'uploadButton', style: { marginBottom: '10px' } },
+	              'UPLOAD',
+	              this.state.checkedImages.length > 1 ? this.state.checkedImages.length + ' IMAGES' : ' IMAGE'
+	            ) : null,
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'back-to-actions', onClick: function onClick() {
+	                  return _this2.setState({ status: 'actions' });
+	                } },
+	              '← Back to upload dialog'
+	            )
 	          )
 	        );
 	      }
@@ -21109,7 +21118,11 @@
 	              'div',
 	              { className: 'image' },
 	              _react2.default.createElement('img', { onMouseOut: this.hideIcon.bind(this, i), onMouseMove: this.showIcon.bind(this, i), key: i, src: img.link }),
-	              _react2.default.createElement('div', { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'block' } })
+	              _react2.default.createElement(
+	                'div',
+	                { onClick: this.handleRemove.bind(this), onMouseMove: this.showIcon.bind(this, i), className: 'removeIcon', style: { display: this.state.showHideIcon[i] ? 'block' : 'none' } },
+	                _react2.default.createElement('div', { className: 'icon' })
+	              )
 	            ), img.sharedLink ? [_react2.default.createElement(
 	              'div',
 	              { className: 'sharedTitle' },
