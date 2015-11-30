@@ -37,7 +37,7 @@ function getParameterByName(name) {
 
 function checkUrl(url) {
 
-  if (window.location.toString().match(/http:\/\/www.codesign.io\/\?oauthProvider/)) {
+  if (window.location.toString().match(/codesign.io\/\?oauthProvider/)) {
     chrome.extension.sendRequest({msg: 'checkStartOauth'}, function (startOauth) {
       if (startOauth) {
         var urlProvider = getParameterByName('oauthProvider');
@@ -84,13 +84,13 @@ function checkUrl(url) {
         }
       }
     });
-  } else if (window.location.toString().match(/http:\/\/www.codesign.io\/checkauthorization/)) {
+  } else if (window.location.toString().match(/codesign.io\/checkauthorization/)) {
     chrome.extension.sendRequest({
       msg: 'stopOauth',
       token: JSON.parse(localStorage["user.token"] || 'null'),
       fromSite: true
     });
-  } else if (window.location.toString().match(/http:\/\/www.codesign.io\/syncauthorization/)) {
+  } else if (window.location.toString().match(/codesign.io\/syncauthorization/)) {
     chrome.extension.sendRequest({
       msg: 'syncAuthorization',
       token: JSON.parse(localStorage["user.token"] || 'null')
@@ -107,7 +107,7 @@ function checkLiveUrl(url, callB) {
   if (!url){
     url = window.location.toString()
   }
-  if (url.match(/http:\/\/www.codesign.io\/live\//) || window.location.toString().match(/http:\/\/www.codesign.io\//) && url.match(/\/live\//)) {
+  if (url.match(/codesign.io\/live\//) || window.location.toString().match(/codesign.io\//) && url.match(/\/live\//)) {
     var match = url.match(/\/live\/(\w+)/);
     var code = match[1];
     callB(code);
@@ -131,7 +131,7 @@ function replacePushState(){
   }
 }
 
-if (window.location.toString().match(/http:\/\/www.codesign.io\//)){
+if (window.location.toString().match(/codesign.io\//)){
   document.addEventListener("DOMContentLoaded", function(){
     var headID = document.getElementsByTagName("head")[0];
     var newScript = document.createElement('script');
