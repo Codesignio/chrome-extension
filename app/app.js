@@ -287,7 +287,7 @@ class App extends React.Component {
           </div>
           <div className="history-buttons">
           {this.state.checkedImages.length ? <div onClick={this.uploadChecked.bind(this)} id="uploadButton" style={{marginBottom: '10px'}}>UPLOAD{this.state.checkedImages.length > 1 ? this.state.checkedImages.length + ' IMAGES' : ' IMAGE'}</div> : null}
-          <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>← Back to upload dialog</div>
+          <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>← Back to menu</div>
             </div>
         </div>
       )

@@ -66,11 +66,11 @@ var CoIntercom = {
 
     // facebook, github, email
     loggedIn (data) {
-      track('logged in extension user', data);
+      track('#LOGGED IN VIA EXTENSION', data);
     },
 
     loggedOut (data) {
-      track('logged out extension user', data);
+      track('#LOGGED OUT VIA EXTENSION', data);
     },
 };
 
@@ -119,10 +119,11 @@ chrome.management.getSelf(function(info){
   })
 });
 
-chrome.runtime.setUninstallURL('http://localhost:3000/uninstalled');
+chrome.runtime.setUninstallURL('http://www.codesign.io/uninstalled');
 
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
+  console.log('message ext');
   if (request.msg === 'capturePage') {
     if (!cancelRequest) {
       capturePage(request, sender, callback)
@@ -184,13 +185,12 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
   } else if (request.msg == 'closeWindow'){
     console.log('closeWindow');
     chrome.tabs.remove(sender.tab.id);
-  } else if (request.msg == 'liveBoard'){
-    loadBoardData(request, sender, callback)
   }
 });
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
+    console.log('message');
     if (request.msg === 'takeFullPageScreenshot'){
       takeFullPageScreenshot();
     } else if(request.msg === 'takeVisiblePageScreenshot'){
@@ -214,9 +214,19 @@ chrome.runtime.onMessage.addListener(
     } else if (request.msg == 'logOutUser'){
       CoIntercom.loggedOut({});
       CoIntercom.shutdown();
+    } else if (request.msg == 'liveBoard'){
+      console.log('liveboard message');
+      loadBoardData(request, sender, sendResponse);
     }
   });
 
+chrome.runtime.onMessageExternal.addListener(
+  function(request, sender, sendResponse) {
+    if (request.msg == 'liveBoard'){
+      console.log('liveboard message');
+      loadBoardData(request, sender, sendResponse);
+    }
+  });
 
 function takeFullPageScreenshot(){
   chrome.tabs.getSelected(null, function (tab) {
@@ -469,12 +479,11 @@ function sendRequestPin(request, sender, callback){
 
 
 function loadBoardData(req, sender, sendResponse){
-  var token = localStorage.token
+  var token = localStorage.token;
   var code = req.boardCode;
   httprequest('http://api.codesign.io/get_board/?code='+code, 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
 
     var url = data.board.title;
-    sendResponse({url: url});
 
     var liveUrl ='http://www.codesign.io/live/'+ code;
     var boardThumbnail = data.board.posts[0].images[0];
@@ -492,16 +501,19 @@ function loadBoardData(req, sender, sendResponse){
 
     var pins = data.board.posts[0].tasks;
 
-    setTimeout(function(){
       chrome.tabs.getSelected(null, function (tab) {
-        chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins) + ';'+ 'window.codesignBoardData = ' + JSON.stringify(data.board)}, function () {
-          chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
-            chrome.tabs.sendRequest(tab.id, {msg: 'loadPins'}, function () {
+        chrome.tabs.update(tab.id, {url: url});
+        chrome.tabs.onUpdated.addListener(function(tabId , info) {
+          if (tabId == tab.id && info.status == "loading") {
+            chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins) + ';'+ 'window.codesignBoardData = ' + JSON.stringify(data.board)}, function () {
+              chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+                chrome.tabs.sendRequest(tab.id, {msg: 'loadPins'}, function () {
+                });
+              });
             });
-          });
+          }
         });
-      })
-    }, 2000)
+      });
 
 
     track('#OPENED LIVE BOARD VIA CLIENT LINK', {user: JSON.parse(localStorage.me || '{}'), board: data});
