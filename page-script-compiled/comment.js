@@ -229,7 +229,7 @@
 	            }
 	            return me.transformPin(pin, { children: comments || [] });
 	          });
-	          me.setState({ pins: myPins, commentMode: true });
+	          me.setState({ pins: myPins, commentMode: true, liveUrl: request.liveUrl, webUrl: request.webUrl });
 	        }
 	      });
 	    }
@@ -431,7 +431,10 @@
 	        width: document.body.scrollWidth,
 	        height: document.body.scrollHeight,
 	        boardData: window.codesignBoardData,
-	        parentPin: parentPin
+	        parentPin: parentPin,
+	        liveUrl: this.state.webUrl,
+	        webUrl: this.state.liveUrl,
+	        documentTitle: document.title
 	      };
 	      chrome.extension.sendRequest(data, function (data) {
 	        if (parentPin) {

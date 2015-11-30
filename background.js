@@ -42,6 +42,7 @@ import assign from 'object-assign';
 
 
 function track (event, data) {
+  console.log('track ', event, data);
   window.Intercom('trackEvent', event, data);
 }
 var CoIntercom = {
@@ -114,7 +115,7 @@ chrome.runtime.onInstalled.addListener(function(){
 chrome.management.getSelf(function(info){
   chrome.management.onUninstalled.addListener(function(id){
     if (info.id == id){
-      track('#UNINSTALLED EXTENSION', {user: JSON.parse(localStorage.me || '{}')});
+      track('#UNINSTALLED EXTENSION');
     }
   })
 });
@@ -232,6 +233,7 @@ function takeFullPageScreenshot(){
   chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {file: 'page.js'}, function () {
         chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function () {
+          track('#SNAPPED FULL PAGE', {"WEB_URL": tab.url, "PAGE-TITLE": tab.title});
           screenshotCaptured(screenshot, tab.url, tab.title)
         });
       });
@@ -243,7 +245,8 @@ function takeFullPageScreenshot(){
 function takeVisibleScreenshot(){
   captureVisible(function(canvas){
     chrome.tabs.getSelected(null, function (tab) {
-      screenshotCaptured({canvas: canvas}, tab.url, tab.title)
+      screenshotCaptured({canvas: canvas}, tab.url, tab.title);
+      track('#SNAPPED SCREEN AREA', {"WEB_URL": tab.url, "PAGE-TITLE": tab.title});
     })
   })
 }
@@ -347,13 +350,14 @@ function storeFromDataCanvas(canvas, pageUrl, callBack){
 function screenshotCaptured(screenshot, pageUrl, pageTitle){
   console.log(screenshot);
   storeFromDataCanvas(screenshot.canvas, pageUrl, function(fileUrl){
+    var pageTitleRes = sendedrequest.pageTitle || pageTitle;
 
     var capturedImage = {
       link: fileUrl,
       size: {width: screenshot.canvas.width, height: screenshot.canvas.height},
       url: pageUrl,
       pins: sendedrequest.pins,
-      pageTitle: sendedrequest.pageTitle || pageTitle
+      pageTitle: pageTitleRes
     };
 
       var capturedImages = JSON.parse(localStorage.capturedImages || '[]');
@@ -406,7 +410,7 @@ function sendRequestPin(request, sender, callback){
       callback(data)
     })
 
-    track('#CREATED LIVE BOARD TASK', {user: JSON.parse(localStorage.me || '{}'), task: pin })
+    track('#CREATED LIVE BOARD TASK', {"LIVE-URL": request.liveUrl, "WEB-URL": request.webUrl, "PAGE_TITLE": request.documentTitle, ID: pin.id, MESSAGE: pin.text})
 
   } else if (request.msg == 'addComment'){
 
@@ -422,7 +426,7 @@ function sendRequestPin(request, sender, callback){
         callback(data)
       })
 
-    track('#CREATED LIVE BOARD COMMENT', {user: JSON.parse(localStorage.me || '{}'), comment: pin })
+    track('#CREATED LIVE BOARD COMMENT', {"LIVE-URL": request.liveUrl, "WEB-URL": request.webUrl, "PAGE_TITLE": request.documentTitle, ID: pin.id, MESSAGE: pin.text})
 
   } else if (request.msg == 'deletePin'){
 
@@ -449,7 +453,7 @@ function sendRequestPin(request, sender, callback){
       status: pin.completed ? "CP" : "AC"
     }, function (data) {})
 
-    track('#MARKED LIVE BOARD TASK AS COMPLETED', {user: JSON.parse(localStorage.me || '{}'), pin: pin});
+    track('#MARKED LIVE BOARD TASK AS COMPLETED', {"LIVE-URL": request.liveUrl, "WEB-URL": request.webUrl, "PAGE_TITLE": request.documentTitle, ID: pin.id, MESSAGE: pin.text});
 
 
   } else if (request.msg == 'movePin'){
@@ -470,9 +474,9 @@ function sendRequestPin(request, sender, callback){
     httprequest('http://api.codesign.io/markers/'+ pin.id, 'PUT', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
-    }, payLoadData , function (data) {})
+    }, payLoadData , function (data) {});
 
-    track('#MOVED LIVE BOARD TASK PIN', {user: JSON.parse(localStorage.me || '{}'), pin: payLoadData});
+    track('#MOVED LIVE BOARD TASK PIN', {"LIVE-URL": request.liveUrl, "WEB-URL": request.webUrl, "PAGE_TITLE": request.documentTitle, ID: pin.id, MESSAGE: pin.text});
 
   }
 }
@@ -507,7 +511,7 @@ function loadBoardData(req, sender, sendResponse){
           if (tabId == tab.id && info.status == "loading") {
             chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins) + ';'+ 'window.codesignBoardData = ' + JSON.stringify(data.board)}, function () {
               chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
-                chrome.tabs.sendRequest(tab.id, {msg: 'loadPins'}, function () {
+                chrome.tabs.sendRequest(tab.id, {msg: 'loadPins', liveUrl: url, webUrl: liveUrl}, function () {
                 });
               });
             });
@@ -516,7 +520,7 @@ function loadBoardData(req, sender, sendResponse){
       });
 
 
-    track('#OPENED LIVE BOARD VIA CLIENT LINK', {user: JSON.parse(localStorage.me || '{}'), board: data});
+    track('#OPENED LIVE BOARD VIA CLIENT LINK', {"LIVE-URL": url, "WEB-URL": data.board.title, ID: data.board.id});
 
   })
 }
@@ -644,8 +648,8 @@ function shareImage (req, sender, sendResponse){
                   chrome.runtime.sendMessage({msg: 'sharedImage', url: url});
 
 
-                  track('#CREATED LIVE BOARD', {user: JSON.parse(localStorage.me || '{}'), board: boardData});
-                  track('#CREATED LIVE BOARD CLIENT LINK', {user: JSON.parse(localStorage.me || '{}'), board_link: url});
+                  track('#CREATED LIVE BOARD', {"LIVE-URL": url, "WEB-URL": boardData.title, ID: boardData.id});
+                  track('#CREATED LIVE BOARD CLIENT LINK', {"LIVE-URL": url, "WEB-URL": boardData.title, ID: boardData.id});
 
                 }
               }
@@ -814,7 +818,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                             function CompleteRequest(){
                               reqCount++;
                               if (reqCount == capturedImage.pins.length) {
-
+                                track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://www.codesign.io/board/" + activeBoard.client_code});
                                 capImgCount++;
 
                                 if (capImgCount == capturedImages.length) {
