@@ -553,7 +553,8 @@ function shareImage (req, sender, sendResponse){
 
     function createSharedPage(sharedFolder){
       httprequest('http://api.codesign.io/folders/'+ sharedFolder.id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-        title: sharedImage.url
+        title: sharedImage.url,
+        description: '#liveboard'
       }, function (boardData) {
 
         httprequest('http://api.codesign.io/boards/'+ boardData.id + '/posts/', 'POST', {

@@ -553,7 +553,8 @@
 
 	    function createSharedPage(sharedFolder) {
 	      (0, _utils.request)('http://api.codesign.io/folders/' + sharedFolder.id + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	        title: sharedImage.url
+	        title: sharedImage.url,
+	        description: '#liveboard'
 	      }, function (boardData) {
 
 	        (0, _utils.request)('http://api.codesign.io/boards/' + boardData.id + '/posts/', 'POST', {
