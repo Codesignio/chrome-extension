@@ -509,15 +509,19 @@
 
 	    chrome.tabs.getSelected(null, function (tab) {
 	      chrome.tabs.update(tab.id, { url: url });
-	      chrome.tabs.onUpdated.addListener(function (tabId, info) {
+
+	      function UpdatedListener(tabId, info) {
 	        if (tabId == tab.id && info.status == "loading") {
+	          chrome.tabs.onUpdated.removeListener(UpdatedListener);
 	          chrome.tabs.executeScript(tab.id, { code: 'window.codesign = {me: ' + localStorage.me + '};' + 'window.codesignPins = ' + JSON.stringify(pins) + ';' + 'window.codesignBoardData = ' + JSON.stringify(data.board) }, function () {
 	            chrome.tabs.executeScript(tab.id, { file: 'page-script-compiled/comment.js' }, function () {
 	              chrome.tabs.sendRequest(tab.id, { msg: 'loadPins', liveUrl: url, webUrl: liveUrl }, function () {});
 	            });
 	          });
 	        }
-	      });
+	      }
+
+	      chrome.tabs.onUpdated.addListener(UpdatedListener);
 	    });
 
 	    track('#OPENED LIVE BOARD VIA CLIENT LINK', { "LIVE-URL": url, "WEB-URL": data.board.title, ID: data.board.id });
