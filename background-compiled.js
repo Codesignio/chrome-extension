@@ -192,27 +192,25 @@
 	            CoIntercom.loggedIn({ login_type: request.urlProvider ? request.urlProvider : 'email' });
 	          });
 
-	          (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
-
-	            var folders = data.results;
-	            var sharedFolder = data.results.filter(function (fol) {
-	              return fol.title == "My live boards";
-	            })[0];
-
-	            if (!sharedFolder) {
-	              (0, _utils.request)('http://api.codesign.io/folders/', 'POST', {
-	                "Authorization": 'Token ' + token,
-	                "Content-Type": "application/json;charset=UTF-8"
-	              }, {
-
-	                title: "My live boards",
-	                personal: true
-
-	              }, function (data) {
-	                console.log('created liveboards folder');
-	              });
-	            }
-	          });
+	          /*          httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+	          
+	                      var folders = data.results;
+	                      var sharedFolder = data.results.filter((fol) => fol.title == "My live boards")[0];
+	          
+	                      if (!sharedFolder) {
+	                        httprequest('http://api.codesign.io/folders/', 'POST', {
+	                          "Authorization": 'Token ' + token,
+	                          "Content-Type": "application/json;charset=UTF-8"
+	                        }, {
+	          
+	                          title: "My live boards",
+	                          personal: true,
+	          
+	                        }, function (data) {
+	                          console.log('created liveboards folder');
+	                        })
+	                      }
+	                    })*/
 	        });
 	        if (!request.fromSite) chrome.tabs.create({ 'url': 'http://www.codesign.io/syncauthorization', selected: false }, function (tab) {});
 	      });

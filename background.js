@@ -160,7 +160,7 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
             CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
           });
 
-          httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+/*          httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
 
             var folders = data.results;
             var sharedFolder = data.results.filter((fol) => fol.title == "My live boards")[0];
@@ -178,7 +178,7 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
                 console.log('created liveboards folder');
               })
             }
-          })
+          })*/
 
         });
         if (!request.fromSite) chrome.tabs.create({'url': 'http://www.codesign.io/syncauthorization', selected: false}, function (tab) {});
