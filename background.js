@@ -223,6 +223,7 @@ chrome.runtime.onMessage.addListener(
 
 chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
+    console.log('receive external message');
     if (request.msg == 'liveBoard'){
       console.log('liveboard message');
       loadBoardData(request, sender, sendResponse);
@@ -756,11 +757,14 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
   var capImgCount=0;
   capturedImages.forEach(function(capturedImage){
 
+    var hasShared = capturedImage.sharedLink;
+    var liveBoardLabel = hasShared ? ' liveboard' : '';
+
     httprequest('http://api.codesign.io/boards/'+ activeBoard.id + '/posts/', 'POST', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {
-      title: capturedImage.url + " " + (new Date).toString()
+      title: capturedImage.url + " " + (new Date).toString() + liveBoardLabel
     }, function (data) {
       console.log(data);
       httprequest('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
