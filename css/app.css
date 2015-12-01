@@ -592,6 +592,7 @@ form {
 
 
 .CommentBox .comment .readonly-text {
+    line-height: 1.428;
     margin-top: 7px;
     font-size: 14px;
     word-wrap: break-word;
@@ -612,9 +613,9 @@ form {
     white-space: nowrap;
     outline: 0;
     cursor: pointer;
-    font-family: avenir-next-medium;
     font-size: 14px;
     line-height: normal;
+    font-weight: 500;
 }
 
 .cs-btn-flat-active {
