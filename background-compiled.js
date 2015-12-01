@@ -502,7 +502,7 @@
 	  var code = req.boardCode;
 	  (0, _utils.request)('http://api.codesign.io/get_board/?code=' + code, 'GET', { "Authorization": 'Token ' + token }, null, function (data) {
 
-	    var url = data.board.title;
+	    var url = data.board.description.match(/url:(.+)\s/)[1];
 
 	    var liveUrl = 'http://www.codesign.io/live/' + code;
 	    var boardThumbnail = data.board.posts[0].images[0];
@@ -570,8 +570,8 @@
 
 	    function createSharedPage(sharedFolder) {
 	      (0, _utils.request)('http://api.codesign.io/folders/' + sharedFolder.id + '/boards/', 'POST', { "Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
-	        title: sharedImage.url,
-	        description: '#liveboard'
+	        title: sharedImage.pageTitle,
+	        description: 'url:' + sharedImage.url + ' #liveboard'
 	      }, function (boardData) {
 
 	        (0, _utils.request)('http://api.codesign.io/boards/' + boardData.id + '/posts/', 'POST', {
