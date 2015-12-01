@@ -618,6 +618,11 @@
 	      }
 	    }
 	  }, {
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      _react2.default.findDOMNode(this.refs.textarea).focus();
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var pin = this.props.pin;

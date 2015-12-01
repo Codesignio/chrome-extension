@@ -482,7 +482,9 @@ class CommentBox extends React.Component {
     }
   }
 
-
+  componentDidMount(){
+    React.findDOMNode(this.refs.textarea).focus();
+  }
 
   render(){
     var pin = this.props.pin;
