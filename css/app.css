@@ -54,7 +54,7 @@ html {
     line-height: 30px;
     font-size: 16px;
     font-weight: 300;
-    color: #222;
+    color: white;
 }
 
 .screenshot {
@@ -666,6 +666,8 @@ form {
 }
 
 
+
+
 .grayButton {
     background-color: #e6e6e6 !important;
     color: #000 !important;
@@ -674,4 +676,18 @@ form {
 .grayButton:hover {
     background-color: #f4f4f4 !important;
     color: #000 !important;
+}
+
+.progress-bar-cancel {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    margin-right: 14px;
+    line-height: 30px;
+    font-size: 16px;
+    font-weight: 300;
+    color: white;
+    cursor: pointer;
 }

@@ -222,7 +222,7 @@ export default class SelectAndUpload extends React.Component {
             {hasliveUrl ? null : <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}
             {hasliveUrl ? null : (this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>)}
             {hasliveUrl ? null : (hasPinsImages ? null :<a onClick={this.backToAction.bind(this)}>+ Snap more</a>)}
-            <a onClick={this.cleanCapturesList.bind(this)}>xCancel</a>
+            <a onClick={this.cleanCapturesList.bind(this)}>x Cancel</a>
           </div>
         </div>
       </div>

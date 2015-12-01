@@ -351,6 +351,12 @@
 	      );
 	    }
 	  }, {
+	    key: 'cancelCapturing',
+	    value: function cancelCapturing() {
+	      this.setState({ status: 'actions' });
+	      chrome.runtime.sendMessage({ msg: 'cancel' });
+	    }
+	  }, {
 	    key: 'renderPopup',
 	    value: function renderPopup() {
 	      var _this2 = this;
@@ -360,6 +366,10 @@
 	          'span',
 	          { className: 'progress_bar-title' },
 	          this.state.progressMsg
+	        ), _react2.default.createElement(
+	          'a',
+	          { className: 'progress-bar-cancel', onClick: this.cancelCapturing.bind(this) },
+	          'x Cancel'
 	        )];
 	      } else if (this.state.status == 'comment-click-title') {
 	        return this.renderVadMikhalyov('Click everywhere you need to leave your feedback right here!', this.okCommentButton.bind(this));
@@ -20756,7 +20766,7 @@
 	            _react2.default.createElement(
 	              'a',
 	              { onClick: this.cleanCapturesList.bind(this) },
-	              'xCancel'
+	              'x Cancel'
 	            )
 	          )
 	        )

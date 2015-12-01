@@ -226,10 +226,15 @@ class App extends React.Component {
     )
   }
 
+  cancelCapturing(){
+    this.setState({status: 'actions'});
+    chrome.runtime.sendMessage({msg: 'cancel'});
+  }
+
   renderPopup(){
 
     if (this.state.status == 'progress'){
-      return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">{this.state.progressMsg}</span>]
+      return [<div className="progress_bar" style={{width: this.state.progress}}></div>, <span className="progress_bar-title">{this.state.progressMsg}</span>, <a className="progress-bar-cancel" onClick={this.cancelCapturing.bind(this)}>x Cancel</a>]
     } else if(this.state.status == 'comment-click-title'){
       return this.renderVadMikhalyov('Click everywhere you need to leave your feedback right here!',this.okCommentButton.bind(this))
 
