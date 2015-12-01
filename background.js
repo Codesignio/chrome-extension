@@ -111,15 +111,6 @@ chrome.runtime.onInstalled.addListener(function(){
   chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
 });
 
-
-chrome.management.getSelf(function(info){
-  chrome.management.onUninstalled.addListener(function(id){
-    if (info.id == id){
-      track('#UNINSTALLED EXTENSION');
-    }
-  })
-});
-
 chrome.runtime.setUninstallURL('http://www.codesign.io/uninstalled');
 
 
@@ -168,6 +159,27 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
             CoIntercom.boot(data.user.id, data.user.first_name, data.user.date_joined);
             CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
           });
+
+          httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+
+            var folders = data.results;
+            var sharedFolder = data.results.filter((fol) => fol.title == "My live boards")[0];
+
+            if (!sharedFolder) {
+              httprequest('http://api.codesign.io/folders/', 'POST', {
+                "Authorization": 'Token ' + token,
+                "Content-Type": "application/json;charset=UTF-8"
+              }, {
+
+                title: "My live boards",
+                personal: true,
+
+              }, function (data) {
+                console.log('created liveboards folder');
+              })
+            }
+          })
+
         });
         if (!request.fromSite) chrome.tabs.create({'url': 'http://www.codesign.io/syncauthorization', selected: false}, function (tab) {});
       })
