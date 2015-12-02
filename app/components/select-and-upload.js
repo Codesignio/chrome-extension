@@ -216,7 +216,9 @@ export default class SelectAndUpload extends React.Component {
               })}
             </select>
           </div> : <div className="selectors-titles">
-            {this.state.activeBoard.id == 'new_board' ? <p key="1">{ hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length ? 'Create new board with full-length page snap' : 'Upload image to a new board' }  in "{this.state.activeFolder.title}" folder</p> : <p key="1">Upload image to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
+            {this.state.activeBoard.id == 'new_board' ?
+              <p key="1">{ hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length ? 'Click on "Share” button to upload a full-length screenshot with your feedback to a new board in' : ('Click on "Share” button to upload ​'+ (this.state.images.length > 1 ? this.state.images.length + 'images' :  '1 image​ to a new board'))}  in "{this.state.activeFolder.title}" folder.</p> :
+              <p key="1">Click on "Share” button to upload ​*[COUNT] image[s]*​ to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
           </div>)}
           <div className="upload-actions">
             {hasliveUrl ? null : <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}

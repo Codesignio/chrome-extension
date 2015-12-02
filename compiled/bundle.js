@@ -20729,14 +20729,14 @@
 	              { key: '1' },
 	              hasPinsImages && this.state.images.filter(function (img) {
 	                return img.sharedLink;
-	              }).length ? 'Create new board with full-length page snap' : 'Upload image to a new board',
+	              }).length ? 'Click on "Share” button to upload a full-length screenshot with your feedback to a new board in' : 'Click on "Share” button to upload ​' + (this.state.images.length > 1 ? this.state.images.length + 'images' : '1 image​ to a new board'),
 	              '  in "',
 	              this.state.activeFolder.title,
-	              '" folder'
+	              '" folder.'
 	            ) : _react2.default.createElement(
 	              'p',
 	              { key: '1' },
-	              'Upload image to "',
+	              'Click on "Share” button to upload ​*[COUNT] image[s]*​ to "',
 	              this.state.activeBoard.title,
 	              '" board in "',
 	              this.state.activeFolder.title,
