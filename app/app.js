@@ -22,7 +22,7 @@ class App extends React.Component {
       currentAction: localStorage.currentAction,
       showHideIcon: [],
       me: JSON.parse(localStorage.me),
-      currentLiveBoard: JSON.parse(localStorage.currentLiveBoard || 'null'),
+      currentLiveBoard: JSON.parse(localStorage.currentLiveBoard || '{}'),
     }
   }
 

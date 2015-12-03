@@ -141,7 +141,7 @@ export default class SelectAndUpload extends React.Component {
   cleanCapturesList(){
     if (this.state.uploadProgress) return;
     localStorage.capturedImages = '';
-    localStorage.currentLiveBoard = null;
+    localStorage.currentLiveBoard = '';
     this.props.backToActions();
     chrome.browserAction.setBadgeText({text: ''});
   }

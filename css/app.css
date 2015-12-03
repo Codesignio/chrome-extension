@@ -294,6 +294,10 @@ img {
     margin-left: 20px;
 }
 
+.title-and-links .links a:first-child {
+    color:blue;
+}
+
 .title-and-links .links a:hover {
     color: #58b684;
 }
