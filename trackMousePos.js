@@ -114,6 +114,12 @@ function checkLiveUrl(url, callB) {
   }
 }
 
+function checkChromeInstalled(url){
+  if (url && url == '/chrome' || window.location.pathname == '/chrome') {
+    window.location = '/chrome?already_installed'
+  }
+}
+
 
 function replacePushState(){
   var pushState = window.history.pushState;
@@ -128,6 +134,7 @@ function replacePushState(){
         chrome.runtime.sendMessage('aigcmnpccgnaggehopdnmgkipmfgomdk', {msg: 'liveBoard', boardCode: code})
       });
 
+      checkChromeInstalled(state.path);
       return pushState.apply(history, arguments);
     }
   }
@@ -138,11 +145,12 @@ if (window.location.toString().match(/codesign.io|localhost:3000\//)){
     var headID = document.getElementsByTagName("head")[0];
     var newScript = document.createElement('script');
     newScript.type = 'text/javascript';
-    newScript.innerHTML = checkLiveUrl.toString() + '; ' + replacePushState.toString() + '; replacePushState();';
+    newScript.innerHTML = checkChromeInstalled.toString() + ' ;' + checkLiveUrl.toString() + '; ' + replacePushState.toString() + '; replacePushState();';
     headID.appendChild(newScript);
   });
 }
 
+checkChromeInstalled();
 checkUrl();
 checkLiveUrl(undefined, function(code){
   chrome.runtime.sendMessage({msg: 'liveBoard', boardCode: code})
