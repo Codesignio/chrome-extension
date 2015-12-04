@@ -107,7 +107,7 @@ function checkLiveUrl(url, callB) {
   if (!url){
     url = window.location.toString()
   }
-  if (url.match(/codesign.io|localhost:3000\/live\//) || window.location.toString().match(/codesign.io|localhost:3000\//) && url.match(/\/live\//)) {
+  if (url.match(/codesign.io\/live\/|localhost:3000\/live\//) || window.location.toString().match(/codesign.io|localhost:3000\//) && url.match(/\/live\//)) {
     var match = url.match(/\/live\/(\w+)/);
     var code = match[1];
     callB(code);
