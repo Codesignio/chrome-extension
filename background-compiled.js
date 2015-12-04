@@ -143,10 +143,10 @@
 	}
 
 	chrome.runtime.onInstalled.addListener(function () {
-	  chrome.tabs.create({ 'url': 'http://www.codesign.io/checkauthorization' }, function (tab) {});
+	  chrome.tabs.create({ 'url': 'http://web.feature.codesign.io/checkauthorization' }, function (tab) {});
 	});
 
-	chrome.runtime.setUninstallURL('http://www.codesign.io/uninstalled');
+	chrome.runtime.setUninstallURL('http://web.feature.codesign.io/uninstalled');
 
 	chrome.extension.onRequest.addListener(function (request, sender, callback) {
 	  console.log('message ext');
@@ -212,7 +212,7 @@
 	                      }
 	                    })*/
 	        });
-	        if (!request.fromSite) chrome.tabs.create({ 'url': 'http://www.codesign.io/syncauthorization', selected: false }, function (tab) {});
+	        if (!request.fromSite) chrome.tabs.create({ 'url': 'http://web.feature.codesign.io/syncauthorization', selected: false }, function (tab) {});
 	      });
 	    } else {
 	      chrome.tabs.getSelected(null, function (tab) {
@@ -504,7 +504,7 @@
 
 	    var url = data.board.description.match(/url:(.+)\s/)[1];
 
-	    var liveUrl = 'http://www.codesign.io/live/' + code;
+	    var liveUrl = 'http://web.feature.codesign.io/live/' + code;
 	    var boardThumbnail = data.board.posts[0].images[0];
 	    var capturedImage = {
 	      link: boardThumbnail && boardThumbnail.thumbnail_url,
@@ -648,7 +648,7 @@
 	                reqCount++;
 	                if (reqCount == sharedImage.pins.length) {
 
-	                  var url = 'http://www.codesign.io/live/' + boardData.client_code;
+	                  var url = 'http://web.feature.codesign.io/live/' + boardData.client_code;
 	                  sharedImage.sharedLink = url;
 	                  localStorage.capturedImages = JSON.stringify(capturedImages);
 	                  chrome.runtime.sendMessage({ msg: 'sharedImage', url: url });
@@ -806,11 +806,11 @@
 	                            function CompleteRequest() {
 	                              reqCount++;
 	                              if (reqCount == capturedImage.pins.length) {
-	                                track('#UPLOADED IMAGE SUCESSFULLY', { "WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://www.codesign.io/board/" + activeBoard.client_code });
+	                                track('#UPLOADED IMAGE SUCESSFULLY', { "WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://web.feature.codesign.io/board/" + activeBoard.client_code });
 	                                capImgCount++;
 
 	                                if (capImgCount == capturedImages.length) {
-	                                  window.open("http://www.codesign.io/board/" + activeBoard.client_code);
+	                                  window.open("http://web.feature.codesign.io/board/" + activeBoard.client_code);
 	                                  chrome.browserAction.setBadgeText({ text: '' });
 	                                  localStorage.capturedImages = '[]';
 	                                }
@@ -860,7 +860,7 @@
 	                        capImgCount++;
 
 	                        if (capImgCount == capturedImages.length) {
-	                          window.open("http://www.codesign.io/board/" + activeBoard.client_code);
+	                          window.open("http://web.feature.codesign.io/board/" + activeBoard.client_code);
 	                          chrome.browserAction.setBadgeText({ text: '' });
 	                          localStorage.capturedImages = '[]';
 	                        }

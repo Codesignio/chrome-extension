@@ -448,7 +448,7 @@
 	              { className: 'links' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'http://www.codesign.io/dashboard/', target: '_blank' },
+	                { href: 'http://web.feature.codesign.io/dashboard/', target: '_blank' },
 	                'Dashboard'
 	              ),
 	              this.state.images.length ? _react2.default.createElement(
