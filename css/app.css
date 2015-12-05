@@ -292,6 +292,7 @@ img {
     display: flex;
     cursor: pointer;
     margin-left: 20px;
+    color: black;
 }
 
 
