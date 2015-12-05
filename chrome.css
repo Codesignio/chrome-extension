@@ -1,0 +1,450 @@
+@charset "UTF-8";
+@font-face {
+    font-family: "AvenirLTStd-Medium";
+    src: url("/landing/fonts/AvenirLTStd-Medium.eot");
+    src: url("/landing/fonts/AvenirLTStd-Medium.eot?#iefix") format("embedded-opentype"), url("/landing/fonts/AvenirLTStd-Medium.woff") format("woff"), url("/landing/fonts/AvenirLTStd-Medium.ttf") format("truetype"), url("/landing/fonts/AvenirLTStd-Medium.svg#AvenirLTStd-Medium") format("svg");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "AvenirLTStd-Light";
+    src: url("/landing/fonts/AvenirLTStd-Light.eot");
+    src: url("/landing/fonts/AvenirLTStd-Light.eot?#iefix") format("embedded-opentype"), url("/landing/fonts/AvenirLTStd-Light.woff") format("woff"), url("/landing/fonts/AvenirLTStd-Light.ttf") format("truetype"), url("/landing/fonts/AvenirLTStd-Light.svg#AvenirLTStd-Light") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "AvenirLTStd-Black";
+    src: url("/landing/fonts/AvenirLTStd-Black.eot");
+    src: url("/landing/fonts/AvenirLTStd-Black.eot?#iefix") format("embedded-opentype"), url("/landing/fonts/AvenirLTStd-Black.woff") format("woff"), url("/landing/fonts/AvenirLTStd-Black.ttf") format("truetype"), url("/landing/fonts/AvenirLTStd-Black.svg#AvenirLTStd-Black") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+.chrome-landing-page * {
+    margin: 0;
+    padding: 0;
+}
+
+.chrome-landing-page {
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    font-family: "AvenirLTStd-Light", sans-serif;
+    font-size: 13px;
+    background: #22bc85;
+    color: #fff;
+    line-height: 1;
+}
+
+.chrome-landing-page .ProfileBar {
+    margin-top: -20px;
+}
+
+.chrome-landing-page .ProfileBar .cs-link:hover {
+    color: black;
+}
+
+.chrome-landing-page .inner {
+    width: 960px;
+    margin: 0 auto;
+}
+
+.chrome-landing-page .col-33, .chrome-landing-page .col-50 {
+    float: left;
+}
+
+.chrome-landing-page .no-padding {
+    padding: 0;
+}
+
+.chrome-landing-page .col-33 {
+    width: 33%;
+}
+
+.chrome-landing-page .col-50 {
+    width: 50%;
+}
+
+.chrome-landing-page .bold-font, .chrome-landing-page .install-block, .chrome-landing-page .signup-with-facebook-btn, .chrome-landing-page .wrong-browser-block, .chrome-landing-page .wrong-browser-label, .chrome-landing-page .tutorial-label, .chrome-landing-page .faq-q {
+    font-family: "AvenirLTStd-Medium", sans-serif;
+    font-weight: normal;
+}
+
+.chrome-landing-page a {
+    color: #fff;
+    text-decoration: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.chrome-landing-page a:hover {
+    text-decoration: none;
+    color: #333;
+}
+
+.chrome-landing-page .green-link {
+    color: #22bc85;
+}
+
+.chrome-landing-page .green-link:hover {
+    color: #1a9166;
+}
+
+.chrome-landing-page h1 {
+    font-size: 55px;
+    padding-top: 100px;
+    color: white;
+}
+
+.chrome-landing-page h2 {
+    font-size: 30px;
+    line-height: 1.2em;
+    padding-top: 10px;
+    color: white;
+}
+
+.chrome-landing-page .content {
+    padding-bottom: 75px;
+    background: #22bc85;
+}
+
+.chrome-landing-page .install-block, .chrome-landing-page .signup-with-facebook-btn {
+    font-size: 25px;
+    color: #333;
+    background: #fff;
+    display: inline-block;
+    margin-top: 30px;
+    padding: 20px 40px 20px 110px;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    border-radius: 50px;
+    position: relative;
+    -moz-transition: all 150ms ease-in-out;
+    -o-transition: all 150ms ease-in-out;
+    -webkit-transition: all 150ms ease-in-out;
+    transition: all 150ms ease-in-out;
+}
+
+.chrome-landing-page .install-block:hover, .chrome-landing-page .signup-with-facebook-btn:hover {
+    color: #333;
+    background: #ff0;
+    -moz-box-shadow: 0 0 40px 0 rgba(255, 255, 255, 0.6);
+    -webkit-box-shadow: 0 0 40px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 40px 0 rgba(255, 255, 255, 0.6);
+}
+
+.chrome-landing-page .install-block img, .chrome-landing-page .signup-with-facebook-btn img {
+    width: 50px;
+    position: absolute;
+    top: 7px;
+    left: 40px;
+}
+
+.chrome-landing-page .signup-with-facebook-btn {
+    color: #fff;
+    background: #2e428b;
+    padding-left: 80px;
+}
+
+.chrome-landing-page .signup-with-facebook-btn:hover {
+    color: #fff;
+    background: #3b54b1;
+}
+
+.chrome-landing-page .signup-with-facebook-btn img {
+    left: 20px;
+}
+
+.chrome-landing-page .signup-other-holder {
+    font-size: 16px;
+    padding-top: 15px;
+}
+
+.chrome-landing-page .wrong-browser-block {
+    font-size: 25px;
+    text-align: left;
+    display: inline-block;
+    margin-top: 30px;
+    padding: 15px 40px 20px 110px;
+    border: solid 1px transparent;
+    border-bottom-color: #fff;
+    position: relative;
+    -moz-transition: all 150ms ease-in-out;
+    -o-transition: all 150ms ease-in-out;
+    -webkit-transition: all 150ms ease-in-out;
+    transition: all 150ms ease-in-out;
+}
+
+.chrome-landing-page .wrong-browser-block:hover {
+    color: #333;
+    background: rgba(0, 0, 0, 0.1);
+    border: solid 1px #333;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    border-radius: 50px;
+}
+
+.chrome-landing-page .wrong-browser-block img {
+    width: 50px;
+    position: absolute;
+    top: 15px;
+    left: 40px;
+}
+
+.chrome-landing-page .wrong-browser-details {
+    font-size: 14px;
+}
+
+.chrome-landing-page .how-it-works-holder {
+    font-size: 18px;
+    display: inline-block;
+    padding-top: 25px;
+    cursor: pointer;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85);
+    opacity: 0.85;
+    color: white;
+}
+
+.chrome-landing-page .how-it-works-holder:hover {
+    filter: progid:DXImageTransform.Microsoft.Alpha(enabled=false);
+    opacity: 1;
+}
+
+.chrome-landing-page .how-it-works-holder img {
+    vertical-align: middle;
+    width: 25px;
+    margin-right: 5px;
+}
+
+.chrome-landing-page .main-image {
+    max-width: 1000px;
+    margin-top: 30px;
+    margin-left: -20px;
+}
+
+.chrome-landing-page .wrong-browser-success {
+    font-size: 18px;
+    height: 65px;
+    margin-top: 25px;
+    padding-top: 30px;
+    position: relative;
+}
+
+.chrome-landing-page .wrong-browser-success:before {
+    content: "✓";
+    font-size: 50px;
+    margin-top: -15px;
+    margin-left: -50px;
+    position: absolute;
+}
+
+.chrome-landing-page .wrong-browser-email {
+    margin-top: 25px;
+    height: 65px;
+}
+
+.chrome-landing-page .wrong-browser-label {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.chrome-landing-page .wrong-browser-input {
+    font-family: "AvenirLTStd-Medium", sans-serif;
+    font-size: 16px;
+    background: transparent !important;
+    display: inline-block;
+    height: 40px;
+    width: 300px !important;
+    padding: 10px 20px;
+    border: solid 2px #fff !important;
+    border-right: none;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -moz-border-radius-topright: 0;
+    -webkit-border-top-right-radius: 0;
+    border-top-right-radius: 0;
+    -moz-border-radius-bottomright: 0;
+    -webkit-border-bottom-right-radius: 0;
+    border-bottom-right-radius: 0;
+    outline: none;
+}
+
+.chrome-landing-page .wrong-browser-button {
+    font-family: "AvenirLTStd-Black", sans-serif;
+    font-size: 16px;
+    color: #22bc85;
+    background: #fff;
+    display: inline-block;
+    height: 40px;
+    margin-left: -3px;
+    padding: 10px 30px;
+    border: none;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+    border-top-right-radius: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -webkit-border-bottom-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    outline: none;
+    cursor: pointer;
+    webkit-appearance: none;
+}
+
+.chrome-landing-page .wrong-browser-button:hover {
+    color: #333;
+    background: #ff0;
+}
+
+.chrome-landing-page .wrong-browser-caption {
+    font-size: 12px;
+    color: #c90012;
+    padding-top: 10px;
+}
+
+.chrome-landing-page .arrow-pointer {
+    width: 150px;
+    position: fixed;
+    top: 20px;
+    right: 40px;
+    z-index: -1;
+}
+
+.chrome-landing-page .tutorial-holder {
+    text-align: center;
+    margin-top: 25px;
+    padding: 30px 0;
+    border-top: solid 1px #fff;
+    border-bottom: solid 1px #fff;
+}
+
+.chrome-landing-page .tutorial-holder img {
+    width: 250px;
+}
+
+.chrome-landing-page .tutorial-label {
+    font-size: 18px;
+    padding-top: 20px;
+    color: white;
+}
+
+.chrome-landing-page .faq-holder {
+    color: #333;
+    background: #fff;
+    min-width: 980px;
+    margin-top: -410px;
+    padding-top: 300px;
+    padding-bottom: 50px;
+}
+
+.chrome-landing-page .faq-block {
+    margin: 25px 5px 0;
+    padding: 23px 15px 20px;
+    border: solid 1px #eee;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+
+.chrome-landing-page .faq-block + .faq-block {
+    margin-top: 10px;
+}
+
+.chrome-landing-page .faq-q {
+    font-size: 25px;
+    line-height: 1.2em;
+}
+
+.chrome-landing-page .faq-a {
+    font-size: 16px;
+    line-height: 1.3em;
+    color: #484848;
+    display: block;
+    padding-top: 10px;
+}
+
+.chrome-landing-page .main-header {
+    font-size: 16px;
+    letter-spacing: 0;
+    padding-top: 60px;
+    position: relative;
+    z-index: 2;
+    background: #22bc85;
+}
+
+.chrome-landing-page .main-logo .bold-font, .chrome-landing-page .main-logo .install-block, .chrome-landing-page .main-logo .signup-with-facebook-btn, .chrome-landing-page .main-logo .wrong-browser-block, .chrome-landing-page .main-logo .wrong-browser-label, .chrome-landing-page .main-logo .tutorial-label, .chrome-landing-page .main-logo .faq-q {
+    font-family: "AvenirLTStd-Black", sans-serif;
+}
+
+.chrome-landing-page .main-nav-link {
+    margin-left: 25px;
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    border-radius: 20px;
+}
+
+.chrome-landing-page .main-nav-link:hover {
+    color: #333;
+}
+
+.chrome-landing-page .main-nav-link.selected {
+    border: solid 1px #fff;
+    padding: 10px 20px;
+}
+
+.chrome-landing-page .main-nav-link.selected:hover {
+    border-color: #333;
+}
+
+.chrome-landing-page .main-footer {
+    font-size: 16px;
+    padding: 20px 0;
+    background: #22bc85;
+}
+
+.chrome-landing-page .footer-link {
+    margin: 0 10px;
+}
+
+.chrome-landing-page .group:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.chrome-landing-page .align-center {
+    text-align: center;
+}
+
+.chrome-landing-page .align-right {
+    text-align: right;
+}
+
+.chrome-landing-page .float-left {
+    float: left;
+}
+
+.chrome-landing-page .hide {
+    display: none !important;
+}
+
+.chrome-landing-page iframe {
+    border: none;
+}
+
+.modal-enter {
+  transform(translate3d(0, 100%, 0));
+}
+
+.modal-enter.modal-enter-active {
+   transform(translate3d(0, 0, 0));
+   transition(all 400ms cubic-bezier(.1, .7, .1, 1));
+}
+
+.modal-leave {
+   transform(translate3d(0, 100%, 0));
+   transition(all 250ms ease-in-out);
+}

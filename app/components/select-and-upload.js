@@ -19,7 +19,7 @@ export default class SelectAndUpload extends React.Component {
 
   componentWillMount() {
     var token = localStorage.token;
-    request('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data1) {
+    request('http://api.feature.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data1) {
       var activeFolder = data1.results.map((f)=> f.id).indexOf(this.state.activeFolder.id) == -1 ? data1.results.filter((fol) => fol.title == "My boards")[0] : this.state.activeFolder;
 
       this.setState({
@@ -28,7 +28,7 @@ export default class SelectAndUpload extends React.Component {
       });
       localStorage.folders = JSON.stringify( data1.results);
 
-      request('http://api.codesign.io/folders/'+ activeFolder.id + '/boards/', 'GET', {"Authorization": 'Token ' + token}, null, function (data2) {
+      request('http://api.feature.codesign.io/folders/'+ activeFolder.id + '/boards/', 'GET', {"Authorization": 'Token ' + token}, null, function (data2) {
         var activeBoard = data2.results.map((b)=> b.id).indexOf(this.state.activeBoard.id) == -1 ?  {id: 'new_board'} : this.state.activeBoard;
 
 
@@ -56,7 +56,7 @@ export default class SelectAndUpload extends React.Component {
     var token = localStorage.token;
     var activeFolder =  this.state.folders.filter((f)=> f.id == parseInt(e.target.value))[0];
     this.setState({selectActiveFolder: activeFolder});
-    request('http://api.codesign.io/folders/'+ activeFolder.id + '/boards/', 'GET', {"Authorization": 'Token ' + token}, null, function (data) {
+    request('http://api.feature.codesign.io/folders/'+ activeFolder.id + '/boards/', 'GET', {"Authorization": 'Token ' + token}, null, function (data) {
       this.state.boards[activeFolder.id] = data.results;
       localStorage.boards = JSON.stringify(this.state.boards);
       this.setState({activeBoard: {id: 'new_board'}});
