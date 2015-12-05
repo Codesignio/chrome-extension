@@ -115,7 +115,7 @@ function checkLiveUrl(url, callB) {
 }
 
 function checkChromeInstalled(url){
-  if (url && url == '/chrome' || window.location.pathname == '/chrome') {
+  if (url && url == '/chrome' || window.location.pathname == '/chrome' && !window.location.search) {
     window.location = '/chrome?already_installed'
   }
 }
@@ -143,11 +143,14 @@ function replacePushState(){
 if (window.location.toString().match(/codesign.io|localhost:3000\//)){
   document.addEventListener("DOMContentLoaded", function(){
     var headID = document.getElementsByTagName("head")[0];
-    var newScript = document.createElement('script');
-    newScript.type = 'text/javascript';
-    newScript.innerHTML = checkChromeInstalled.toString() + ' ;' + checkLiveUrl.toString() + '; ' + replacePushState.toString() + '; replacePushState();';
-    headID.appendChild(newScript);
+    if (headID) {
+      var newScript = document.createElement('script');
+      newScript.type = 'text/javascript';
+      newScript.innerHTML = checkChromeInstalled.toString() + ' ;' + checkLiveUrl.toString() + '; ' + replacePushState.toString() + '; replacePushState();';
+      headID.appendChild(newScript);
+    }
   });
+
 }
 
 checkChromeInstalled();
