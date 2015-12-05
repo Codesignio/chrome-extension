@@ -98,7 +98,7 @@
 	      unsupported: false,
 	      currentAction: localStorage.currentAction,
 	      showHideIcon: [],
-	      me: JSON.parse(localStorage.me),
+	      me: JSON.parse(localStorage.me || '{}'),
 	      currentLiveBoard: JSON.parse(localStorage.currentLiveBoard || '{}')
 	    };
 	    return _this;
