@@ -1,7 +1,7 @@
 {
-  "name": "Codesign.io",
+  "name": "Screen capture and live annotations (by Codesign)",
   "description": "The simplest feedback tool for live web-sites",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "content_security_policy": "script-src 'self' 'unsafe-eval' https://widget.intercom.io/ https://js.intercomcdn.com/; object-src 'self' ",
   "permissions": [
     "tabs",
