@@ -109,7 +109,7 @@ export default class LoginForm extends React.Component {
           <div>
             {this.state.status && <p>{this.state.status}</p>}
             <div className="title">{signUpOrLogIn ? 'Sign Up' : 'Log In'}</div>
-            <div>
+            {/*<div>
               <a onClick={this.handleOauth.bind(this)} href="https://www.facebook.com/dialog/oauth?scope=email&client_id=528390150556681&redirect_uri=http://www.codesign.io/?oauthProvider=facebook&state=/" className="facebook-login-btn">
                 <span>{signUpOrLogIn ? 'Sign Up' : 'Log In'}</span>
                 <span> with Facebook</span></a>
@@ -117,7 +117,7 @@ export default class LoginForm extends React.Component {
                 <span>or </span>
                 <a onClick={this.handleOauth.bind(this)} href="https://accounts.google.com/o/oauth2/auth?response_type=code&scope=openid%20email&client_id=577728361914-n4k1d2unaaqpje4r5pfivs7p3n095at8.apps.googleusercontent.com&redirect_uri=http://www.codesign.io/?oauthProvider=google&state=/" className="google">Google</a>
                 </div>
-            </div>
+            </div> */}
             <form className="auth-form">
               <span className="auth-form-title">or {signUpOrLogIn ? 'Sign Up' : 'Log In'} with Email</span>
               <div className="inputs">

@@ -1,3 +1,4 @@
+var webpack = require("webpack");
 var path = require('path');
 module.exports = {
   entry: './app/app.js',
@@ -16,5 +17,8 @@ module.exports = {
       },
       { test: /\.css$/, loader: "raw-loader" },
     ]
-  }
+  },
+  plugins: [
+    new webpack.optimize.UglifyJsPlugin({minimize: true})
+  ]
 };

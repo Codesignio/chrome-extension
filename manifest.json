@@ -1,7 +1,8 @@
 {
-  "name": "Screen capture and live annotations (by Codesign)",
-  "description": "The simplest feedback tool for live web-sites",
-  "version": "1.1.11",
+  "name": "Full page screen capture, visual annotations",
+  "short_name": "Codesign.io",
+  "description": "Leave single-click visual feedback everywhere on the web. Share live-links on your comments or make full page screenshots with them!",
+  "version": "1.1.12",
   "content_security_policy": "script-src 'self' 'unsafe-eval' https://widget.intercom.io/ https://js.intercomcdn.com/; object-src 'self' ",
   "permissions": [
     "tabs",
