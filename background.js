@@ -82,6 +82,7 @@ var sendedrequest = {};
 var cropData = null;
 var startOauth;
 var cancelRequest;
+var firstAuthorization;
 
 import {request as httprequest} from './app/utils';
 import {s3Upload} from './app/utils';
@@ -152,7 +153,8 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
       localStorage.token = request.token;
       chrome.tabs.getSelected(null, function (tab) {
         chrome.tabs.remove(tab.id);
-        chrome.tabs.create({'url': 'http://www.codesign.io/chrome?successfully-installed'}, function (tab) {
+
+        !firstAuthorization && chrome.tabs.create({'url': 'http://www.codesign.io/extension-successfully-installed'}, function (tab) {
           var token = localStorage.token;
           httprequest('http://api.codesign.io/users/me/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
             localStorage.me = JSON.stringify(data);
@@ -185,7 +187,8 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
       })
     } else {
       chrome.tabs.getSelected(null, function (tab) {
-        chrome.tabs.update(tab.id, {url: chrome.extension.getURL('login.html')})
+        firstAuthorization = true;
+        chrome.tabs.update(tab.id, {url: 'http://www.codesign.io/chrome?extension-authorization'})
       })
     }
     startOauth = null;

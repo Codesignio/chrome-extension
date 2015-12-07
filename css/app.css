@@ -1,26 +1,13 @@
 @charset "UTF-8";
 @font-face {
-    font-family: "AvenirLTStd-Medium";
-    src: url("/landing/fonts/AvenirLTStd-Medium.eot");
-    src: url("/landing/fonts/AvenirLTStd-Medium.eot?#iefix") format("embedded-opentype"), url("/landing/fonts/AvenirLTStd-Medium.woff") format("woff"), url("/landing/fonts/AvenirLTStd-Medium.ttf") format("truetype"), url("/landing/fonts/AvenirLTStd-Medium.svg#AvenirLTStd-Medium") format("svg");
+    font-family: avenir-next;
+    src: url('./fonts/AvenirNextCyr-Regular.otf');
+}
+
+@font-face {
+    font-family: avenir-next;
+    src: url('./fonts/AvenirNextCyr-Bold.otf');
     font-weight: bold;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: "AvenirLTStd-Light";
-    src: url("/landing/fonts/AvenirLTStd-Light.eot");
-    src: url("/landing/fonts/AvenirLTStd-Light.eot?#iefix") format("embedded-opentype"), url("/landing/fonts/AvenirLTStd-Light.woff") format("woff"), url("/landing/fonts/AvenirLTStd-Light.ttf") format("truetype"), url("/landing/fonts/AvenirLTStd-Light.svg#AvenirLTStd-Light") format("svg");
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: "AvenirLTStd-Black";
-    src: url("/landing/fonts/AvenirLTStd-Black.eot");
-    src: url("/landing/fonts/AvenirLTStd-Black.eot?#iefix") format("embedded-opentype"), url("/landing/fonts/AvenirLTStd-Black.woff") format("woff"), url("/landing/fonts/AvenirLTStd-Black.ttf") format("truetype"), url("/landing/fonts/AvenirLTStd-Black.svg#AvenirLTStd-Black") format("svg");
-    font-weight: normal;
-    font-style: normal;
 }
 
 
@@ -34,7 +21,7 @@
     box-sizing: border-box;
 
 
-    font-family: "AvenirLTStd-Light", sans-serif;
+    font-family: avenir-next, sans-serif;
     -webkit-font-smoothing: subpixel-antialiased;
 }
 body {

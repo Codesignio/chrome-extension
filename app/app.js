@@ -51,8 +51,7 @@ class App extends React.Component {
     });
 
     if (!localStorage.token){
-      chrome.tabs.create({'url': chrome.extension.getURL('login.html')}, function (tab) {
-      });
+      chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
     }
 
     chrome.browserAction.setBadgeText({text: this.state.capturedImages.length ? this.state.capturedImages.length.toString() : ''});
@@ -155,7 +154,7 @@ class App extends React.Component {
     this.setState({token: null});
     localStorage.token = '';
     chrome.runtime.sendMessage({msg: 'logOutUser'});
-    chrome.tabs.create({'url': chrome.extension.getURL('login.html')}, function (tab) {
+    chrome.tabs.create({'url': 'http://www.codesign.io/chrome?extension-authorization'}, function (tab) {
     });
   }
 
