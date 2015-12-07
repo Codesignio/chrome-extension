@@ -51,10 +51,11 @@ class App extends React.Component {
     });
 
     if (!localStorage.token){
+      if (localStorage.firstAuthorization == 'true')  chrome.browserAction.setBadgeText({text: 'press me'});
       chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
+    } else {
+      chrome.browserAction.setBadgeText({text: this.state.capturedImages.length ? this.state.capturedImages.length.toString() : ''});
     }
-
-    chrome.browserAction.setBadgeText({text: this.state.capturedImages.length ? this.state.capturedImages.length.toString() : ''});
     var me = this;
 
     chrome.tabs.getSelected(null, function(tab) {
@@ -290,7 +291,7 @@ class App extends React.Component {
             }.bind(this))}
           </div>
           <div className="history-buttons">
-          {this.state.checkedImages.length ? <div onClick={this.uploadChecked.bind(this)} id="uploadButton" style={{marginBottom: '10px'}}>UPLOAD{this.state.checkedImages.length > 1 ? this.state.checkedImages.length + ' IMAGES' : ' IMAGE'}</div> : null}
+          {this.state.checkedImages.length ? <div onClick={this.uploadChecked.bind(this)} id="uploadButton" style={{marginBottom: '10px'}}>UPLOAD {this.state.checkedImages.length > 1 ? this.state.checkedImages.length + ' IMAGES' : ' IMAGE'}</div> : null}
           <div className="back-to-actions" onClick={()=> this.setState({status: 'actions'})}>← Back to menu</div>
             </div>
         </div>
