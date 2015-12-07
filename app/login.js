@@ -24,7 +24,7 @@ export default class LoginForm extends React.Component {
     if(this.state.signUpOrLogIn){
       var xhr = new XMLHttpRequest();
       var json = JSON.stringify({"username": me.refs.email.value, "password1": me.refs.password.value, "password2": me.refs.password.value});
-      xhr.open("POST", 'http://api.feature.codesign.io/users/registration/', true);
+      xhr.open("POST", 'http://api.codesign.io/users/registration/', true);
       xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
       xhr.onreadystatechange = function() {
         if (xhr.readyState != 4) return;
@@ -35,7 +35,7 @@ export default class LoginForm extends React.Component {
 
           var xhr2 = new XMLHttpRequest();
           var json = JSON.stringify({"username": me.refs.email.value, "password": me.refs.password.value});
-          xhr2.open("POST", 'http://api.feature.codesign.io/users/token/username/', true);
+          xhr2.open("POST", 'http://api.codesign.io/users/token/username/', true);
           xhr2.setRequestHeader('Content-type', 'application/json; charset=utf-8');
           xhr2.onreadystatechange = function() {
             if (xhr2.readyState != 4) return;
@@ -49,7 +49,7 @@ export default class LoginForm extends React.Component {
 
               var xhr3 = new XMLHttpRequest();
               var json = JSON.stringify({"first_name": me.refs.name.value});
-              xhr3.open("PUT", 'http://api.feature.codesign.io/users/me/', true);
+              xhr3.open("PUT", 'http://api.codesign.io/users/me/', true);
               xhr3.setRequestHeader('Content-type', 'application/json; charset=utf-8');
               xhr3.setRequestHeader('Authorization',  'Token ' + token);
               xhr3.onreadystatechange = function() {
@@ -74,7 +74,7 @@ export default class LoginForm extends React.Component {
     } else {
       var xhr = new XMLHttpRequest();
       var json = JSON.stringify({username: this.refs.email.value, password: this.refs.password.value});
-      xhr.open("POST", 'http://api.feature.codesign.io/users/token/username/', true);
+      xhr.open("POST", 'http://api.codesign.io/users/token/username/', true);
       xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
       xhr.onreadystatechange = function() {
         if (xhr.readyState != 4) return;
@@ -174,8 +174,8 @@ export default class LoginForm extends React.Component {
               </div>
               <div className="col-50 align-right">
                 <nav className="main-nav">
-                  <a href="http://web.feature.codesign.io/about/?" className="main-nav-link">About</a>
-                  <a href="http://web.feature.codesign.io/jobs/?" className="main-nav-link">Jobs</a>
+                  <a href="http://www.codesign.io/about/?" className="main-nav-link">About</a>
+                  <a href="http://www.codesign.io/jobs/?" className="main-nav-link">Jobs</a>
                   <a className="main-nav-link" href="javascript:void(0)" onClick={this.showLogin.bind(this)}>
                     Log in
                   </a>

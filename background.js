@@ -108,10 +108,10 @@ chrome.contextMenus.create({
 
 
 chrome.runtime.onInstalled.addListener(function(){
-  chrome.tabs.create({'url': 'http://web.feature.codesign.io/checkauthorization'}, function (tab) {});
+  chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
 });
 
-chrome.runtime.setUninstallURL('http://web.feature.codesign.io/uninstalled');
+chrome.runtime.setUninstallURL('http://www.codesign.io/uninstalled');
 
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
@@ -152,21 +152,21 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
       localStorage.token = request.token;
       chrome.tabs.getSelected(null, function (tab) {
         chrome.tabs.remove(tab.id);
-        chrome.tabs.create({'url': 'http://web.feature.codesign.io/chrome?successfully-installed'}, function (tab) {
+        chrome.tabs.create({'url': 'http://www.codesign.io/chrome?successfully-installed'}, function (tab) {
           var token = localStorage.token;
-          httprequest('http://api.feature.codesign.io/users/me/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+          httprequest('http://api.codesign.io/users/me/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
             localStorage.me = JSON.stringify(data);
             CoIntercom.boot(data.user.id, data.user.first_name, data.user.date_joined);
             CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
           });
 
-/*          httprequest('http://api.feature.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+/*          httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
 
             var folders = data.results;
             var sharedFolder = data.results.filter((fol) => fol.title == "My live boards")[0];
 
             if (!sharedFolder) {
-              httprequest('http://api.feature.codesign.io/folders/', 'POST', {
+              httprequest('http://api.codesign.io/folders/', 'POST', {
                 "Authorization": 'Token ' + token,
                 "Content-Type": "application/json;charset=UTF-8"
               }, {
@@ -181,7 +181,7 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
           })*/
 
         });
-        if (!request.fromSite) chrome.tabs.create({'url': 'http://web.feature.codesign.io/syncauthorization', selected: false}, function (tab) {});
+        if (!request.fromSite) chrome.tabs.create({'url': 'http://www.codesign.io/syncauthorization', selected: false}, function (tab) {});
       })
     } else {
       chrome.tabs.getSelected(null, function (tab) {
@@ -403,7 +403,7 @@ function sendRequestPin(request, sender, callback){
     var method = pin.updated ? 'PUT' : 'POST';
     var urlPart = method == 'POST' ? 'posts/' + post.id + '/tasks/' : 'tasks/'+ pin.id;
 
-    httprequest('http://api.feature.codesign.io/' + urlPart, pin.updated ? 'PUT' :'POST', {
+    httprequest('http://api.codesign.io/' + urlPart, pin.updated ? 'PUT' :'POST', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {
@@ -430,7 +430,7 @@ function sendRequestPin(request, sender, callback){
     var method = pin.updated ? 'PUT' : 'POST';
     var urlPart = method == 'POST' ? 'tasks/' + request.parentPin.id + '/comments/' : 'comments/'+ pin.id;
 
-      httprequest('http://api.feature.codesign.io/'+ urlPart, method , {
+      httprequest('http://api.codesign.io/'+ urlPart, method , {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {
@@ -443,14 +443,14 @@ function sendRequestPin(request, sender, callback){
 
   } else if (request.msg == 'deletePin'){
 
-    httprequest('http://api.feature.codesign.io/tasks/' + pin.id, 'DELETE', {
+    httprequest('http://api.codesign.io/tasks/' + pin.id, 'DELETE', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {}, function (data) {})
 
   } else if (request.msg == 'deleteComment'){
 
-    httprequest('http://api.feature.codesign.io/comments/' + pin.id, 'DELETE', {
+    httprequest('http://api.codesign.io/comments/' + pin.id, 'DELETE', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {}, function (data) {})
@@ -459,7 +459,7 @@ function sendRequestPin(request, sender, callback){
   } else if (request.msg == 'completePin'){
 
 
-    httprequest('http://api.feature.codesign.io/tasks/'+ pin.id, 'PUT', {
+    httprequest('http://api.codesign.io/tasks/'+ pin.id, 'PUT', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {
@@ -484,7 +484,7 @@ function sendRequestPin(request, sender, callback){
       task: pin.id
     };
 
-    httprequest('http://api.feature.codesign.io/markers/'+ pin.id, 'PUT', {
+    httprequest('http://api.codesign.io/markers/'+ pin.id, 'PUT', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, payLoadData , function (data) {});
@@ -498,11 +498,11 @@ function sendRequestPin(request, sender, callback){
 function loadBoardData(req, sender, sendResponse){
   var token = localStorage.token;
   var code = req.boardCode;
-  httprequest('http://api.feature.codesign.io/get_board/?code='+code, 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+  httprequest('http://api.codesign.io/get_board/?code='+code, 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
 
     var url = data.board.description.match(/url:(.+)\s/)[1];
 
-    var liveUrl ='http://web.feature.codesign.io/live/'+ code;
+    var liveUrl ='http://www.codesign.io/live/'+ code;
     var boardThumbnail = data.board.posts[0].images[0];
     var capturedImage = {
       link: boardThumbnail && boardThumbnail.thumbnail_url,
@@ -550,13 +550,13 @@ function shareImage (req, sender, sendResponse){
   var capturedImages = JSON.parse(localStorage.capturedImages);
   var sharedImage = capturedImages.filter((img)=> img.link == req.image.link)[0];
 
-  httprequest('http://api.feature.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
+  httprequest('http://api.codesign.io/folders/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
 
     var folders = data.results;
     var sharedFolder = data.results.filter((fol) => fol.title == "My live boards")[0];
 
     if (!sharedFolder){
-      httprequest('http://api.feature.codesign.io/folders/', 'POST', {"Authorization": 'Token ' +  token, "Content-Type": "application/json;charset=UTF-8"}, {
+      httprequest('http://api.codesign.io/folders/', 'POST', {"Authorization": 'Token ' +  token, "Content-Type": "application/json;charset=UTF-8"}, {
 
         title: "My live boards",
         personal: true,
@@ -570,12 +570,12 @@ function shareImage (req, sender, sendResponse){
 
 
     function createSharedPage(sharedFolder){
-      httprequest('http://api.feature.codesign.io/folders/'+ sharedFolder.id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+      httprequest('http://api.codesign.io/folders/'+ sharedFolder.id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
         title: sharedImage.pageTitle,
         description: 'url:'+ sharedImage.url + ' #liveboard'
       }, function (boardData) {
 
-        httprequest('http://api.feature.codesign.io/boards/'+ boardData.id + '/posts/', 'POST', {
+        httprequest('http://api.codesign.io/boards/'+ boardData.id + '/posts/', 'POST', {
           "Authorization": 'Token ' + token,
           "Content-Type": "application/json;charset=UTF-8"
         }, {
@@ -589,7 +589,7 @@ function shareImage (req, sender, sendResponse){
           }
 
 
-          httprequest('http://api.feature.codesign.io/posts/'+ postData.id + '/images/get_upload_url/?filename='+ sharedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
+          httprequest('http://api.codesign.io/posts/'+ postData.id + '/images/get_upload_url/?filename='+ sharedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
             console.log(data1);
 
             window.webkitResolveLocalFileSystemURL(sharedImage.link, function(fileEntry){
@@ -607,7 +607,7 @@ function shareImage (req, sender, sendResponse){
                     var blob =  dataURItoBlob(canvas.toDataURL());
                     s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {
 
-                      httprequest('http://api.feature.codesign.io/posts/'+ postData.id +'/images/', 'POST', {
+                      httprequest('http://api.codesign.io/posts/'+ postData.id +'/images/', 'POST', {
                         "Authorization": 'Token ' + token,
                         "Content-Type": "application/json;charset=UTF-8"
                       }, {
@@ -637,7 +637,7 @@ function shareImage (req, sender, sendResponse){
           var reqCount = 0;
           for (var i = 0; i < sharedImage.pins.length;i++) {
             var pin = sharedImage.pins[i];
-            httprequest('http://api.feature.codesign.io/posts/' + postData.id + '/tasks/', 'POST', {
+            httprequest('http://api.codesign.io/posts/' + postData.id + '/tasks/', 'POST', {
               "Authorization": 'Token ' + token,
               "Content-Type": "application/json;charset=UTF-8"
             }, {
@@ -661,7 +661,7 @@ function shareImage (req, sender, sendResponse){
                 reqCount++;
                 if (reqCount == sharedImage.pins.length) {
 
-                  var url = 'http://web.feature.codesign.io/live/'+boardData.client_code;
+                  var url = 'http://www.codesign.io/live/'+boardData.client_code;
                   sharedImage.sharedLink = url;
                   localStorage.capturedImages = JSON.stringify(capturedImages);
                   chrome.runtime.sendMessage({msg: 'sharedImage', url: url});
@@ -683,7 +683,7 @@ function shareImage (req, sender, sendResponse){
                     var comment = pin.children[i];
 
 
-                    httprequest('http://api.feature.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
+                    httprequest('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
                       "Authorization": 'Token ' + token,
                       "Content-Type": "application/json;charset=UTF-8"
                     }, {
@@ -700,7 +700,7 @@ function shareImage (req, sender, sendResponse){
               }
 
               if (pin.completed){
-                httprequest('http://api.feature.codesign.io/tasks/'+ data3.id, 'PUT', {
+                httprequest('http://api.codesign.io/tasks/'+ data3.id, 'PUT', {
                   "Authorization": 'Token ' + token,
                   "Content-Type": "application/json;charset=UTF-8"
                 }, {
@@ -745,7 +745,7 @@ function uploadImages(req, sender, sendResponse){
 
 
   if(activeBoard.id == 'new_board'){
-    httprequest('http://api.feature.codesign.io/folders/'+ activeFolder.id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
+    httprequest('http://api.codesign.io/folders/'+ activeFolder.id + '/boards/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8" }, {
       title: capturedImages[0].pageTitle
     }, function (data) {
       activeBoard = data;
@@ -754,7 +754,7 @@ function uploadImages(req, sender, sendResponse){
 
   } else {
 
-    httprequest('http://api.feature.codesign.io/boards/' + activeBoard.id + '/posts/', 'GET', {"Authorization": 'Token ' + token}, null, function (data) {
+    httprequest('http://api.codesign.io/boards/' + activeBoard.id + '/posts/', 'GET', {"Authorization": 'Token ' + token}, null, function (data) {
       posts = data.results;
       uploadImageProcess(activeBoard,posts, logCallBack);
     });
@@ -772,14 +772,14 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
     var hasShared = capturedImage.sharedLink;
     var liveBoardLabel = hasShared ? ' liveboard' : '';
 
-    httprequest('http://api.feature.codesign.io/boards/'+ activeBoard.id + '/posts/', 'POST', {
+    httprequest('http://api.codesign.io/boards/'+ activeBoard.id + '/posts/', 'POST', {
       "Authorization": 'Token ' + token,
       "Content-Type": "application/json;charset=UTF-8"
     }, {
       title: capturedImage.url + " " + (new Date).toString() + liveBoardLabel
     }, function (data) {
       console.log(data);
-      httprequest('http://api.feature.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
+      httprequest('http://api.codesign.io/posts/'+ data.id + '/images/get_upload_url/?filename='+ capturedImage.name +'&image_type=image%2Fjpeg&thumbnail_type=image%2Fjpeg', 'GET', {"Authorization": 'Token ' + token}, null, function (data1) {
         console.log(data1);
 
         window.webkitResolveLocalFileSystemURL(capturedImage.link, function(fileEntry){
@@ -797,7 +797,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                 var blob =  dataURItoBlob(canvas.toDataURL());
                 s3Upload(data1.thumbnail_upload_url, blob, logCallBack, function () {
 
-                  httprequest('http://api.feature.codesign.io/posts/'+ data.id +'/images/', 'POST', {
+                  httprequest('http://api.codesign.io/posts/'+ data.id +'/images/', 'POST', {
                     "Authorization": 'Token ' + token,
                     "Content-Type": "application/json;charset=UTF-8"
                   }, {
@@ -807,7 +807,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                     height: capturedImage.size.height
                   }, function (data3) {
 
-                    httprequest('http://api.feature.codesign.io/boards/'+ activeBoard.id + '/update_order/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
+                    httprequest('http://api.codesign.io/boards/'+ activeBoard.id + '/update_order/', 'POST', {"Authorization": 'Token ' + token, "Content-Type": "application/json;charset=UTF-8"}, {
                       keys: posts.map((post)=> post.id).concat(data.id)
                     }, function () {
 
@@ -817,7 +817,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                         var reqCount = 0;
                         for (var i = 0; i < capturedImage.pins.length;i++) {
                           var pin = capturedImage.pins[i];
-                          httprequest('http://api.feature.codesign.io/posts/' + data.id + '/tasks/', 'POST', {
+                          httprequest('http://api.codesign.io/posts/' + data.id + '/tasks/', 'POST', {
                             "Authorization": 'Token ' + token,
                             "Content-Type": "application/json;charset=UTF-8"
                           }, {
@@ -840,11 +840,11 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                             function CompleteRequest(){
                               reqCount++;
                               if (reqCount == capturedImage.pins.length) {
-                                track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://web.feature.codesign.io/board/" + activeBoard.client_code});
+                                track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://www.codesign.io/board/" + activeBoard.client_code});
                                 capImgCount++;
 
                                 if (capImgCount == capturedImages.length) {
-                                  window.open("http://web.feature.codesign.io/board/" + activeBoard.client_code);
+                                  window.open("http://www.codesign.io/board/" + activeBoard.client_code);
                                   chrome.browserAction.setBadgeText({text: ''});
                                   localStorage.capturedImages = '[]';
                                 }
@@ -862,7 +862,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                                   var comment = pin.children[i];
 
 
-                                  httprequest('http://api.feature.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
+                                  httprequest('http://api.codesign.io/tasks/' + data3.id + '/comments/', 'POST', {
                                     "Authorization": 'Token ' + token,
                                     "Content-Type": "application/json;charset=UTF-8"
                                   }, {
@@ -879,7 +879,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                             }
 
                             if (pin.completed){
-                              httprequest('http://api.feature.codesign.io/tasks/'+ data3.id, 'PUT', {
+                              httprequest('http://api.codesign.io/tasks/'+ data3.id, 'PUT', {
                                 "Authorization": 'Token ' + token,
                                 "Content-Type": "application/json;charset=UTF-8"
                               }, {
@@ -906,7 +906,7 @@ function uploadImageProcess(activeBoard,posts, logCallBack){
                         capImgCount++;
 
                         if(capImgCount == capturedImages.length){
-                          window.open("http://web.feature.codesign.io/board/" + activeBoard.client_code);
+                          window.open("http://www.codesign.io/board/" + activeBoard.client_code);
                           chrome.browserAction.setBadgeText({text: ''});
                           localStorage.capturedImages = '[]';
                         }

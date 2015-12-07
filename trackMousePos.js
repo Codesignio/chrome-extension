@@ -63,7 +63,7 @@ function checkUrl(url) {
 
               var xhr = new XMLHttpRequest();
               var json = JSON.stringify({access_token: access_token});
-              xhr.open("POST", 'http://api.feature.codesign.io/users/token/' + urlProvider + '/', true);
+              xhr.open("POST", 'http://api.codesign.io/users/token/' + urlProvider + '/', true);
               xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
               xhr.onreadystatechange = function () {
                 if (xhr.readyState != 4) return;

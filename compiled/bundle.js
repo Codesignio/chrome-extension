@@ -448,7 +448,7 @@
 	              { className: 'links' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'http://web.feature.codesign.io/dashboard/', target: '_blank' },
+	                { href: 'http://www.codesign.io/dashboard/', target: '_blank' },
 	                'Dashboard'
 	              ),
 	              this.state.images.length ? _react2.default.createElement(
@@ -20435,7 +20435,7 @@
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
 	      var token = localStorage.token;
-	      (0, _utils.request)('http://api.feature.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data1) {
+	      (0, _utils.request)('http://api.codesign.io/folders/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data1) {
 	        var activeFolder = data1.results.map(function (f) {
 	          return f.id;
 	        }).indexOf(this.state.activeFolder.id) == -1 ? data1.results.filter(function (fol) {
@@ -20448,7 +20448,7 @@
 	        });
 	        localStorage.folders = JSON.stringify(data1.results);
 
-	        (0, _utils.request)('http://api.feature.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
+	        (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data2) {
 	          var activeBoard = data2.results.map(function (b) {
 	            return b.id;
 	          }).indexOf(this.state.activeBoard.id) == -1 ? { id: 'new_board' } : this.state.activeBoard;
@@ -20478,7 +20478,7 @@
 	        return f.id == parseInt(e.target.value);
 	      })[0];
 	      this.setState({ selectActiveFolder: activeFolder });
-	      (0, _utils.request)('http://api.feature.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data) {
+	      (0, _utils.request)('http://api.codesign.io/folders/' + activeFolder.id + '/boards/', 'GET', { "Authorization": 'Token ' + token }, null, (function (data) {
 	        this.state.boards[activeFolder.id] = data.results;
 	        localStorage.boards = JSON.stringify(this.state.boards);
 	        this.setState({ activeBoard: { id: 'new_board' } });
