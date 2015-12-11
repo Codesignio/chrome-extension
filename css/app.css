@@ -301,11 +301,10 @@ img {
     font-size: 13px;
     font-weight: 300;
     outline: none;
-    justify-content: center;
-    display: flex;
     cursor: pointer;
     margin-left: 20px;
     color: black;
+    overflow: visible;
 }
 
 
