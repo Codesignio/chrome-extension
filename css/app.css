@@ -422,7 +422,7 @@ form {
 .imagesList {
     background-color: white;
     overflow: auto;
-    max-height: 500px;
+    max-height: 450px;
 }
 
 #images-list .checkbox {

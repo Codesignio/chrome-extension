@@ -2,7 +2,7 @@
   "name": "Full page screen capture, visual annotations",
   "short_name": "Codesign.io",
   "description": "Project management tool for visual feedback. Discuss web pages, upload designs & screenshots. Get to-dos done in collaborative way.",
-  "version": "1.1.14",
+  "version": "1.1.16",
   "content_security_policy": "script-src 'self' 'unsafe-eval' https://widget.intercom.io/ https://js.intercomcdn.com/; object-src 'self' ",
   "permissions": [
     "tabs",
@@ -24,7 +24,7 @@
   },
   "content_scripts":[
     {
-      "matches":["*://*/*","file:///*"],
+      "matches":["*://*/*"],
       "js":["trackMousePos.js"],
       "run_at": "document_start"
     }
