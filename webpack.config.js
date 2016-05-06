@@ -8,10 +8,9 @@ var config = {
 
   entry: {
     app: './app/popup/popup.js',
-    comment: './app/page_script/comment.js',
     background: './app/background/background.js',
     snap: './app/page_script/snap.js',
-    track_mouse: './app/page_script/track_mouse.js',
+    auth_hook: './app/page_script/auth_hook.js',
     scroll_page: './app/page_script/scroll_page.js'
   },
   output: {

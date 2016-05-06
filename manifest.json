@@ -25,7 +25,7 @@
   "content_scripts":[
     {
       "matches":["*://*/*"],
-      "js":["build/track_mouse.js"],
+      "js":["build/auth_hook.js"],
       "run_at": "document_start"
     }
   ],

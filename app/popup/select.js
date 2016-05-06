@@ -1,7 +1,5 @@
 const React = require('react');
 const {request} = require('./../utils');
-const {s3Upload} = require( './../utils');
-const {dataURItoBlob} = require( './../utils');
 
 class SelectAndUpload extends React.Component {
   constructor(props) {
