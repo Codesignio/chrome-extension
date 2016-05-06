@@ -1,82 +1,3 @@
-import assign from 'object-assign';
-
-(function () {
-  var w = window;
-  var ic = w.Intercom;
-  if (typeof ic === "function") {
-    ic('reattach_activator');
-    ic('update', intercomSettings);
-  } else {
-    var d = document;
-    var i = function () {
-      i.c(arguments)
-    };
-    i.q = [];
-    i.c = function (args) {
-      i.q.push(args)
-    };
-    w.Intercom = i;
-    function l() {
-      var s = d.createElement('script');
-      s.type = 'text/javascript';
-      s.async = true;
-      s.src = 'https://widget.intercom.io/widget/ufe67jbo';
-      var x = d.getElementsByTagName('script')[0];
-      x.parentNode.insertBefore(s, x);
-    }
-
-    if (w.attachEvent) {
-      w.attachEvent('onload', l);
-    } else {
-      w.addEventListener('load', l, false);
-    }
-  }
-})()
-
-
-
-
-
-
-
-
-
-function track (event, data) {
-  console.log('track ', event, data);
-  window.Intercom('trackEvent', event, data);
-}
-var CoIntercom = {
-  boot (id, name, email, created_at) {
-    console.log('Intercom.boot: start');
-    window.Intercom('boot', {
-      app_id: 'lid3oqje',
-      user_id: id,
-      name: name,
-      email: email,
-      created_at: created_at,
-      extension: true,
-    });
-
-    console.log('Intercom.boot: done');
-  },
-
-  shutdown () {
-    console.log('Intercom.shutdown');
-    window.Intercom('shutdown');
-  },
-
-    // facebook, github, email
-    loggedIn (data) {
-      track('#LOGGED IN VIA EXTENSION', data);
-    },
-
-    loggedOut (data) {
-      track('#LOGGED OUT VIA EXTENSION', data);
-    },
-};
-
-
-
 var screenshot = {};
 var sendedrequest = {};
 var cropData = null;
@@ -84,9 +5,11 @@ var startOauth;
 var cancelRequest;
 var firstAuthorization;
 
-import {request as httprequest} from './app/utils';
-import {s3Upload} from './app/utils';
-import {dataURItoBlob} from './app/utils';
+
+const {track, CoIntercom } = require('./analitics');
+const httprequest = require('./../utils').request
+const {s3Upload} = require('./../utils')
+const {dataURItoBlob} = require('./../utils');
 
 chrome.contextMenus.create({
   "title": "Add Comment",
@@ -97,7 +20,7 @@ chrome.contextMenus.create({
  function clickHandler(e) {
    chrome.tabs.getSelected(null, function (tab) {
      chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'}'}, function () {
-       chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+       chrome.tabs.executeScript(tab.id, {file: 'build/comment.js'}, function () {
          chrome.tabs.sendRequest(tab.id, {msg: 'contextMenu'}, function () {
          });
        });
@@ -227,7 +150,7 @@ chrome.runtime.onMessageExternal.addListener(
 
 function takeFullPageScreenshot(){
   chrome.tabs.getSelected(null, function (tab) {
-      chrome.tabs.executeScript(tab.id, {file: 'page.js'}, function () {
+      chrome.tabs.executeScript(tab.id, {file: 'build/scroll_page.js'}, function () {
         chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function () {
           track('#SNAPPED FULL PAGE', {"WEB_URL": tab.url, "PAGE-TITLE": tab.title});
           screenshotCaptured(screenshot, tab.url, tab.title)
@@ -508,7 +431,7 @@ function loadBoardData(req, sender, sendResponse){
           if (tabId == tab.id && info.status == "loading") {
             chrome.tabs.onUpdated.removeListener(UpdatedListener);
             chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'};'+ 'window.codesignPins = ' + JSON.stringify(pins) + ';'+ 'window.codesignBoardData = ' + JSON.stringify(data.board)}, function () {
-              chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+              chrome.tabs.executeScript(tab.id, {file: 'build/comment.js'}, function () {
                 chrome.tabs.sendRequest(tab.id, {msg: 'loadPins', liveUrl: url, webUrl: liveUrl}, function () {
                 });
               });

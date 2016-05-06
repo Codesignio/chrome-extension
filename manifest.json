@@ -15,7 +15,7 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": ["background-compiled.js"]
+    "scripts": ["build/background.js"]
   },
   "icons": {
     "16": "icon.png",
@@ -25,7 +25,7 @@
   "content_scripts":[
     {
       "matches":["*://*/*"],
-      "js":["trackMousePos.js"],
+      "js":["build/track_mouse.js"],
       "run_at": "document_start"
     }
   ],
@@ -34,7 +34,8 @@
     "matches": [
       "http://www.codesign.io/*",
       "http://localhost:3000/*",
-      "http://web.feature.codesign.io/*"
+      "http://web.feature.codesign.io/*",
+      "http://dev0.codesign.io/*"
     ]
   }
 }

@@ -1,10 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import cx from 'classnames';
-import assign from 'object-assign';
-import {request} from './utils';
-
-import SelectAndUpload from './components/select-and-upload';
+const React = require('react')
+const ReactDOM  = require('react-dom')
+const SelectAndUpload = require('./select')
 
 var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 
@@ -111,7 +107,7 @@ class App extends React.Component {
   snapScreen(){
     var me = this;
     chrome.tabs.getSelected(null, function (tab) {
-      chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/bundle.js'}, function () {
+      chrome.tabs.executeScript(tab.id, {file: 'build/snap.js'}, function () {
 
         if(!localStorage.okCropButton){
           me.setState({status: 'crop-click-title'});
@@ -126,7 +122,7 @@ class App extends React.Component {
     var me = this;
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'}'}, function () {
-        chrome.tabs.executeScript(tab.id, {file: 'page-script-compiled/comment.js'}, function () {
+        chrome.tabs.executeScript(tab.id, {file: 'build/comment.js'}, function () {
           if(!localStorage.okCommentButton){
             me.setState({status: 'comment-click-title'});
           } else {

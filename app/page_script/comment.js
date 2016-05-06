@@ -1,39 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import cx from 'classnames';
-import assign from 'object-assign';
-import {request} from './../app/utils';
-import cssString from "raw!./../pageStyles.css";
-import cssPath from "css-path";
-
-
-function elementsFromPoint(x,y) {
-  var elements = [], previousPointerEvents = [], current, i, d;
-
-  // get all elements via elementFromPoint, and remove them from hit-testing in order
-  while ((current = document.elementFromPoint(x,y)) && elements.indexOf(current)===-1 && current != null) {
-
-    // push the element and its current style
-    elements.push(current);
-    previousPointerEvents.push({
-      value: current.style.getPropertyValue('pointer-events'),
-      priority: current.style.getPropertyPriority('pointer-events')
-    });
-
-    // add "pointer-events: none", to get to the underlying element
-    current.style.setProperty('pointer-events', 'none', 'important');
-  }
-
-  // restore the previous pointer-events values
-  for(i = previousPointerEvents.length; d=previousPointerEvents[--i]; ) {
-    elements[i].style.setProperty('pointer-events', d.value?d.value:'', d.priority);
-  }
-
-  // return our results
-  return elements;
-}
-
-
+const React = require('react');
+const ReactDOM = require('react-dom');
+const cx = require('classnames');
+const cssString = require("raw!./../../pageStyles.css");
+const cssPath = require("css-path");
+const {elementsFromPoint} = require('../utils');
 
 
 class Frame extends React.Component{
@@ -43,7 +13,7 @@ class Frame extends React.Component{
   }
 
   render() {
-    return !this.state.cancel && React.createElement('iframe', assign({}, this.props, {children: undefined}));
+    return !this.state.cancel && React.createElement('iframe', {...this.props, children: undefined});
   }
   componentDidMount() {
     this.renderFrameContents();
@@ -113,7 +83,7 @@ class Comment extends React.Component {
     var me = this;
     chrome.extension.onRequest.addListener(function (request, sender, callback) {
       if (request.msg === 'contextMenu') {
-        me.newPin(assign(codeSignMousePos, {fromContextMenu: true}))
+        me.newPin({...codeSignMousePos, fromContextMenu: true})
       } else if(request.msg == 'removeOverlay'){
         var elem = document.getElementById('snap-overlay');
         if (elem){
@@ -144,11 +114,11 @@ class Comment extends React.Component {
     var timeSeg = (new Date(Date.parse(pin.date_created))).toString().split(' ');
     var time = timeSeg[4].split(':')[0] + ':' + timeSeg[4].split(':')[1] + ' ' + timeSeg[1] + ' ' + timeSeg[2];
 
-    var x, y, relativeX,relativeY;
+    var x, y, relativeX, relativeY;
     var cssPath = pin.markers && pin.markers[0].geometry.cssPath;
     var elem = document.querySelector(cssPath);
 
-    if (cssPath && elem){
+    if (cssPath && elem) {
       var elemRect = elem.getBoundingClientRect();
       relativeX = pin.markers && pin.markers[0].geometry.relativeX;
       relativeY = pin.markers && pin.markers[0].geometry.relativeY;
@@ -160,7 +130,7 @@ class Comment extends React.Component {
     }
 
 
-    return assign({
+    return {
       user: pin.creator,
       x: x,
       y: y,
@@ -171,9 +141,11 @@ class Comment extends React.Component {
       id: pin.id,
       text: pin.title,
       time: time,
-      added: true
-    }, attrs || {})
+      added: true,
+      ...attrs
+    }
   }
+  
 
 
   componentDidMount(){

@@ -1,9 +1,9 @@
-import React from 'react';
-import {request} from './../utils';
-import {s3Upload} from './../utils';
-import {dataURItoBlob} from './../utils';
+const React = require('react');
+const {request} = require('./../utils');
+const {s3Upload} = require( './../utils');
+const {dataURItoBlob} = require( './../utils');
 
-export default class SelectAndUpload extends React.Component {
+class SelectAndUpload extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -230,3 +230,5 @@ export default class SelectAndUpload extends React.Component {
     )
   }
 }
+
+module.exports = SelectAndUpload

@@ -1,24 +1,59 @@
-var webpack = require("webpack");
-var path = require('path');
-module.exports = {
-  entry: './app/app.js',
-  output: {
-    path: path.join(__dirname, 'compiled'),
-    filename: 'bundle.js'
+var path = require("path");
+var CleanWebpackPlugin = require('clean-webpack-plugin');
+var webpack = require('webpack');
+
+var config = {
+  devtool: process.env.NODE_ENV == 'production' ? false : 'source-map',
+
+
+  entry: {
+    app: './app/popup/popup.js',
+    comment: './app/page_script/comment.js',
+    background: './app/background/background.js',
+    snap: './app/page_script/snap.js',
+    track_mouse: './app/page_script/track_mouse.js',
+    scroll_page: './app/page_script/scroll_page.js'
   },
+  output: {
+    path: path.join(__dirname, 'build'),
+    filename: '[name].js'
+  },
+  
+  
   module: {
     loaders: [
       {
         test: /\.js$/,
-        loader: 'babel',
+        loader: "babel",
         query: {
-          presets: ['es2015','react']
-        }
-      },
-      { test: /\.css$/, loader: "raw-loader" },
+          presets: ["es2015", "stage-0", "react"]
+        },
+        exclude: /node_modules/
+      }
     ]
   },
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({minimize: true})
+    new webpack.EnvironmentPlugin(
+      Object.keys(process.env)
+    ),
+    new CleanWebpackPlugin(['build'], {
+      root: __dirname,
+      verbose: true,
+      dry: false
+    }),
   ]
 };
+
+if(process.env.NODE_ENV == 'production'){
+  config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+    compress: {
+      warnings: false,
+      drop_console: false,
+    },
+    mangle: true,
+    comments: /__drop__/
+    // stats: false
+  }))
+}
+
+module.exports = config

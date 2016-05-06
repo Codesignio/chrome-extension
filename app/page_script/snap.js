@@ -1,7 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import cx from 'classnames';
-import assign from 'object-assign';
+const React = require('react')
+const ReactDOM = require('react-dom')
 
 class Snap extends React.Component {
   constructor(props){
@@ -185,16 +183,16 @@ class Snap extends React.Component {
            onMouseMove={this.handleMouseMove.bind(this)}
            onMouseUp={this.handleMouseUp.bind(this)}>
 
-      {this.state.width && <div className="selection" onMouseDown={this.startDrag.bind(this)} style={assign({},selectionStyle)}>
+      {this.state.width && <div className="selection" onMouseDown={this.startDrag.bind(this)} style={{...selectionStyle}}>
           {this.state.select || this.state.resize ? null : [
-            <div key="resizer top" onMouseDown={this.startResize.bind(this, 'top')} className="resizer top" style={assign({}, resizerStyle, {top: 0, width: '100%', height: '2px', cursor: 'ns-resize'})}></div>,
-            <div key="resizer bottom" onMouseDown={this.startResize.bind(this, 'bottom')} className="resizer bottom" style={assign({}, resizerStyle, {bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize'})}></div>,
-            <div key="resizer left" onMouseDown={this.startResize.bind(this, 'left')} className="resizer left" style={assign({}, resizerStyle, {left: 0, width: '2px', height: '100%', cursor: 'ew-resize'})}></div>,
-            <div key="resizer right" onMouseDown={this.startResize.bind(this, 'right')} className="resizer right" style={assign({}, resizerStyle, {right: 0, width: '2px', height: '100%', cursor: 'ew-resize'})}></div>,
-            <div key="resizer top-left" onMouseDown={this.startResize.bind(this, 'top-left')} className="resizer top-left" style={assign({}, resizerStyle, {top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize'})}></div>,
-            <div key="resizer top-right" onMouseDown={this.startResize.bind(this, 'top-right')} className="resizer top-right" style={assign({}, resizerStyle, {top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize'})}></div>,
-            <div key="resizer bottom-right" onMouseDown={this.startResize.bind(this, 'bottom-right')} className="resizer bottom-right" style={assign({}, resizerStyle, {bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize'})}></div>,
-            <div key="resizer bottom-left" onMouseDown={this.startResize.bind(this, 'bottom-left')} className="resizer bottom-left" style={assign({}, resizerStyle, {bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize'})}></div>
+            <div key="resizer top" onMouseDown={this.startResize.bind(this, 'top')} className="resizer top" style={{...resizerStyle, top: 0, width: '100%', height: '2px', cursor: 'ns-resize'}}></div>,
+            <div key="resizer bottom" onMouseDown={this.startResize.bind(this, 'bottom')} className="resizer bottom" style={{...resizerStyle, bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize'}}></div>,
+            <div key="resizer left" onMouseDown={this.startResize.bind(this, 'left')} className="resizer left" style={{...resizerStyle, left: 0, width: '2px', height: '100%', cursor: 'ew-resize'}}></div>,
+            <div key="resizer right" onMouseDown={this.startResize.bind(this, 'right')} className="resizer right" style={{...resizerStyle, right: 0, width: '2px', height: '100%', cursor: 'ew-resize'}}></div>,
+            <div key="resizer top-left" onMouseDown={this.startResize.bind(this, 'top-left')} className="resizer top-left" style={{...resizerStyle, top: -4, left: -4, width: '8px', height: '8px', cursor: 'nwse-resize'}}></div>,
+            <div key="resizer top-right" onMouseDown={this.startResize.bind(this, 'top-right')} className="resizer top-right" style={{...resizerStyle, top: -4, right: -4, width: '8px', height: '8px', cursor: 'nesw-resize'}}></div>,
+            <div key="resizer bottom-right" onMouseDown={this.startResize.bind(this, 'bottom-right')} className="resizer bottom-right" style={{...resizerStyle, bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize'}}></div>,
+            <div key="resizer bottom-left" onMouseDown={this.startResize.bind(this, 'bottom-left')} className="resizer bottom-left" style={{...resizerStyle, bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize'}}></div>
           ]}
         </div>}
       </div>
