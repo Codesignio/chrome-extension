@@ -1,3 +1,6 @@
+require('babel-polyfill');
+window.Promise = require('bluebird');
+
 var screenshot = {};
 var sendedrequest = {};
 var cropData = null;
@@ -7,22 +10,32 @@ var firstAuthorization;
 
 
 const {track, CoIntercom } = require('./analitics');
-const httprequest = require('./../utils').request;
-const {dataURItoBlob} = require('./../utils');
+const httprequest = require('./../request');
+const {dataURItoBlob, randomStr} = require('./../utils');
 const genRunner = require('../genrunner');
 
 
 
 chrome.runtime.onInstalled.addListener(function(){
-  chrome.tabs.create({'url': 'http://dev0.codesign.io/checkauthorization'}, function (tab) {});
+  chrome.tabs.create({'url': 'http://dev0.codesign.io/checkauthorization'});
 });
 
-chrome.runtime.setUninstallURL('http://dev0.codesign.io/uninstalled');
+chrome.runtime.setUninstallURL('http://dev0.codesign.io/chrome?uninstalled=true');
 
 
-chrome.runtime.onMessage.addListener(function(request, sender, callback) {
+var getSelectedTab = function () {
+  return new Promise((resolve, reject)=>{
+    chrome.tabs.getSelected(null, function (tab) {
+      resolve(tab);
+    })
+  })
+}
 
-  genRunner(function* () {
+
+var messageListener = function(request, sender, callback) {
+
+  genRunner(function*() {
+    console.log('got message', request);
 
     if (request.msg === 'capturePage') {
       if (!cancelRequest) {
@@ -54,27 +67,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
 
     if (request.msg == 'stopOauth'){
       console.log('stopOauth');
+      var tab = yield getSelectedTab();
       if (request.token){
         localStorage.token = request.token;
-        chrome.tabs.getSelected(null, function (tab) {
-          chrome.tabs.remove(tab.id);
+        chrome.tabs.remove(tab.id);
+        !firstAuthorization && chrome.tabs.create({'url': 'http://dev0.codesign.io/chrome?successfully_installed=true'});
 
-          !firstAuthorization && chrome.tabs.create({'url': 'http://www.codesign.io/extension-successfully-installed'}, function (tab) {});
-          var token = localStorage.token;
-          httprequest('http://api.codesign.io/users/me/', 'GET', {"Authorization": 'Token ' +  token}, null, function (data) {
-            localStorage.me = JSON.stringify(data);
-            CoIntercom.boot(data.user.id, data.user.first_name, data.user.date_joined);
-            CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
-          });
+        var user = yield httprequest.get('http://dev0.codesign.io/api/users/me');
+        localStorage.me = JSON.stringify(user);
+        CoIntercom.boot(user.id, user.first_name, user.created_at);
+        CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
+        if (!request.fromSite) chrome.tabs.create({'url': 'http://dev0.codesign.io/syncauthorization', selected: false});
 
-          if (!request.fromSite) chrome.tabs.create({'url': 'http://www.codesign.io/syncauthorization', selected: false}, function (tab) {});
-        })
       } else {
-        chrome.tabs.getSelected(null, function (tab) {
-          firstAuthorization = true;
-          localStorage.firstAuthorization = 'true';
-          chrome.tabs.update(tab.id, {url: 'http://www.codesign.io/chrome?extension-authorization'})
-        })
+        firstAuthorization = true;
+        localStorage.firstAuthorization = 'true';
+        chrome.tabs.update(tab.id, {url: 'http://dev0.codesign.io/chrome?extension_authorization=true'})
       }
       startOauth = null;
     }
@@ -140,7 +148,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
 
 
   }())
-});
+}
+
+chrome.runtime.onMessageExternal.addListener(messageListener)
+chrome.runtime.onMessage.addListener(messageListener);
 
 
 
@@ -148,26 +159,33 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
 
 
 
-function* takeFullPageScreenshot(){
-  var tab = yield chrome.tabs.getSelected.bind(null, null);
-  yield chrome.tabs.executeScript.bind(null, tab.id, {file: 'build/scroll_page.js'});
-  yield chrome.tabs.sendRequest.bind(null, tab.id, {msg: 'scrollPage'});
+var takeFullPageScreenshot = function*(){
+  var tab = yield getSelectedTab();
+  yield new Promise((resolve, reject)=>{
+    chrome.tabs.executeScript(tab.id, {file: 'build/scroll_page.js'}, function () {
+      chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function () {
+        resolve()
+      });
+    });
+  });
   yield* screenshotCaptured(screenshot, tab.url, tab.title);
-  
+
+  console.log('takeFullPageScreenshot end');
+
   track('#SNAPPED FULL PAGE', {"WEB_URL": tab.url, "PAGE-TITLE": tab.title});
 }
 
-function* takeVisibleScreenshot(){
+var takeVisibleScreenshot = function*(){
   var canvas = yield* captureVisible();
-  var tab = yield chrome.tabs.getSelected.bind(null, null);
+  var tab = yield getSelectedTab();
   yield* screenshotCaptured({canvas: canvas}, tab.url, tab.title);
-  
+
   track('#SNAPPED SCREEN AREA', {"WEB_URL": tab.url, "PAGE-TITLE": tab.title});
 
 }
 
 
-function* capturePage(data, sender, callback) {
+var capturePage = function*(data, sender, callback) {
   var progressStatus = parseInt(data.complete * 100, 10) + '%';
   chrome.runtime.sendMessage({msg: 'progress', progress: progressStatus, progressMsg: 'Capturing...'});
   chrome.browserAction.setBadgeText({text: progressStatus});
@@ -186,20 +204,31 @@ function* capturePage(data, sender, callback) {
     screenshot.canvas.height = data.totalHeight;
   }
 
+  console.log('try capture visible');
+
   yield* captureVisible({left: data.x, top: data.y});
-  callback(true);
+  console.log('after capture visible', callback);
+  var tab = yield getSelectedTab();
+  chrome.tabs.sendRequest(tab.id, {msg: 'processEnd'});
 }
 
 
 
 
-function* captureVisible(canvasPos){
-  var dataURI = yield chrome.tabs.captureVisibleTab.bind(null, null, {format: 'png', quality: 100});
-  
+var captureVisible = function*(canvasPos){
+  var dataURI = yield new Promise((resolve, reject)=> {
+    chrome.tabs.captureVisibleTab(null, {format: 'png', quality: 100}, function(data){
+      resolve(data);
+    });
+  });
+
   return yield new Promise((resolve,reject)=>{
+    console.log('new image');
       var image = new Image();
       image.onload = function () {
+        console.log('image onload', screenshot.canvas);
         if(screenshot.canvas) {
+          console.log('try canvas before draw');
           screenshot.canvas.getContext('2d').drawImage(image, canvasPos.left, canvasPos.top);
           resolve();
         } else {
@@ -211,17 +240,16 @@ function* captureVisible(canvasPos){
           canvas.height = capturedImageSize.height;
           canvas.getContext('2d').drawImage(image, capturedImageSize.left, capturedImageSize.top, capturedImageSize.width, capturedImageSize.height, 0, 0, capturedImageSize.width, capturedImageSize.height);
           resolve(canvas);
-          console.log(canvas);
         }
       };
       image.src = dataURI;
   })
 }
 
-function* storeFromDataCanvas(canvas, pageUrl){
+var storeFromDataCanvas = function*(canvas, pageUrl){
   var dataURI = canvas.toDataURL();
   var blob = dataURItoBlob(dataURI);
-  
+
   var name = pageUrl.split('?')[0].split('#')[0];
   if (name) {
     name = name
@@ -236,23 +264,25 @@ function* storeFromDataCanvas(canvas, pageUrl){
   }
   name = 'screencapture' + name + '-' + Date.now() + '.png';
   var url = 'filesystem:chrome-extension://' + chrome.i18n.getMessage('@@extension_id') + '/temporary/' + name;
-
-  var fs = yield window.webkitRequestFileSystem.bind(null, window.TEMPORARY, blob.size);
-  var fileEntry = yield fs.root.getFile.bind(null, name, {create: true});
-  var fileWriter = yield fileEntry.createWriter;
   yield new Promise((resolve, reject)=>{
-    fileWriter.onwriteend = () => resolve();
-    fileWriter.write(blob);
+    window.webkitRequestFileSystem(window.TEMPORARY, blob.size, function (fs) {
+      fs.root.getFile(name, {create: true}, function (fileEntry) {
+        fileEntry.createWriter(function (fileWriter) {
+          fileWriter.onwriteend = () => resolve();
+          fileWriter.write(blob);
+        })
+      });
+    });
   });
-  
+
   return url;
 }
 
 
-function* screenshotCaptured(screenshot, pageUrl, pageTitle){
+var screenshotCaptured = function*(screenshot, pageUrl, pageTitle){
   console.log(screenshot);
   var fileUrl = yield* storeFromDataCanvas(screenshot.canvas, pageUrl);
-  
+
   var pageTitleRes = sendedrequest.pageTitle || pageTitle;
 
   var capturedImage = {
@@ -276,27 +306,41 @@ function* screenshotCaptured(screenshot, pageUrl, pageTitle){
 }
 
 
-function* uploadImages(req){
+var uploadImages = function*(req){
   var activeBoard = req.activeBoard;
   var activeFolder = req.activeFolder;
   var capturedImages = JSON.parse(localStorage.capturedImages);
 
+  var readCodeObj;
   if(activeBoard.id == 'new_board'){
-    activeBoard = yield httprequest.post('http://codesign.io/api/folders/'+ activeFolder.id + '/boards/', {}, {title: capturedImages[0].pageTitle});
-  }
-  
-  for (var i in capturedImages){
-    var capturedImage = capturedImages[i];
-    var post = yield httprequest.post('http://codesign.io/api/boards/'+ activeBoard.id + '/posts/', {}, {title: capturedImage.url + " " + (new Date).toString()});
-    var fileEntry = window.webkitResolveLocalFileSystemURL.bind(null, capturedImage.link)
-    var file = yield fileEntry.file;
-    yield httprequest.post('http://codesign.io/api/posts/'+post.id+'/images', {}, file);
-    track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://www.codesign.io/board/" + activeBoard.client_code});
+    activeBoard = yield httprequest.post('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards', {}, {title: capturedImages[0].pageTitle, status: "AC", post_preview_id: ''});
+    readCodeObj = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CL', boards_id: activeBoard.id});
+    yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CB', boards_id: activeBoard.id});
   }
 
-  window.open("http://www.codesign.io/board/" + activeBoard.client_code);
+  for (var i in capturedImages){
+    var capturedImage = capturedImages[i];
+    var post = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/posts', {}, {title: capturedImage.url + " " + (new Date).toString()});
+    yield httprequest.put('http://dev0.codesign.io/api/boards/'+ activeBoard.id, {}, {post_preview_id: post.id});
+
+    var file = yield new Promise((resolve, reject)=>{
+      window.webkitResolveLocalFileSystemURL(capturedImage.link, function (fileEntry) {
+        fileEntry.file(function (file) {
+          resolve(file)
+        })
+      })
+    });
+    var image = yield httprequest.post('http://dev0.codesign.io/api/posts/'+post.id+'/images', {}, file);
+    yield httprequest.put('http://dev0.codesign.io/api/posts/'+ post.id, {}, {imageversion_id: image.id});
+    track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://dev0.codesign.io/board/" + activeBoard.client_code});
+  }
+
+
+  console.log('upload done');
+
+  window.open("http://dev0.codesign.io/board/" + (readCodeObj && readCodeObj.code || activeBoard.boards_codes.filter((bc=>bc.role=="CL"))[0].code));
   chrome.browserAction.setBadgeText({text: ''});
-  
+
   localStorage.capturedImages = '[]';
 
 }

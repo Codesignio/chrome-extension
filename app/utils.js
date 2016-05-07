@@ -36,6 +36,9 @@ var utils = {
 
     // return our results
     return elements;
+  },
+  randomStr(length){
+    return new Array(length).join().replace(/(.|$)/g, function(){return ((Math.random()*36)|0).toString(36)[Math.random()<.5?"toString":"toUpperCase"]();});
   }
 };
 

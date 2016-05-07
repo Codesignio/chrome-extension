@@ -2,9 +2,23 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
     if (request.msg === 'scrollPage') {
         getPositions(callback);
     }
+
+    if(request.msg === 'processEnd'){
+      window.clearTimeout(cleanUpTimeout);
+      processArrangements();
+    }
 });
 
 function getPositions(callback) {
+  chrome.extension.onRequest.addListener(function(request, sender, callback){
+
+    if(request.msg === 'processEnd'){
+      window.clearTimeout(cleanUpTimeout);
+      processArrangements();
+    }
+  });
+
+
     var fullWidth = document.body.scrollWidth,
         fullHeight = document.body.scrollHeight,
         windowWidth = window.innerWidth,
@@ -43,7 +57,9 @@ function getPositions(callback) {
         window.scrollTo(originalX, originalY);
     }
 
-    (function processArrangements() {
+  var cleanUpTimeout;
+
+    function processArrangements() {
         if (!arrangements.length) {
             cleanUp();
             if (callback) {
@@ -68,17 +84,11 @@ function getPositions(callback) {
         };
 
         window.setTimeout(function() {
-            var cleanUpTimeout = window.setTimeout(cleanUp, 1250);
-
-            chrome.extension.sendRequest(data, function(captured) {
-                window.clearTimeout(cleanUpTimeout);
-                if (captured) {
-                    processArrangements();
-                } else {
-                    cleanUp();
-                }
-            });
+            cleanUpTimeout = window.setTimeout(cleanUp, 1250);
+            chrome.runtime.sendMessage(data);
 
         }, 50);
-    })();
+    };
+
+  processArrangements();
 }

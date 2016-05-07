@@ -17,13 +17,15 @@
   },
   "homepage": "https://github.com/Codesignio/chrome-extension#readme",
   "dependencies": {
+    "babel-polyfill": "^6.8.0",
+    "bluebird": "^3.3.1",
     "classnames": "^2.2.0",
     "css-path": "^1.0.3",
+    "qs": "^6.1.0",
     "react": "^0.14.2",
     "react-addons-css-transition-group": "^0.14.3",
     "react-dom": "^0.14.2"
   },
-
   "devDependencies": {
     "babel-core": "^6.5.2",
     "babel-loader": "^6.2.2",
