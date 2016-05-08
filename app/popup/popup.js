@@ -131,7 +131,7 @@ class App extends React.Component {
     this.setState({token: null});
     localStorage.token = '';
     chrome.runtime.sendMessage({msg: 'logOutUser'});
-    chrome.tabs.create({'url': 'http://dev0.codesign.io/chrome?extension-authorization'}, function (tab) {
+    chrome.tabs.create({'url': 'http://dev0.codesign.io/chrome?extension_authorization=true'}, function (tab) {
     });
   }
 
