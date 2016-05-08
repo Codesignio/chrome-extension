@@ -71,7 +71,7 @@ class Snap extends React.Component {
     this.state.resize = false;
     this.setState({});
 
-    chrome.extension.sendRequest({
+    chrome.runtime.sendMessage({
       msg: 'cropData',
       width: this.state.width,
       height: this.state.height,
@@ -183,7 +183,7 @@ class Snap extends React.Component {
            onMouseMove={this.handleMouseMove.bind(this)}
            onMouseUp={this.handleMouseUp.bind(this)}>
 
-      {this.state.width && <div className="selection" onMouseDown={this.startDrag.bind(this)} style={{...selectionStyle}}>
+      {this.state.width ? <div className="selection" onMouseDown={this.startDrag.bind(this)} style={{...selectionStyle}}>
           {this.state.select || this.state.resize ? null : [
             <div key="resizer top" onMouseDown={this.startResize.bind(this, 'top')} className="resizer top" style={{...resizerStyle, top: 0, width: '100%', height: '2px', cursor: 'ns-resize'}}></div>,
             <div key="resizer bottom" onMouseDown={this.startResize.bind(this, 'bottom')} className="resizer bottom" style={{...resizerStyle, bottom: 0, width: '100%', height: '2px', cursor: 'ns-resize'}}></div>,
@@ -194,7 +194,7 @@ class Snap extends React.Component {
             <div key="resizer bottom-right" onMouseDown={this.startResize.bind(this, 'bottom-right')} className="resizer bottom-right" style={{...resizerStyle, bottom: -4, right: -4, width: '8px', height: '8px', cursor: 'nwse-resize'}}></div>,
             <div key="resizer bottom-left" onMouseDown={this.startResize.bind(this, 'bottom-left')} className="resizer bottom-left" style={{...resizerStyle, bottom: -4, left: -4, width: '8px', height: '8px', cursor: 'nesw-resize'}}></div>
           ]}
-        </div>}
+        </div> : null}
       </div>
 
   }
