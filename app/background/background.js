@@ -322,7 +322,11 @@ var uploadImages = function*(req){
 
   for (var i in capturedImages){
     var capturedImage = capturedImages[i];
-    var post = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/posts', {}, {title: capturedImage.url + " " + (new Date).toString(), position: activeBoard.posts && activeBoard.posts.sort((a,b)=>a.position - b.position)[0].position+1 || 0});
+    var position = activeBoard.posts && activeBoard.posts.length && activeBoard.posts.sort((a,b)=>a.position - b.position)[0].position+1 || 0;
+    var post = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/posts', {}, {title: capturedImage.url + " " + (new Date).toString(), position: position});
+    if(!activeBoard.posts) activeBoard.posts = [];
+    activeBoard.posts.push(post);
+    localStorage.setItem('activeBoard', JSON.stringify(activeBoard));
     yield httprequest.put('http://dev0.codesign.io/api/boards/'+ activeBoard.id, {}, {post_preview_id: post.id});
 
     var file = yield new Promise((resolve, reject)=>{

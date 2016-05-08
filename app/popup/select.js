@@ -27,7 +27,7 @@ class SelectAndUpload extends React.Component {
       });
       localStorage.folders = JSON.stringify( data1);
 
-      return request.get('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards?'+qs.stringify({embed: [{l:'boards_codes'}]})).then((data2)=>{
+      return request.get('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards?'+qs.stringify({embed: [{l:'boards_codes'}, {l: 'posts'}]})).then((data2)=>{
         var activeBoard = data2.map((b)=> b.id).indexOf(this.state.activeBoard.id) == -1 ?  {id: 'new_board'} : this.state.activeBoard;
 
 
