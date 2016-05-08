@@ -68,18 +68,20 @@ var messageListener = function(request, sender, callback) {
     if (request.msg == 'stopOauth'){
       console.log('stopOauth');
       var tab = yield getSelectedTab();
-      if (request.token){
-        localStorage.token = request.token;
+
+      localStorage.token = request.token;
+      var user = yield httprequest.get('http://dev0.codesign.io/api/users/me');
+
+      if(user.role != 'guest'){
         chrome.tabs.remove(tab.id);
         !firstAuthorization && chrome.tabs.create({'url': 'http://dev0.codesign.io/chrome?successfully_installed=true'});
 
-        var user = yield httprequest.get('http://dev0.codesign.io/api/users/me');
         localStorage.me = JSON.stringify(user);
         CoIntercom.boot(user.id, user.first_name, user.created_at);
         CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
         if (!request.fromSite) chrome.tabs.create({'url': 'http://dev0.codesign.io/syncauthorization', selected: false});
-
       } else {
+        localStorage.token = '';
         firstAuthorization = true;
         localStorage.firstAuthorization = 'true';
         chrome.tabs.update(tab.id, {url: 'http://dev0.codesign.io/chrome?extension_authorization=true'})
