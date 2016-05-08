@@ -54,7 +54,7 @@ class SelectAndUpload extends React.Component {
   setFolder(e) {
     var activeFolder =  this.state.folders.filter((f)=> f.id == parseInt(e.target.value))[0];
     this.setState({selectActiveFolder: activeFolder});
-    request.get('http://api.codesign.io/folders/'+ activeFolder.id + '/boards?'+qs.stringify({embed: [{l:'boards_codes'}]})).then((data)=>{
+    request.get('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards?'+qs.stringify({embed: [{l:'boards_codes'}]})).then((data)=>{
       this.state.boards[activeFolder.id] = data;
       localStorage.boards = JSON.stringify(this.state.boards);
       this.setState({activeBoard: {id: 'new_board'}});
