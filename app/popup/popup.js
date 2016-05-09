@@ -180,6 +180,21 @@ class App extends React.Component {
     window.close()
   }
 
+
+  addComment=()=>{
+    chrome.tabs.getSelected(null, (tab)=>{
+      chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'}'}, ()=>{
+        chrome.tabs.executeScript(tab.id, {file: 'build/comment.js'}, ()=>{
+          if(!localStorage.okCommentButton){
+            this.setState({status: 'comment-click-title'});
+          } else {
+            window.close()
+          }
+        });
+      });
+    });
+  };
+
   renderVadMikhalyov(text, callBack){
     return (
       <div className="task-box">
@@ -230,6 +245,7 @@ class App extends React.Component {
           {this.state.unsupported ? null : <div className="actions">
                 <div key="1" onClick={this.takeFullPageScreenshoot.bind(this)}><span>Snap a full page</span></div>
                 <div key="3" onClick={this.snapScreen.bind(this)}><span>Snap screen area</span></div>
+                {!this.state.capturedImages.length ? <div key="4" onClick={this.addComment}><span>Add comment</span></div> : null}
                 {this.state.capturedImages.length ? <div className="back-to-upload" key="5" style={{backgroundColor: 'white'}} onClick={()=> this.setState({status: 'captured'})}><span className="back-link">← Back to upload dialog</span></div> : null}
           </div>}
           {!this.state.capturedImages.length ? <div className="title-and-links">

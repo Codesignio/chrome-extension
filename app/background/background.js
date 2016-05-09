@@ -23,6 +23,24 @@ chrome.runtime.onInstalled.addListener(function(){
 chrome.runtime.setUninstallURL('http://dev0.codesign.io/chrome?uninstalled=true');
 
 
+chrome.contextMenus.create({
+  "title": "Add Comment",
+  "contexts": ["all"],
+  "onclick" : clickHandler
+});
+
+function clickHandler(e) {
+  chrome.tabs.getSelected(null, function (tab) {
+    chrome.tabs.executeScript(tab.id, {code: 'window.codesign = {me: '+ localStorage.me+'}'}, function () {
+      chrome.tabs.executeScript(tab.id, {file: 'build/comment.js'}, function () {
+        chrome.tabs.sendRequest(tab.id, {msg: 'contextMenu'}, function () {
+        });
+      });
+    });
+  });
+}
+
+
 var getSelectedTab = function () {
   return new Promise((resolve, reject)=>{
     chrome.tabs.getSelected(null, function (tab) {
@@ -146,6 +164,20 @@ var messageListener = function(request, sender, callback) {
     if (request.msg == 'logOutUser'){
       CoIntercom.loggedOut({});
       CoIntercom.shutdown();
+    }
+
+
+    if (request.msg == 'addPin' || request.msg == 'deletePin' || request.msg == 'completePin' || request.msg == 'addComment' || request.msg == 'deleteComment'){
+
+
+      sendedrequest = request;
+      if(request.pins.length){
+        localStorage.currentAction = 'comment';
+      }
+
+
+      chrome.browserAction.setBadgeText({text: request.pins.length ? 'share' : '' });
+
     }
 
 
@@ -338,6 +370,33 @@ var uploadImages = function*(req){
     });
     var image = yield httprequest.post('http://dev0.codesign.io/api/posts/'+post.id+'/images', {}, file);
     yield httprequest.put('http://dev0.codesign.io/api/posts/'+ post.id, {}, {imageversion_id: image.id});
+
+
+    if(capturedImage.pins){
+      
+      for (var i = 0; i < capturedImage.pins.length;i++) {
+        var pin = capturedImage.pins[i];
+
+        var task = yield httprequest.post('http://dev0.codesign.io/api/posts/' + post.id + '/tasks', {}, {
+          title: pin.text,
+          left: pin.x / capturedImage.size.width * 100,
+          top: pin.y / capturedImage.size.height * 100,
+          status: pin.completed ? "CP" : "AC"
+        });
+
+        if (pin.children.length) {
+          for (var i = 0; i < pin.children.length; i++) {
+            var comment = pin.children[i];
+            yield httprequest.post('http://api.codesign.io/tasks/' + task.id + '/comments', {}, {
+              title: comment.text
+            })
+          }
+
+        }
+      }
+    }
+    
+    
     track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://dev0.codesign.io/board/" + activeBoard.client_code});
   }
 

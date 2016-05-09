@@ -11,7 +11,8 @@ var config = {
     background: './app/background/background.js',
     snap: './app/page_script/snap.js',
     auth_hook: './app/page_script/auth_hook.js',
-    scroll_page: './app/page_script/scroll_page.js'
+    scroll_page: './app/page_script/scroll_page.js',
+    comment: './app/page_script/comment.js'
   },
   output: {
     path: path.join(__dirname, 'build'),
