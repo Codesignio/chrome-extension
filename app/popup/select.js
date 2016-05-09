@@ -179,7 +179,6 @@ class SelectAndUpload extends React.Component {
   render(){
 
     var hasPinsImages = this.state.images.filter((img)=> img.pins && img.pins.length).length;
-    var hasliveUrl = this.state.images.filter((img)=> img.liveUrl).length;
 
     return (
       <div>
@@ -196,9 +195,8 @@ class SelectAndUpload extends React.Component {
         </div>
         <div className="uploadWidget">
 
-          {hasPinsImages && (this.state.images.filter((img)=> img.sharedLink).length) || hasliveUrl  ? <div id="shareButton" onClick={this.copyLink.bind(this)}>{ this.state.copiedLink ? '✓ COPIED SUCCESSFULLY!' : 'COPY LIVE LINK'}</div> : (hasPinsImages ? <div id="shareButton" onClick={this.shareImage.bind(this)}>{this.state.shareProgress ? 'SHARING...' : 'SHARE LIVE LINK'}</div> : null)}
-          {hasliveUrl ? null : <div id="uploadButton" className={hasPinsImages ? "grayButton": null} onClick={this.uploadImage.bind(this)}>{this.state.uploadProgress ? <span>UPLOADING...</span> : <span>SHARE {hasPinsImages ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</span>}</div>}
-          {hasliveUrl ? null : (this.state.edit ? <div className="selectors">
+           <div id="uploadButton" className={hasPinsImages ? "grayButton": null} onClick={this.uploadImage.bind(this)}>{this.state.uploadProgress ? <span>UPLOADING...</span> : <span>SHARE {hasPinsImages ? 'AS' : ''} {this.state.images.length-1 ? this.state.images.length + ' IMAGES' : ' IMAGE'}</span>}</div>
+          {this.state.edit ? <div className="selectors">
             <p>FOLDER</p>
             <select defaultValue={this.state.activeFolder.id} ref="foldersSelect" onChange={this.setFolder.bind(this)}>
               {this.state.folders && this.state.folders.map(function(folder, i){
@@ -216,11 +214,11 @@ class SelectAndUpload extends React.Component {
             {this.state.activeBoard.id == 'new_board' ?
               <p key="1">{ hasPinsImages && this.state.images.filter((img)=> img.sharedLink).length ? 'Click on "Share” button to upload a full-length screenshot with your feedback to a new board' : ('Click on "Share” button to upload ​'+ (this.state.images.length > 1 ? this.state.images.length + ' images' :  '1 image​ to a new board'))}  in "{this.state.activeFolder.title}" folder.</p> :
               <p key="1">Click on "Share" button to upload {this.state.images.length > 1 ? this.state.images.length + ' images' :  '1 image​'}​ to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
-          </div>)}
+          </div>}
           <div className="upload-actions">
-            {hasliveUrl ? null : <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}
-            {hasliveUrl ? null : (this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>)}
-            {hasliveUrl ? null : (hasPinsImages ? null :<a onClick={this.backToAction.bind(this)}>+ Snap more</a>)}
+            <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}
+            {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
+            {hasPinsImages ? null :<a onClick={this.backToAction.bind(this)}>+ Snap more</a>}
             <a onClick={this.cleanCapturesList.bind(this)}>x Cancel</a>
           </div>
         </div>
