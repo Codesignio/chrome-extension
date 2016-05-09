@@ -348,10 +348,12 @@ var uploadImages = function*(req){
   var capturedImages = JSON.parse(localStorage.capturedImages);
 
   var readCodeObj;
+  var createBoard;
   if(activeBoard.id == 'new_board'){
     activeBoard = yield httprequest.post('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards', {}, {title: capturedImages[0].pageTitle, status: "AC", post_preview_id: ''});
     readCodeObj = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CL', boards_id: activeBoard.id});
     activeBoard.boards_codes = [readCodeObj];
+    createBoard = true;
     yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CB', boards_id: activeBoard.id});
   }
 
@@ -361,7 +363,9 @@ var uploadImages = function*(req){
     var post = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/posts', {}, {title: capturedImage.url + " " + (new Date).toString(), position: position});
     if(!activeBoard.posts) activeBoard.posts = [];
     activeBoard.posts.push(post);
-    localStorage.setItem('activeBoard', JSON.stringify(activeBoard));
+
+    if(!createBoard) localStorage.setItem('activeBoard', JSON.stringify(activeBoard));
+
     yield httprequest.put('http://dev0.codesign.io/api/boards/'+ activeBoard.id, {}, {post_preview_id: post.id});
 
     var file = yield new Promise((resolve, reject)=>{
