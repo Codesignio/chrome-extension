@@ -7,6 +7,7 @@ var cropData = null;
 var startOauth;
 var cancelRequest;
 var firstAuthorization;
+var current_user;
 
 
 const {track, CoIntercom } = require('./analitics');
@@ -94,6 +95,7 @@ var messageListener = function(request, sender, callback) {
         chrome.tabs.remove(tab.id);
         !firstAuthorization && chrome.tabs.create({'url': 'http://dev0.codesign.io/chrome?successfully_installed=true'});
 
+        current_user = user;
         localStorage.me = JSON.stringify(user);
         CoIntercom.boot(user.id, user.first_name, user.created_at);
         CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
@@ -349,6 +351,7 @@ var uploadImages = function*(req){
   if(activeBoard.id == 'new_board'){
     activeBoard = yield httprequest.post('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards', {}, {title: capturedImages[0].pageTitle, status: "AC", post_preview_id: ''});
     readCodeObj = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CL', boards_id: activeBoard.id});
+    activeBoard.boards_codes = [readCodeObj];
     yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CB', boards_id: activeBoard.id});
   }
 
@@ -381,13 +384,15 @@ var uploadImages = function*(req){
           title: pin.text,
           left: pin.x / capturedImage.size.width * 100,
           top: pin.y / capturedImage.size.height * 100,
-          status: pin.completed ? "CP" : "AC"
+          status: pin.completed ? "CP" : "AC",
+          executors_id: pin.completed ? current_user.id: '',
+          number: i+1,
         });
 
         if (pin.children.length) {
           for (var i = 0; i < pin.children.length; i++) {
             var comment = pin.children[i];
-            yield httprequest.post('http://api.codesign.io/tasks/' + task.id + '/comments', {}, {
+            yield httprequest.post('http://dev0.codesign.io/api/tasks/' + task.id + '/comments', {}, {
               title: comment.text
             })
           }

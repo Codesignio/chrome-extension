@@ -238,7 +238,6 @@ class Comment extends React.Component {
   }
 
   sendData(msg, pin, parentPin){
-    var me = this;
     var data = {
       msg: msg == 'addPin' ? (this.state.pins.indexOf(pin) > -1 ? 'addPin' : 'addComment') : (msg == 'deletePin' ? (this.state.pins.indexOf(pin) > -1 ? 'deletePin' : 'deleteComment') : msg),
       pins: this.state.pins,
@@ -255,13 +254,7 @@ class Comment extends React.Component {
       webUrl: this.state.liveUrl,
       documentTitle: document.title,
     };
-    chrome.extension.sendRequest(data, function(data){
-      if (parentPin){
-        parentPin.children[parentPin.children.indexOf(pin)].id = data.id;
-      } else {
-        me.state.pins[me.state.pins.indexOf(pin)].id = data.id;
-      }
-    });
+    chrome.runtime.sendMessage(data);
 
   }
 
