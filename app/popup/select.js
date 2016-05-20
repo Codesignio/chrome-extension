@@ -52,7 +52,7 @@ class SelectAndUpload extends React.Component {
   }
 
   setFolder(e) {
-    var activeFolder =  this.state.folders.filter((f)=> f.id == parseInt(e.target.value))[0];
+    var activeFolder =  this.state.folders.filter((f)=> f.id == e.target.value)[0];
     this.setState({selectActiveFolder: activeFolder});
     request.get('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards?'+qs.stringify({embed: [{l:'boards_codes'}, {l: 'posts'}]})).then((data)=>{
       this.state.boards[activeFolder.id] = data;
@@ -106,7 +106,7 @@ class SelectAndUpload extends React.Component {
 
       var activeBoard;
       if (this.refs.boardsSelect.value !== "new_board") {
-        activeBoard = this.state.boards[activeFolder.id].filter((b)=> b.id == parseInt(this.refs.boardsSelect.value))[0];
+        activeBoard = this.state.boards[activeFolder.id].filter((b)=> b.id == this.refs.boardsSelect.value)[0];
       } else {
         activeBoard = {id: "new_board"}
       }
