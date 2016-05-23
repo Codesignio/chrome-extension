@@ -216,7 +216,7 @@ class SelectAndUpload extends React.Component {
               <p key="1">Click on "Share" button to upload {this.state.images.length > 1 ? this.state.images.length + ' images' :  '1 image​'}​ to "{this.state.activeBoard.title}" board in "{this.state.activeFolder.title}" folder.</p>}
           </div>}
           <div className="upload-actions">
-            <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>}
+            <a onClick={this.toogleSelectors.bind(this)}>{this.state.edit ? 'Save' : 'Edit'}</a>
             {this.state.edit && <a onClick={()=> this.setState({edit: false})}>Cancel</a>}
             {hasPinsImages ? null :<a onClick={this.backToAction.bind(this)}>+ Snap more</a>}
             <a onClick={this.cleanCapturesList.bind(this)}>x Cancel</a>
