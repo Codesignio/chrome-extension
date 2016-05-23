@@ -18,10 +18,10 @@ const genRunner = require('../genrunner');
 
 
 chrome.runtime.onInstalled.addListener(function(){
-  chrome.tabs.create({'url': 'http://dev0.codesign.io/checkauthorization'});
+  chrome.tabs.create({'url': 'http://codesign.io/checkauthorization'});
 });
 
-chrome.runtime.setUninstallURL('http://dev0.codesign.io/chrome?uninstalled=true');
+chrome.runtime.setUninstallURL('http://codesign.io/chrome?uninstalled=true');
 
 
 chrome.contextMenus.create({
@@ -89,22 +89,22 @@ var messageListener = function(request, sender, callback) {
       var tab = yield getSelectedTab();
 
       localStorage.token = request.token;
-      var user = yield httprequest.get('http://dev0.codesign.io/api/users/me');
+      var user = yield httprequest.get('http://codesign.io/api/users/me');
 
       if(user.role != 'guest'){
         chrome.tabs.remove(tab.id);
-        !firstAuthorization && chrome.tabs.create({'url': 'http://dev0.codesign.io/chrome?successfully_installed=true'});
+        !firstAuthorization && chrome.tabs.create({'url': 'http://codesign.io/chrome?successfully_installed=true'});
 
         current_user = user;
         localStorage.me = JSON.stringify(user);
         CoIntercom.boot(user.id, user.first_name, user.created_at);
         CoIntercom.loggedIn({login_type: request.urlProvider ? request.urlProvider : 'email'});
-        if (!request.fromSite) chrome.tabs.create({'url': 'http://dev0.codesign.io/syncauthorization', selected: false});
+        if (!request.fromSite) chrome.tabs.create({'url': 'http://codesign.io/syncauthorization', selected: false});
       } else {
         localStorage.token = '';
         firstAuthorization = true;
         localStorage.firstAuthorization = 'true';
-        chrome.tabs.update(tab.id, {url: 'http://dev0.codesign.io/chrome?extension_authorization=true'})
+        chrome.tabs.update(tab.id, {url: 'http://codesign.io/chrome?extension_authorization=true'})
       }
       startOauth = null;
     }
@@ -350,23 +350,23 @@ var uploadImages = function*(req){
   var readCodeObj;
   var createBoard;
   if(activeBoard.id == 'new_board'){
-    activeBoard = yield httprequest.post('http://dev0.codesign.io/api/folders/'+ activeFolder.id + '/boards', {}, {title: capturedImages[0].pageTitle, status: "AC", post_preview_id: ''});
-    readCodeObj = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CL', boards_id: activeBoard.id});
+    activeBoard = yield httprequest.post('http://codesign.io/api/folders/'+ activeFolder.id + '/boards', {}, {title: capturedImages[0].pageTitle, status: "AC", post_preview_id: ''});
+    readCodeObj = yield httprequest.post('http://codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CL', boards_id: activeBoard.id});
     activeBoard.boards_codes = [readCodeObj];
     createBoard = true;
-    yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CB', boards_id: activeBoard.id});
+    yield httprequest.post('http://codesign.io/api/boards/'+ activeBoard.id + '/boards_codes', {}, {code: randomStr(6), role: 'CB', boards_id: activeBoard.id});
   }
 
   for (var i in capturedImages){
     var capturedImage = capturedImages[i];
     var position = activeBoard.posts && activeBoard.posts.length && activeBoard.posts.sort((a,b)=>a.position - b.position)[0].position+1 || 0;
-    var post = yield httprequest.post('http://dev0.codesign.io/api/boards/'+ activeBoard.id + '/posts', {}, {title: capturedImage.url + " " + (new Date).toString(), position: position});
+    var post = yield httprequest.post('http://codesign.io/api/boards/'+ activeBoard.id + '/posts', {}, {title: capturedImage.url + " " + (new Date).toString(), position: position});
     if(!activeBoard.posts) activeBoard.posts = [];
     activeBoard.posts.push(post);
 
     if(!createBoard) localStorage.setItem('activeBoard', JSON.stringify(activeBoard));
 
-    yield httprequest.put('http://dev0.codesign.io/api/boards/'+ activeBoard.id, {}, {post_preview_id: post.id});
+    yield httprequest.put('http://codesign.io/api/boards/'+ activeBoard.id, {}, {post_preview_id: post.id});
 
     var file = yield new Promise((resolve, reject)=>{
       window.webkitResolveLocalFileSystemURL(capturedImage.link, function (fileEntry) {
@@ -375,8 +375,8 @@ var uploadImages = function*(req){
         })
       })
     });
-    var image = yield httprequest.post('http://dev0.codesign.io/api/posts/'+post.id+'/images', {}, file);
-    yield httprequest.put('http://dev0.codesign.io/api/posts/'+ post.id, {}, {imageversion_id: image.id});
+    var image = yield httprequest.post('http://codesign.io/api/posts/'+post.id+'/images', {}, file);
+    yield httprequest.put('http://codesign.io/api/posts/'+ post.id, {}, {imageversion_id: image.id});
 
 
     if(capturedImage.pins){
@@ -384,7 +384,7 @@ var uploadImages = function*(req){
       for (var i = 0; i < capturedImage.pins.length;i++) {
         var pin = capturedImage.pins[i];
 
-        var task = yield httprequest.post('http://dev0.codesign.io/api/posts/' + post.id + '/tasks', {}, {
+        var task = yield httprequest.post('http://codesign.io/api/posts/' + post.id + '/tasks', {}, {
           title: pin.text,
           left: pin.x / capturedImage.size.width * 100,
           top: pin.y / capturedImage.size.height * 100,
@@ -396,7 +396,7 @@ var uploadImages = function*(req){
         if (pin.children.length) {
           for (var i = 0; i < pin.children.length; i++) {
             var comment = pin.children[i];
-            yield httprequest.post('http://dev0.codesign.io/api/tasks/' + task.id + '/comments', {}, {
+            yield httprequest.post('http://codesign.io/api/tasks/' + task.id + '/comments', {}, {
               title: comment.text
             })
           }
@@ -406,13 +406,13 @@ var uploadImages = function*(req){
     }
     
     
-    track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://dev0.codesign.io/board/" + activeBoard.client_code});
+    track('#UPLOADED IMAGE SUCESSFULLY', {"WEB_URL": capturedImage.url, "PAGE-TITLE": activeBoard.title, "BOARD-ID": activeBoard.id, LINK: "http://codesign.io/board/" + activeBoard.client_code});
   }
 
 
   console.log('upload done');
 
-  window.open("http://dev0.codesign.io/board/" + (readCodeObj && readCodeObj.code || activeBoard.boards_codes.filter((bc=>bc.role=="CL"))[0].code));
+  window.open("http://codesign.io/board/" + (readCodeObj && readCodeObj.code || activeBoard.boards_codes.filter((bc=>bc.role=="CL"))[0].code));
   chrome.browserAction.setBadgeText({text: ''});
 
   localStorage.capturedImages = '[]';

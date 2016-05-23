@@ -1,5 +1,5 @@
 function sendToken(token) {
-  chrome.runtime.sendMessage('gaaecipbmihjphkblcmkjfjlgdegboog', {
+  chrome.runtime.sendMessage('hdgakklpolkedaadooepdllhghhffjbk', {
     msg: 'stopOauth',
     token: token,
     fromSite: true
@@ -21,12 +21,12 @@ function checkUrl() {
     }
 
   } else if(window.location.toString().match(/codesign.io\/syncauthorization/)) {
-    chrome.runtime.sendMessage('gaaecipbmihjphkblcmkjfjlgdegboog', {
+    chrome.runtime.sendMessage('hdgakklpolkedaadooepdllhghhffjbk', {
         msg: 'syncAuthorization',
         token: JSON.parse(localStorage["token"] || 'null')
       }, {}, function (token) {
         window.app_store.dispatch({type: 'set_state', storage: {token: token}});
-      chrome.runtime.sendMessage('gaaecipbmihjphkblcmkjfjlgdegboog', {msg: 'closeWindow'})
+      chrome.runtime.sendMessage('hdgakklpolkedaadooepdllhghhffjbk', {msg: 'closeWindow'})
       })
   }
 
