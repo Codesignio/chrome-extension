@@ -47,7 +47,7 @@ class App extends React.Component {
 
     if (!localStorage.token){
       if (localStorage.firstAuthorization == 'true')  chrome.browserAction.setBadgeText({text: 'press me'});
-      chrome.tabs.create({'url': 'http://codesign.io/checkauthorization'}, function (tab) {});
+      chrome.tabs.create({'url': 'http://www.codesign.io/checkauthorization'}, function (tab) {});
     } else {
       chrome.browserAction.setBadgeText({text: this.state.capturedImages.length ? this.state.capturedImages.length.toString() : ''});
     }
@@ -131,7 +131,7 @@ class App extends React.Component {
     this.setState({token: null});
     localStorage.token = '';
     chrome.runtime.sendMessage({msg: 'logOutUser'});
-    chrome.tabs.create({'url': 'http://codesign.io/chrome?extension_authorization=true'}, function (tab) {
+    chrome.tabs.create({'url': 'http://www.codesign.io/chrome?extension_authorization=true'}, function (tab) {
     });
   }
 
@@ -252,7 +252,7 @@ class App extends React.Component {
             {this.state.unsupported ? [<p></p>, <p className="unsapported-title">Please, open web-page to leave feedback and screen capture!</p>]: [<p>codesign.io</p>,
             <p>Simplest feedback tool</p>]}
             <div className="links">
-              <a href="http://codesign.io/dashboard/" target="_blank">Dashboard</a>
+              <a href="http://www.codesign.io/dashboard/" target="_blank">Dashboard</a>
               {this.state.images.length ? <a className="imagesList" onClick={()=> this.setState({status: 'list'})}>History ({this.state.images.length})</a> : null}
               <a className="logOut" onClick={this.logOut.bind(this)}>Log out</a>
             </div>
